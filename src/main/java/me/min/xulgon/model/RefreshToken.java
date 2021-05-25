@@ -5,7 +5,9 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import javax.persistence.*;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
 import java.time.Instant;
 
 @Entity
@@ -13,15 +15,10 @@ import java.time.Instant;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class User {
+public class RefreshToken {
    @Id
    @GeneratedValue
    private Long id;
-   private String username;
-   private String password;
-   private String firstName;
-   private String lastName;
-   private String email;
+   private String token;
    private Instant createdAt;
-   private boolean enabled;
 }

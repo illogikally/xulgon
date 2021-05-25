@@ -5,7 +5,10 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import javax.persistence.*;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.OneToOne;
 import java.time.Instant;
 
 @Entity
@@ -13,15 +16,12 @@ import java.time.Instant;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class User {
+public class VerificationToken {
    @Id
    @GeneratedValue
    private Long id;
-   private String username;
-   private String password;
-   private String firstName;
-   private String lastName;
-   private String email;
-   private Instant createdAt;
-   private boolean enabled;
+   private String token;
+   @OneToOne
+   private User user;
+   private Instant expiryDate;
 }
