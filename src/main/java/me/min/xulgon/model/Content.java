@@ -29,9 +29,11 @@ public class Content {
    private Page page;
    @ManyToOne(fetch = FetchType.LAZY)
    private User user;
-   @OneToMany(mappedBy = "content")
+   @OneToMany(mappedBy = "content", cascade = CascadeType.ALL)
    private List<Reaction> reactions;
-   @OneToMany(mappedBy = "parent")
+   @OneToMany(mappedBy = "parent", cascade = CascadeType.ALL)
    private List<Comment> comments;
+   @OneToMany(mappedBy = "parent", cascade = CascadeType.ALL)
+   private List<Photo> photos;
 
 }

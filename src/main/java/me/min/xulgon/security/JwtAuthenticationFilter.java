@@ -1,6 +1,7 @@
 package me.min.xulgon.security;
 
 import lombok.AllArgsConstructor;
+
 import org.jetbrains.annotations.NotNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;

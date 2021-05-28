@@ -9,16 +9,16 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class PostResponse {
+public class CommentResponse {
    private Long id;
-   private Long pageId;
    private Long userId;
-   private String username;
-   private Boolean isReacted;
-   private String createdAt;
+   private Long parentId;
+   private String parentType;
    private String body;
+   private Boolean isReacted;
+   private String username;
+   private String avatarUrl;
+   private String createdAgo;
    private Integer reactionCount;
-   private Integer commentCount;
-   private Integer shareCount;
-   private Integer photoCount;
+   private Integer replyCount;
 }

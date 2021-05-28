@@ -7,8 +7,7 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
 import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
+import javax.persistence.OneToOne;
 
 @EqualsAndHashCode(callSuper = true)
 @Entity
@@ -16,7 +15,7 @@ import javax.persistence.Enumerated;
 @AllArgsConstructor
 @SuperBuilder
 @NoArgsConstructor
-public class Post extends Content {
-   @Enumerated(value = EnumType.STRING)
-   private Privacy privacy;
+public class UserProfile extends Page {
+   @OneToOne
+   private User user;
 }

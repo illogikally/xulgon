@@ -1,22 +1,24 @@
 package me.min.xulgon.model;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import lombok.experimental.SuperBuilder;
+import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import javax.persistence.ManyToOne;
 
 @EqualsAndHashCode(callSuper = true)
 @Entity
 @Data
-@AllArgsConstructor
 @SuperBuilder
+@AllArgsConstructor
 @NoArgsConstructor
-public class Post extends Content {
+public class Photo extends Content {
+   @ManyToOne
+   private Content parent;
    @Enumerated(value = EnumType.STRING)
    private Privacy privacy;
+   private String url;
 }

@@ -12,6 +12,7 @@ import me.min.xulgon.security.JwtProvider;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -67,6 +68,13 @@ public class AuthenticationService {
       return !verificationToken.getExpiryDate().isAfter(Instant.now());
    }
 
+   @Transactional(readOnly = true)
+   public User getLoggedInUser() {
+      org.springframework.security.core.userdetails.User pricipal = (org.springframework.security.core.userdetails.User) SecurityContextHolder.getContext()
+            .getAuthentication().getPrincipal();
+      return userRepository.findByUsername(pricipal.getUsername())
+            .orElseThrow(() -> new RuntimeException("User not found"));
+   }
    private String generateVerificationToken(User user) {
       String token = UUID.randomUUID().toString();
       VerificationToken verificationToken = VerificationToken.builder()

@@ -4,19 +4,15 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import me.min.xulgon.dto.PostResponse;
 import me.min.xulgon.mapper.PostMapper;
-import me.min.xulgon.model.Page;
-import me.min.xulgon.model.Post;
-import me.min.xulgon.repository.PageRepository;
-import me.min.xulgon.repository.PostRepository;
-import me.min.xulgon.repository.UserRepository;
+import me.min.xulgon.model.*;
+import me.min.xulgon.repository.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.text.SimpleDateFormat;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
-import java.time.format.DateTimeFormatter;
+import java.text.Collator;
 import java.util.List;
+import java.util.function.Predicate;
+import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 @Service
@@ -25,20 +21,32 @@ import java.util.stream.Collectors;
 @Slf4j
 public class PostService {
    private final PostRepository postRepository;
-   private final PageRepository pageRepository;
-   private final UserRepository userRepository;
    private final PostMapper postMapper;
+   private final AuthenticationService authenticationService;
+   private final UserProfileRepository userProfileRepository;
+   private final FriendshipRepository friendshipRepository;
 
    @Transactional(readOnly = true)
-   public List<PostResponse> getPostsByPage(Long pageId) {
-      Page page = pageRepository.findById(pageId)
+   public List<PostResponse> getPostsByProfile(Long profileId) {
+      UserProfile userProfile = userProfileRepository.findById(profileId)
             .orElseThrow(() -> new RuntimeException("Page not found"));
-      List<Post> posts = postRepository.findAllByPage(page);
-      var date = LocalDateTime.ofInstant(posts.get(0).getCreatedAt(), ZoneOffset.ofHours(7));
-      log.warn(DateTimeFormatter.ofPattern("dd 'tháng' MM 'lúc' hh:mm").format(date));
+      List<Post> posts = postRepository.findAllByPage(userProfile);
+      User loggedInUser = authenticationService.getLoggedInUser();
+      Privacy privacy = getPrivacy(loggedInUser, userProfile.getUser());
+
       return posts.stream()
+            .filter(post -> post.getPrivacy().ordinal() <= privacy.ordinal())
+            .peek(post -> post.setPhotos(post.getPhotos().stream()
+                  .filter(photo -> photo.getPrivacy().ordinal() <= privacy.ordinal())
+                  .collect(Collectors.toList())))
             .map(postMapper::toDto)
             .collect(Collectors.toList());
 
+   }
+
+   private Privacy getPrivacy(User userA, User userB) {
+      return userA.equals(userB) ? Privacy.ME :
+            friendshipRepository.findByUser(userA, userB).isPresent()
+                  ? Privacy.FRIEND : Privacy.PUBLIC;
    }
 }
