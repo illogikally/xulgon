@@ -45,8 +45,8 @@ public class PostService {
    }
 
    private Privacy getPrivacy(User userA, User userB) {
-      return userA.equals(userB) ? Privacy.ME :
-            friendshipRepository.findByUser(userA, userB).isPresent()
+      return userA.equals(userB) ? Privacy.ME
+            : friendshipRepository.findByUser(userA, userB).isPresent()
                   ? Privacy.FRIEND : Privacy.PUBLIC;
    }
 }

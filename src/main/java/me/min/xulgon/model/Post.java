@@ -6,9 +6,7 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
+import javax.persistence.*;
 
 @EqualsAndHashCode(callSuper = true)
 @Entity
@@ -19,4 +17,7 @@ import javax.persistence.Enumerated;
 public class Post extends Content {
    @Enumerated(value = EnumType.STRING)
    private Privacy privacy;
+   @ManyToOne
+   private Post shared;
+
 }

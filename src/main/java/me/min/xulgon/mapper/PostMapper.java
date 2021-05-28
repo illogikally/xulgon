@@ -18,6 +18,8 @@ public abstract class PostMapper {
 
    @Autowired
    AuthenticationService authenticationService;
+   @Autowired
+   PostMapper postMapper;
 
    @Mapping(target = "pageId", expression = "java(post.getPage().getId())")
    @Mapping(target = "userId", expression = "java(post.getUser().getId())")
@@ -29,6 +31,7 @@ public abstract class PostMapper {
    @Mapping(target = "createdAt", expression = "java(toDate(post.getCreatedAt()))")
    @Mapping(target = "isReacted", expression = "java(isReacted(post))")
    @Mapping(target = "photoCount", expression = "java(post.getPhotos().size())")
+   @Mapping(target = "shared", expression = "java(postMapper.toDto(post.getShared()))")
    public abstract PostResponse toDto(Post post);
 
    String toDate(Instant instant) {

@@ -21,4 +21,5 @@ public class PostResponse {
    private Integer commentCount;
    private Integer shareCount;
    private Integer photoCount;
+   private PostResponse shared;
 }

@@ -15,7 +15,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/page/")
 @AllArgsConstructor
-public class PageController {
+public class ProfileController {
    private final PostService postService;
 
    @GetMapping("/{pageId}/posts")
