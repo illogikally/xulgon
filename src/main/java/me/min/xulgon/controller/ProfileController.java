@@ -13,14 +13,14 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/page/")
+@RequestMapping("/api/profiles/")
 @AllArgsConstructor
 public class ProfileController {
    private final PostService postService;
 
-   @GetMapping("/{pageId}/posts")
-   public ResponseEntity<List<PostResponse>> getPostsByPage(@PathVariable Long pageId) {
-       return ResponseEntity.status(HttpStatus.OK).body(postService.getPostsByProfile(pageId));
+   @GetMapping("/{profileId}/posts")
+   public ResponseEntity<List<PostResponse>> getPostsByPage(@PathVariable Long profileId) {
+       return ResponseEntity.ok(postService.getPostsByProfile(profileId));
    }
 
 }

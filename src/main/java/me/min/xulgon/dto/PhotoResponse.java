@@ -5,24 +5,20 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
-
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class PostResponse {
+public class PhotoResponse {
    private Long id;
-   private Long pageId;
+   private Long parentId;
    private Long userId;
    private String username;
-   private Boolean isReacted;
    private String createdAt;
    private String body;
+   private String url;
+   private Boolean isReacted;
    private Integer reactionCount;
    private Integer commentCount;
    private Integer shareCount;
-   private Integer photoCount;
-   private List<PhotoResponse> photos;
-   private PostResponse sharedPost;
 }

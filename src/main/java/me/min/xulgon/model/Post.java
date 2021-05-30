@@ -18,6 +18,7 @@ public class Post extends Content {
    @Enumerated(value = EnumType.STRING)
    private Privacy privacy;
    @ManyToOne
-   private Post shared;
+   private Post sharedPost;
+
 
 }

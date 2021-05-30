@@ -22,10 +22,11 @@ public abstract class CommentMapper {
    @Mapping(target = "id", ignore = true)
    @Mapping(target = "type", constant = "COMMENT")
    @Mapping(target = "createdAt", expression = "java(Instant.now())")
-   @Mapping(target = "body", source = "commentRequest.body")
+   @Mapping(target = "body", expression = "java(commentRequest.getBody())")
    @Mapping(target = "parent", source = "parent")
    @Mapping(target = "comments", expression = "java(new LinkedList<>())")
    @Mapping(target = "reactions", expression = "java(new LinkedList<>())")
+//   @Mapping(target = "photos", expression = "commentRequest.getPhotos")
    public abstract Comment map(CommentRequest commentRequest,
                                Page page,
                                User user,
@@ -36,7 +37,7 @@ public abstract class CommentMapper {
          expression = "java(comment.getUser().getLastName() + \" \" + comment.getUser().getFirstName())")
    @Mapping(target = "avatarUrl", constant = "")
    @Mapping(target = "parentId", expression = "java(comment.getParent().getId())")
-   @Mapping(target = "createdAgo", expression = "java(toVietnamese(TimeAgo.using(comment.getCreatedAt().toEpochMilli())))")
+   @Mapping(target = "createdAgo", expression = "java(toVietnamese(comment))")
    @Mapping(target = "reactionCount", expression = "java(comment.getReactions().size())")
    @Mapping(target = "replyCount", expression = "java(comment.getComments().size())")
    @Mapping(target = "parentType", expression = "java(comment.getParent().getType().toString())")
@@ -51,8 +52,10 @@ public abstract class CommentMapper {
             .anyMatch(reactor -> reactor.equals(user));
    }
 
-   String toVietnamese(String timeAgo) {
-      return timeAgo.replace("yesterday", "hôm qua")
+   String toVietnamese(Comment comment) {
+
+      return TimeAgo.using(comment.getCreatedAt().toEpochMilli())
+            .replace("yesterday", "hôm qua")
             .replace("one", "một")
             .replace("just now", "vừa tức thì")
             .replace("about", "khoảng")

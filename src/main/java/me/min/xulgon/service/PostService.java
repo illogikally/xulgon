@@ -2,18 +2,23 @@ package me.min.xulgon.service;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import me.min.xulgon.dto.PhotoRequest;
+import me.min.xulgon.dto.PostRequest;
 import me.min.xulgon.dto.PostResponse;
+import me.min.xulgon.mapper.PhotoMapper;
 import me.min.xulgon.mapper.PostMapper;
 import me.min.xulgon.model.*;
 import me.min.xulgon.repository.*;
+import org.springframework.boot.autoconfigure.mongo.embedded.EmbeddedMongoProperties;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
-import java.text.Collator;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Predicate;
-import java.util.stream.Collector;
+import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 @Service
 @AllArgsConstructor
@@ -22,14 +27,19 @@ import java.util.stream.Collectors;
 public class PostService {
    private final PostRepository postRepository;
    private final PostMapper postMapper;
+   private final UserRepository userRepository;
    private final AuthenticationService authenticationService;
    private final UserProfileRepository userProfileRepository;
    private final FriendshipRepository friendshipRepository;
+   private final PageRepository pageRepository;
+   private final StorageService storageService;
+   private final PhotoService photoService;
+   private final PhotoMapper photoMapper;
 
    @Transactional(readOnly = true)
    public List<PostResponse> getPostsByProfile(Long profileId) {
       UserProfile userProfile = userProfileRepository.findById(profileId)
-            .orElseThrow(() -> new RuntimeException("Page not found"));
+            .orElseThrow(() -> new RuntimeException("Profile not found"));
       List<Post> posts = postRepository.findAllByPage(userProfile);
       User loggedInUser = authenticationService.getLoggedInUser();
       Privacy privacy = getPrivacy(loggedInUser, userProfile.getUser());
@@ -42,6 +52,19 @@ public class PostService {
             .map(postMapper::toDto)
             .collect(Collectors.toList());
 
+   }
+
+   public PostResponse save(PostRequest postRequest,
+                            List<MultipartFile> photos,
+                            List<PhotoRequest> photoRequests) {
+      Post savedPost = postRepository.save(postMapper.map(postRequest));
+      photoRequests.forEach(photoRequest -> photoRequest.setParentId(savedPost.getId()));
+      List<Photo> savedPhotos = new ArrayList<>();
+      for (int i = 0; i < photos.size(); ++i) {
+         savedPhotos.add(photoService.save(photoRequests.get(i), photos.get(i)));
+      }
+      savedPost.setPhotos(savedPhotos);
+      return postMapper.toDto(savedPost);
    }
 
    private Privacy getPrivacy(User userA, User userB) {

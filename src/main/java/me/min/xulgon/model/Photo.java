@@ -20,5 +20,5 @@ public class Photo extends Content {
    private Content parent;
    @Enumerated(value = EnumType.STRING)
    private Privacy privacy;
-   private String url;
+   private String name;
 }

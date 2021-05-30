@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/reaction")
+@RequestMapping("/api/reactions")
 @AllArgsConstructor
 public class ReactionController {
    private final ReactionService reactionService;
