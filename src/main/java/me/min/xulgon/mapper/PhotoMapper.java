@@ -24,6 +24,8 @@ public class PhotoMapper {
    PageRepository pageRepository;
 
    public Photo map(PhotoRequest photoRequest, String name) {
+      if (photoRequest == null || name == null) return null;
+
       return Photo.builder()
             .id(null)
             .body(photoRequest.getBody())
@@ -36,23 +38,26 @@ public class PhotoMapper {
             .comments(new LinkedList<>())
             .privacy(photoRequest.getPrivacy())
             .parent(getParent(photoRequest.getParentId()))
-            .name(name)
+            .url("http://localhost:8080/contents/" + name)
             .build();
    }
 
    public PhotoResponse toDto(Photo photo) {
+      if (photo == null) return null;
+
       return PhotoResponse.builder()
             .id(photo.getId())
             .parentId(photo.getParent().getId())
             .userId(photo.getUser().getId())
             .username(getUsername(photo))
+            .avatarUrl(photo.getUser().getAvatar().getUrl())
             .createdAt(toDate(photo.getCreatedAt()))
             .body(photo.getBody())
             .reactionCount(photo.getReactions().size())
             .commentCount(photo.getComments().size())
             .shareCount(0)
             .isReacted(isReacted(photo))
-            .url("http://localhost:8080/contents/" + photo.getName())
+            .url(photo.getUrl())
             .build();
 
    }

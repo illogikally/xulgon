@@ -2,11 +2,11 @@ package me.min.xulgon.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
 import javax.persistence.*;
-
 @Entity
 @Data
 @AllArgsConstructor
@@ -19,8 +19,6 @@ public class Page {
    private Long id;
    @Enumerated(value = EnumType.STRING)
    private PageType type;
-   private boolean isPrivate;
    @OneToOne
    private Photo coverPhoto;
-
 }

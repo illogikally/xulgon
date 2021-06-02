@@ -1,9 +1,6 @@
 package me.min.xulgon.model;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import javax.persistence.*;
 import java.time.Instant;
@@ -24,4 +21,10 @@ public class User {
    private String email;
    private Instant createdAt;
    private boolean enabled;
+   @OneToOne(fetch = FetchType.LAZY)
+   @EqualsAndHashCode.Exclude
+   private Photo avatar;
+   @OneToOne(mappedBy = "user", fetch = FetchType.LAZY)
+   @EqualsAndHashCode.Exclude
+   private UserProfile profile;
 }

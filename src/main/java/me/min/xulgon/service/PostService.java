@@ -9,16 +9,13 @@ import me.min.xulgon.mapper.PhotoMapper;
 import me.min.xulgon.mapper.PostMapper;
 import me.min.xulgon.model.*;
 import me.min.xulgon.repository.*;
-import org.springframework.boot.autoconfigure.mongo.embedded.EmbeddedMongoProperties;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 @Service
 @AllArgsConstructor
@@ -40,7 +37,8 @@ public class PostService {
    public List<PostResponse> getPostsByProfile(Long profileId) {
       UserProfile userProfile = userProfileRepository.findById(profileId)
             .orElseThrow(() -> new RuntimeException("Profile not found"));
-      List<Post> posts = postRepository.findAllByPage(userProfile);
+
+      List<Post> posts = postRepository.findAllByPageOrderByCreatedAtDesc(userProfile);
       User loggedInUser = authenticationService.getLoggedInUser();
       Privacy privacy = getPrivacy(loggedInUser, userProfile.getUser());
 
@@ -59,17 +57,19 @@ public class PostService {
                             List<PhotoRequest> photoRequests) {
       Post savedPost = postRepository.save(postMapper.map(postRequest));
       photoRequests.forEach(photoRequest -> photoRequest.setParentId(savedPost.getId()));
+
       List<Photo> savedPhotos = new ArrayList<>();
-      for (int i = 0; i < photos.size(); ++i) {
+      for (int i = 0; i < Math.min(photos.size(), photoRequests.size()); ++i) {
          savedPhotos.add(photoService.save(photoRequests.get(i), photos.get(i)));
       }
+
       savedPost.setPhotos(savedPhotos);
       return postMapper.toDto(savedPost);
    }
 
    private Privacy getPrivacy(User userA, User userB) {
       return userA.equals(userB) ? Privacy.ME
-            : friendshipRepository.findByUser(userA, userB).isPresent()
+            : friendshipRepository.findByUsers(userA, userB).isPresent()
                   ? Privacy.FRIEND : Privacy.PUBLIC;
    }
 }

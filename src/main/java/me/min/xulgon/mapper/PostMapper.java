@@ -1,85 +1,103 @@
 package me.min.xulgon.mapper;
 
 import lombok.AllArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import me.min.xulgon.dto.CommentResponse;
 import me.min.xulgon.dto.PhotoResponse;
 import me.min.xulgon.dto.PostRequest;
 import me.min.xulgon.dto.PostResponse;
 import me.min.xulgon.model.*;
 import me.min.xulgon.repository.PageRepository;
 import me.min.xulgon.repository.PostRepository;
-import me.min.xulgon.repository.UserRepository;
 import me.min.xulgon.service.AuthenticationService;
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-@Mapper(componentModel = "spring",
-      imports = {Instant.class, DateTimeFormatter.class, LocalDateTime.class})
-@Slf4j
-public abstract class PostMapper {
+@Service
+@AllArgsConstructor
+public class PostMapper {
 
-   @Autowired
-   AuthenticationService authenticationService;
-   @Autowired
-   PostMapper postMapper;
-   @Autowired
-   PostRepository postRepository;
-   @Autowired
-   PageRepository pageRepository;
-   @Autowired
-   PhotoMapper photoMapper;
+   private final AuthenticationService authenticationService;
+   private final PostRepository postRepository;
+   private final PageRepository pageRepository;
+   private final CommentMapper commentMapper;
+   private final  PhotoMapper photoMapper;
 
-   @Mapping(target = "id"        , ignore = true)
-   @Mapping(target = "type"      , constant = "POST")
-   @Mapping(target = "createdAt" , expression = "java(Instant.now())")
-   @Mapping(target = "body"      , expression = "java(postRequest.getBody())")
-   @Mapping(target = "comments"  , expression = "java(new java.util.LinkedList<>())")
-   @Mapping(target = "reactions" , expression = "java(new java.util.LinkedList<>())")
-   @Mapping(target = "photos"    , expression = "java(new java.util.LinkedList<>())")
-   @Mapping(target = "privacy"   , expression = "java(postRequest.getPrivacy())")
-   @Mapping(target = "page"      , expression = "java(getPage(postRequest.getPageId()))")
-   @Mapping(target = "user"      , expression = "java(authenticationService.getLoggedInUser())")
-   @Mapping(target = "sharedPost", expression = "java(getSharedPost(postRequest.getSharedPostId()))")
-   public abstract Post map(PostRequest postRequest);
+   public Post map(PostRequest postRequest) {
+      if (postRequest == null) return null;
 
-   @Mapping(target = "pageId"       , expression = "java(post.getPage().getId())")
-   @Mapping(target = "userId"       , expression = "java(post.getUser().getId())")
-   @Mapping(target = "username"     , expression = "java(getUsername(post))")
-   @Mapping(target = "reactionCount", expression = "java(post.getReactions().size())")
-   @Mapping(target = "commentCount" , expression = "java(post.getComments().size())")
-   @Mapping(target = "shareCount"   , constant = "0")
-   @Mapping(target = "createdAt"    , expression = "java(toDate(post.getCreatedAt()))")
-   @Mapping(target = "isReacted"    , expression = "java(isReacted(post))")
-   @Mapping(target = "photoCount"   , expression = "java(post.getPhotos().size())")
-   @Mapping(target = "sharedPost"   , expression = "java(postMapper.toDto(post.getSharedPost()))")
-   @Mapping(target = "photos"       , expression = "java(getPhotoResponses(post.getPhotos()))")
-   public abstract PostResponse toDto(Post post);
+      return Post.builder()
+            .type(ContentType.POST)
+            .createdAt(Instant.now())
+            .body(postRequest.getBody())
+            .comments(new LinkedList<>())
+            .reactions(new LinkedList<>())
+            .photos(new LinkedList<>())
+            .privacy(postRequest.getPrivacy())
+            .page(getPage(postRequest.getPageId()))
+            .user(authenticationService.getLoggedInUser())
+            .sharedPost(getSharedPost(postRequest.getSharedPostId()))
+            .build();
 
-   String getUsername(Content content) {
+   }
+
+
+   public PostResponse toDto(Post post) {
+      if (post == null) return null;
+
+      return PostResponse.builder()
+            .id(post.getId())
+            .pageId(post.getPage().getId())
+            .userId(post.getUser().getId())
+            .reactionCount(post.getReactions().size())
+            .commentCount(getCommentCount(post, 0))
+            .username(getUsername(post))
+            .comments(getFirstTwo(post))
+            .body(post.getBody())
+            .avatarUrl(post.getUser().getAvatar().getUrl())
+            .shareCount(0)
+            .createdAt(toDate(post.getCreatedAt()))
+            .isReacted(isReacted(post))
+            .sharedPost(this.toDto(post.getSharedPost()))
+            .photos(getPhotoResponses(post.getPhotos()))
+            .build();
+   }
+
+   private List<CommentResponse> getFirstTwo(Post post) {
+      return post.getComments().stream()
+            .limit(2)
+            .map(commentMapper::toDto)
+            .collect(Collectors.toList());
+   }
+   private Integer getCommentCount(Content content, Integer count) {
+      for (Comment comment: content.getComments()) {
+         count = getCommentCount(comment, count+1);
+      }
+      return count;
+   }
+
+   private String getUsername(Content content) {
       return content.getUser().getLastName() + " " + content.getUser().getFirstName();
    }
 
-   List<PhotoResponse> getPhotoResponses(List<Photo> photos) {
-      var photoDto = photos.stream()
+   private List<PhotoResponse> getPhotoResponses(List<Photo> photos) {
+      return photos.stream()
             .map(photoMapper::toDto)
             .collect(Collectors.toList());
-      return photoDto;
    }
 
-   String toDate(Instant instant) {
+   private String toDate(Instant instant) {
       var date = LocalDateTime.ofInstant(instant, ZoneOffset.ofHours(7));
       return DateTimeFormatter.ofPattern("d 'tháng' M 'lúc' HH:mm").format(date);
    }
 
-   boolean isReacted(Content content) {
+   private boolean isReacted(Content content) {
       User user = authenticationService.getLoggedInUser();
 
       return content.getReactions().stream()
@@ -87,12 +105,12 @@ public abstract class PostMapper {
             .anyMatch(reactor -> reactor.equals(user));
    }
 
-   Page getPage(Long pageId) {
+   private Page getPage(Long pageId) {
       return pageRepository.findById(pageId)
             .orElseThrow(() -> new RuntimeException("Page not found"));
    }
 
-   Post getSharedPost(Long postId) {
+   private Post getSharedPost(Long postId) {
       return postId == null ? null : postRepository.findById(postId)
             .orElseThrow(() -> new RuntimeException("Post not found"));
    }

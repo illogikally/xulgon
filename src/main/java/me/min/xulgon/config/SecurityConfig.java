@@ -33,7 +33,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
       http.cors().and().csrf().disable()
             .authorizeRequests()
             .antMatchers("/api/authentication/**",
-                  "/contents/**", "/api/photos")
+                  "/contents/**")
 
             .permitAll()
             .antMatchers("/v2/api-docs",

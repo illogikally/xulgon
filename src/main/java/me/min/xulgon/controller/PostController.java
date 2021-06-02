@@ -7,6 +7,7 @@ import me.min.xulgon.dto.PostRequest;
 import me.min.xulgon.dto.PostResponse;
 import me.min.xulgon.service.PostService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.lang.Nullable;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -20,7 +21,7 @@ public class PostController {
    private final PostService postService;
 
    @PostMapping
-   public ResponseEntity<PostResponse> save(@RequestPart("photos") List<MultipartFile> photos,
+   public ResponseEntity<PostResponse> save(@Nullable @RequestPart("photos") List<MultipartFile> photos,
                                             @RequestPart("photoRequest") List<PhotoRequest> photoRequests,
                                             @RequestPart("postRequest") PostRequest postRequest) {
 

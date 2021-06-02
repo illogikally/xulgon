@@ -19,10 +19,11 @@ public class PostResponse {
    private Boolean isReacted;
    private String createdAt;
    private String body;
+   private String avatarUrl;
    private Integer reactionCount;
    private Integer commentCount;
    private Integer shareCount;
-   private Integer photoCount;
+   private List<CommentResponse> comments;
    private List<PhotoResponse> photos;
    private PostResponse sharedPost;
 }

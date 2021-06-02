@@ -17,8 +17,9 @@ import javax.persistence.ManyToOne;
 @NoArgsConstructor
 public class Photo extends Content {
    @ManyToOne
+   @ToString.Exclude
    private Content parent;
    @Enumerated(value = EnumType.STRING)
    private Privacy privacy;
-   private String name;
+   private String url;
 }

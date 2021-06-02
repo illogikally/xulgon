@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.OneToOne;
 
 @EqualsAndHashCode(callSuper = true)
@@ -16,6 +17,14 @@ import javax.persistence.OneToOne;
 @SuperBuilder
 @NoArgsConstructor
 public class UserProfile extends Page {
-   @OneToOne
+   @OneToOne(fetch = FetchType.LAZY)
    private User user;
+   @OneToOne(fetch = FetchType.LAZY)
+   private Photo avatar;
+
+   private String workplace;
+   private String school;
+   private String hometown;
+
 }
+

@@ -1,11 +1,14 @@
 package me.min.xulgon.service;
 
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import me.min.xulgon.dto.AuthenticationRequest;
 import me.min.xulgon.dto.AuthenticationResponse;
 import me.min.xulgon.dto.SignupRequest;
+import me.min.xulgon.model.UserProfile;
 import me.min.xulgon.model.VerificationToken;
 import me.min.xulgon.model.User;
+import me.min.xulgon.repository.UserProfileRepository;
 import me.min.xulgon.repository.VerificationTokenRepository;
 import me.min.xulgon.repository.UserRepository;
 import me.min.xulgon.security.JwtProvider;
@@ -25,12 +28,14 @@ import java.util.UUID;
 @Service
 @AllArgsConstructor
 @Transactional
+@Slf4j
 public class AuthenticationService {
    private final JwtProvider jwtProvider;
    private final AuthenticationManager authenticationManager;
    private final PasswordEncoder passwordEncoder;
    private final UserRepository userRepository;
    private final VerificationTokenRepository verificationTokenRepository;
+   private final UserProfileRepository userProfileRepository;
 
    public AuthenticationResponse login(AuthenticationRequest authenticationRequest) {
       Authentication authentication = authenticationManager.authenticate(
@@ -41,8 +46,11 @@ public class AuthenticationService {
       return AuthenticationResponse.builder()
             .token(token)
             .refreshToken("xxhaha")
+            .userId(this.getLoggedInUser().getId())
             .expiresAt(Instant.now().plusMillis(jwtProvider.getJwtExpirationInMillis()))
-            .username(authenticationRequest.getUsername())
+            .profileId(this.getLoggedInUser().getProfile().getId())
+            .username(this.getLoggedInUser().getFirstName())
+            .avatarUrl(this.getLoggedInUser().getAvatar().getUrl())
             .build();
    }
 
@@ -58,6 +66,7 @@ public class AuthenticationService {
             .build();
 
       userRepository.save(user);
+      userProfileRepository.save(UserProfile.builder().user(user).build());
 
       String token = generateVerificationToken(user);
    }

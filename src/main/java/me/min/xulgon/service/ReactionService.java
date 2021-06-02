@@ -25,9 +25,11 @@ public class ReactionService {
    public void react(ReactionDto reactionDto) {
       Content content = contentRepository.findById(reactionDto.getContentId())
             .orElseThrow(() -> new RuntimeException("Content not found"));
+
       Optional<Reaction> reactionOptional = reactionRepository.findTopByContentAndUserOrderByIdDesc(
             content, authenticationService.getLoggedInUser()
       );
+
       if (reactionOptional.isPresent()) {
          if (!reactionOptional.get().getType().equals(reactionDto.getType())) {
             reactionRepository.save(mapToReaction(reactionDto, content));

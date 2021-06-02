@@ -26,17 +26,9 @@ public class CommentService {
    private final CommentRepository commentRepository;
    private final ContentRepository contentRepository;
    private final CommentMapper commentMapper;
-   private final PageRepository pageRepository;
-   private final AuthenticationService authenticationService;
 
    public CommentResponse save(CommentRequest commentRequest) {
-      Content parent = contentRepository.findById(commentRequest.getParentId())
-            .orElseThrow(() -> new RuntimeException("Content not found"));
-      User user = authenticationService.getLoggedInUser();
-      Page page = pageRepository.findById(parent.getPage().getId())
-            .orElseThrow(() -> new RuntimeException("Page not found"));
-
-      Comment comment = commentMapper.map(commentRequest, page, user, parent);
+      Comment comment = commentMapper.map(commentRequest);
       return commentMapper.toDto(commentRepository.save(comment));
    }
 

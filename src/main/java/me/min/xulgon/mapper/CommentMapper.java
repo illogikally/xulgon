@@ -1,48 +1,83 @@
 package me.min.xulgon.mapper;
 
 import com.github.marlonlom.utilities.timeago.TimeAgo;
+import lombok.AllArgsConstructor;
 import me.min.xulgon.dto.CommentRequest;
 import me.min.xulgon.dto.CommentResponse;
+import me.min.xulgon.dto.PhotoResponse;
 import me.min.xulgon.model.*;
+import me.min.xulgon.repository.ContentRepository;
+import me.min.xulgon.repository.PageRepository;
 import me.min.xulgon.service.AuthenticationService;
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.util.LinkedList;
+import java.util.stream.Collectors;
 
-@Mapper(componentModel = "spring",
-      imports = {LinkedList.class, TimeAgo.class, Instant.class, ContentType.class})
-public abstract class CommentMapper {
+@Service
+@AllArgsConstructor
+public class CommentMapper {
 
-   @Autowired
-   AuthenticationService authenticationService;
+   private final AuthenticationService authenticationService;
+   private final PageRepository pageRepository;
+   private final ContentRepository contentRepository;
+   private final PhotoMapper photoMapper;
 
-   @Mapping(target = "id", ignore = true)
-   @Mapping(target = "type", constant = "COMMENT")
-   @Mapping(target = "createdAt", expression = "java(Instant.now())")
-   @Mapping(target = "body", expression = "java(commentRequest.getBody())")
-   @Mapping(target = "parent", source = "parent")
-   @Mapping(target = "comments", expression = "java(new LinkedList<>())")
-   @Mapping(target = "reactions", expression = "java(new LinkedList<>())")
-//   @Mapping(target = "photos", expression = "commentRequest.getPhotos")
-   public abstract Comment map(CommentRequest commentRequest,
-                               Page page,
-                               User user,
-                               Content parent);
 
-   @Mapping(target = "userId", expression = "java(comment.getUser().getId())")
-   @Mapping(target = "username",
-         expression = "java(comment.getUser().getLastName() + \" \" + comment.getUser().getFirstName())")
-   @Mapping(target = "avatarUrl", constant = "")
-   @Mapping(target = "parentId", expression = "java(comment.getParent().getId())")
-   @Mapping(target = "createdAgo", expression = "java(toVietnamese(comment))")
-   @Mapping(target = "reactionCount", expression = "java(comment.getReactions().size())")
-   @Mapping(target = "replyCount", expression = "java(comment.getComments().size())")
-   @Mapping(target = "parentType", expression = "java(comment.getParent().getType().toString())")
-   @Mapping(target = "isReacted", expression = "java(isReacted(comment))")
-   public abstract CommentResponse toDto(Comment comment);
+   public Comment map(CommentRequest commentRequest) {
+      if (commentRequest == null) return null;
+
+      return Comment.builder()
+            .parent(getParent(commentRequest))
+            .type(ContentType.COMMENT)
+            .user(authenticationService.getLoggedInUser())
+            .createdAt(Instant.now())
+            .page(getPage(commentRequest))
+            .body(commentRequest.getBody())
+            .comments(new LinkedList<>())
+            .reactions(new LinkedList<>())
+            .build();
+
+   }
+
+   public CommentResponse toDto(Comment comment) {
+      if (comment == null) return null;
+
+      return CommentResponse.builder()
+            .id(comment.getId())
+            .userId(comment.getUser().getId())
+            .parentType(comment.getParent().getType())
+            .body(comment.getBody())
+            .isReacted(isReacted(comment))
+            .username(getUsername(comment))
+            .avatarUrl(comment.getUser().getAvatar().getUrl())
+            .photo(getPhoto(comment))
+            .parentId(comment.getParent().getId())
+            .createdAgo(MappingUtil.getCreatedAgo(comment.getCreatedAt()))
+            .reactionCount(comment.getReactions().size())
+            .replyCount(comment.getComments().size())
+            .build();
+   }
+
+   private PhotoResponse getPhoto(Comment comment) {
+      if (comment.getPhotos() == null) return null;
+      if (comment.getPhotos().isEmpty()) return null;
+      return photoMapper.toDto(comment.getPhotos().get(0));
+   }
+
+   private String getUsername(Comment comment) {
+      return comment.getUser().getLastName() + " " + comment.getUser().getFirstName();
+   }
+   private Page getPage(CommentRequest commentRequest) {
+      return pageRepository.findById(getParent(commentRequest).getPage().getId())
+            .orElseThrow(() -> new RuntimeException("Page not found"));
+   }
+
+   private Content getParent(CommentRequest commentRequest) {
+      return contentRepository.findById(commentRequest.getParentId())
+            .orElseThrow(() -> new RuntimeException("Content not found"));
+   }
 
    boolean isReacted(Comment comment) {
       User user = authenticationService.getLoggedInUser();
@@ -50,23 +85,6 @@ public abstract class CommentMapper {
       return comment.getReactions().stream()
             .map(Reaction::getUser)
             .anyMatch(reactor -> reactor.equals(user));
-   }
-
-   String toVietnamese(Comment comment) {
-
-      return TimeAgo.using(comment.getCreatedAt().toEpochMilli())
-            .replace("yesterday", "hôm qua")
-            .replace("one", "một")
-            .replace("just now", "vừa tức thì")
-            .replace("about", "khoảng")
-            .replace("an", "một")
-            .replace("ago", "trước")
-            .replaceAll("hours?", "giờ")
-            .replaceAll("seconds?", "giây")
-            .replaceAll("minutes?", "phút")
-            .replaceAll("days?", " ngày")
-            .replaceAll("years?", "năm")
-            .replaceAll("months?", "tháng");
    }
 
 }
