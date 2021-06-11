@@ -4,7 +4,6 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import me.min.xulgon.dto.FriendRequestDto;
 import me.min.xulgon.model.FriendRequest;
-import me.min.xulgon.model.Friendship;
 import me.min.xulgon.model.User;
 import me.min.xulgon.repository.FriendshipRepository;
 import me.min.xulgon.service.AuthenticationService;
@@ -24,19 +23,21 @@ public class FriendRequestMapper {
    public FriendRequestDto toDto(FriendRequest request) {
       return FriendRequestDto.builder()
             .id(request.getId())
-            .requesterId(request.getRequestor().getId())
-            .requesterAvatarUrl(request.getRequestor().getAvatar().getUrl())
+            .requesterProfileId(request.getRequester().getProfile().getId())
+            .requesterId(request.getRequester().getId())
+            .requesterAvatarUrl(request.getRequester().getAvatar().getUrl())
             .requesterName(getRequesterName(request))
             .createdAgo(MappingUtil.getCreatedAgo(request.getCreatedAt()))
-            .commonFriendCount(getCommentFriendCount(request))
+            .commonFriendCount(getCommonFriendCount(request))
             .build();
    }
 
    private String getRequesterName(FriendRequest request) {
-      return request.getRequestor().getLastName() + " " + request.getRequestor().getFirstName();
+      return request.getRequester().getLastName() + " " + request.getRequester().getFirstName();
    }
-   private Integer getCommentFriendCount(FriendRequest friendRequest) {
-      User requester = friendRequest.getRequestor();
+
+   private Integer getCommonFriendCount(FriendRequest friendRequest) {
+      User requester = friendRequest.getRequester();
       User requestee = friendRequest.getRequestee();
 
       List<User> requesterFriends = getFriends(requester);

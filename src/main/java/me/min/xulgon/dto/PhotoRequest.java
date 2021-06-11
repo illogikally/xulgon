@@ -11,5 +11,7 @@ import me.min.xulgon.model.Privacy;
 public class PhotoRequest {
    private String body;
    private Privacy privacy;
+   private Long pageId;
    private Long parentId;
+   private Float sizeRatio;
 }

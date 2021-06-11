@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import me.min.xulgon.model.Privacy;
 
 import java.util.List;
 
@@ -18,6 +19,7 @@ public class PostResponse {
    private String username;
    private Boolean isReacted;
    private String createdAt;
+   private Privacy privacy;
    private String body;
    private String avatarUrl;
    private Integer reactionCount;

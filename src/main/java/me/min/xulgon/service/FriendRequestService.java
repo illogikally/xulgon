@@ -1,6 +1,7 @@
 package me.min.xulgon.service;
 
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import me.min.xulgon.dto.FriendRequestDto;
 import me.min.xulgon.mapper.FriendRequestMapper;
 import me.min.xulgon.model.FriendRequest;
@@ -18,6 +19,7 @@ import java.util.stream.Collectors;
 @Service
 @Transactional
 @AllArgsConstructor
+@Slf4j
 public class FriendRequestService {
 
    private final FriendRequestRepository friendRequestRepository;
@@ -29,8 +31,9 @@ public class FriendRequestService {
    public void save(Long requesteeId) {
       User requestee = userRepository.findById(requesteeId)
             .orElseThrow(() -> new RuntimeException("User not found"));
+      log.error("Requestee " + requesteeId + "/// resutertet " + authenticationService.getLoggedInUser().getId() );
       friendRequestRepository.save(FriendRequest.builder()
-            .requestor(authenticationService.getLoggedInUser())
+            .requester(authenticationService.getLoggedInUser())
             .requestee(requestee)
             .createdAt(Instant.now())
             .build());
@@ -47,6 +50,7 @@ public class FriendRequestService {
    }
 
 
+   @Transactional(readOnly = true)
    public List<FriendRequestDto> getRequestsByRequestee(Long requesteeId) {
       User requestee = userRepository.findById(requesteeId)
             .orElseThrow(() -> new RuntimeException("User not found"));

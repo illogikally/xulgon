@@ -62,6 +62,7 @@ public class PostMapper {
             .body(post.getBody())
             .avatarUrl(post.getUser().getAvatar().getUrl())
             .shareCount(0)
+            .privacy(post.getPrivacy())
             .createdAt(toDate(post.getCreatedAt()))
             .isReacted(isReacted(post))
             .sharedPost(this.toDto(post.getSharedPost()))
@@ -93,7 +94,7 @@ public class PostMapper {
    }
 
    private String toDate(Instant instant) {
-      var date = LocalDateTime.ofInstant(instant, ZoneOffset.ofHours(7));
+      LocalDateTime date = LocalDateTime.ofInstant(instant, ZoneOffset.ofHours(7));
       return DateTimeFormatter.ofPattern("d 'tháng' M 'lúc' HH:mm").format(date);
    }
 

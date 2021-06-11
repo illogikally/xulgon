@@ -8,11 +8,13 @@ import java.time.Instant;
 
 @Entity
 @Data
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @AllArgsConstructor
 @NoArgsConstructor
 public class ContentEditHistory {
    @Id
    @GeneratedValue
+   @EqualsAndHashCode.Include
    private Long id;
    private Instant createdAt;
    @ManyToOne

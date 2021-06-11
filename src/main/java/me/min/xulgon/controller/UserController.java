@@ -1,18 +1,14 @@
 package me.min.xulgon.controller;
 
-import io.swagger.models.Response;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import me.min.xulgon.dto.FriendRequestDto;
 import me.min.xulgon.dto.PostResponse;
 import me.min.xulgon.dto.UserDto;
-import me.min.xulgon.model.User;
-import me.min.xulgon.repository.FriendRequestRepository;
 import me.min.xulgon.repository.FriendshipRepository;
 import me.min.xulgon.repository.UserRepository;
-import me.min.xulgon.service.FriendRequestService;
-import me.min.xulgon.service.FriendshipService;
-import me.min.xulgon.service.TimelineService;
+import me.min.xulgon.service.*;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -29,6 +25,7 @@ public class UserController {
    private final UserRepository userRepository;
    private final FriendshipService friendshipService;
    private final TimelineService timelineService;
+   private final UserService userService;
 
    @PostMapping("/{id}/friend-requests")
    public void save(@PathVariable Long id) {
@@ -36,7 +33,7 @@ public class UserController {
    }
 
    @DeleteMapping("/{id}/friend-requests")
-   public void delete(@PathVariable Long id) {
+   public void deleteFriendRequest(@PathVariable Long id) {
       friendRequestService.delete(id);
    }
 
@@ -46,15 +43,25 @@ public class UserController {
    }
 
    @GetMapping("/{id}/friends")
-   public void getFriends(@PathVariable Long id) {
-      User user = userRepository.findById(id).get();
-      friendshipRepository.findAllByUser(user).forEach(friendship -> {
-         log.error(friendship.getUserA() + " " + friendship.getUserB());
-      });
+   public ResponseEntity<List<UserDto>> getFriends(@PathVariable Long id) {
+      return ResponseEntity.ok(userService.getFriends(id));
+   }
+
+   @DeleteMapping("/{id}/friends")
+   public ResponseEntity<Void> deleteFriend(@PathVariable Long id) {
+      friendshipService.delete(id);
+      return new ResponseEntity<>(HttpStatus.OK);
+   }
+
+   @PostMapping("/{id}/friends")
+   public ResponseEntity<Void> createFriend(@PathVariable Long id) {
+      friendshipService.createFriendship(id);
+      return new ResponseEntity<>(HttpStatus.CREATED);
    }
 
    @GetMapping("/timeline")
    public ResponseEntity<List<PostResponse>> getTimeline() {
       return ResponseEntity.ok(timelineService.getTimeline());
    }
+
 }

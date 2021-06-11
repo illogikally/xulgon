@@ -3,10 +3,9 @@ package me.min.xulgon.controller;
 import lombok.AllArgsConstructor;
 import me.min.xulgon.dto.PhotoResponse;
 import me.min.xulgon.service.PhotoService;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/photos")
@@ -17,5 +16,11 @@ public class PhotoController {
    @GetMapping("/{id}")
    public PhotoResponse get(@PathVariable Long id) {
       return photoService.get(id);
+   }
+
+   @DeleteMapping("{id}")
+   public ResponseEntity<Void> delete(@PathVariable Long id) {
+      photoService.delete(id);
+      return new ResponseEntity<>(HttpStatus.OK);
    }
 }

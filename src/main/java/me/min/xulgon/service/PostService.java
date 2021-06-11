@@ -24,14 +24,10 @@ import java.util.stream.Collectors;
 public class PostService {
    private final PostRepository postRepository;
    private final PostMapper postMapper;
-   private final UserRepository userRepository;
    private final AuthenticationService authenticationService;
    private final UserProfileRepository userProfileRepository;
    private final FriendshipRepository friendshipRepository;
-   private final PageRepository pageRepository;
-   private final StorageService storageService;
    private final PhotoService photoService;
-   private final PhotoMapper photoMapper;
 
    @Transactional(readOnly = true)
    public List<PostResponse> getPostsByProfile(Long profileId) {

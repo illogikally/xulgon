@@ -12,6 +12,7 @@ import lombok.NoArgsConstructor;
 public class FriendRequestDto {
    private Long id;
    private Long requesterId;
+   private Long requesterProfileId;
    private String requesterAvatarUrl;
    private String requesterName;
    private String createdAgo;

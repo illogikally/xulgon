@@ -9,6 +9,7 @@ import lombok.Data;
 @Builder
 public class UserDto {
    private Long id;
+   private Long profileId;
    private String avatarUrl;
    private String username;
    private Integer commonFriendCount;

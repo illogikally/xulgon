@@ -13,7 +13,6 @@ import me.min.xulgon.service.AuthenticationService;
 import me.min.xulgon.service.FriendshipService;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -39,7 +38,7 @@ public class UserProfileMapper {
             .firstName(userProfile.getUser().getFirstName())
             .lastName(userProfile.getUser().getLastName())
             .userId(userProfile.getUser().getId())
-            .avatarUrl(userProfile.getUser().getAvatar().getUrl())
+            .avatarUrl(userProfile.getAvatar().getUrl())
             .coverPhotoUrl(userProfile.getCoverPhoto().getUrl())
             .workplace(userProfile.getWorkplace())
             .friends(getFriends(userProfile))
@@ -90,11 +89,12 @@ public class UserProfileMapper {
             loggedInUser).isPresent()) {
          status = FriendshipStatus.FRIEND;
       }
-      else if (friendRequestRepository.findByRequestorAndRequestee(loggedInUser,
+
+      else if (friendRequestRepository.findByRequesterAndRequestee(loggedInUser,
             userProfile.getUser()).isPresent()) {
          status = FriendshipStatus.SEND;
       }
-      else if (friendRequestRepository.findByRequestorAndRequestee(userProfile.getUser(),
+      else if (friendRequestRepository.findByRequesterAndRequestee(userProfile.getUser(),
             loggedInUser).isPresent()) {
          status = FriendshipStatus.RECEIVED;
       }

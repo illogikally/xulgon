@@ -6,7 +6,9 @@ import me.min.xulgon.model.Friendship;
 import me.min.xulgon.model.User;
 import me.min.xulgon.repository.FriendRequestRepository;
 import me.min.xulgon.repository.FriendshipRepository;
+import me.min.xulgon.repository.UserRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.List;
@@ -14,22 +16,36 @@ import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
+@Transactional
 public class FriendshipService {
 
    private final FriendshipRepository friendshipRepository;
    private final FriendRequestRepository friendRequestRepository;
    private final AuthenticationService authenticationService;
+   private final UserRepository userRepository;
 
-   public void save(Long requestId) {
-      FriendRequest request = friendRequestRepository.findById(requestId)
+   public void createFriendship(Long requesterId) {
+      User requester = userRepository.findById(requesterId)
+            .orElseThrow(() -> new RuntimeException("User not found"));
+      FriendRequest request = friendRequestRepository.findByRequesterAndRequestee(
+            requester, authenticationService.getLoggedInUser()
+      )
             .orElseThrow(() -> new RuntimeException("Friendresiq not found"));
+
       friendshipRepository.save(Friendship.builder()
             .createdAt(Instant.now())
             .userA(request.getRequestee())
-            .userB(request.getRequestor())
+            .userB(request.getRequester())
             .build()
       );
-      friendRequestRepository.deleteById(requestId);
+      friendRequestRepository.deleteById(request.getId());
+   }
+
+   public void delete(Long userId) {
+      User loggedInUser = authenticationService.getLoggedInUser();
+      User user = userRepository.findById(userId)
+            .orElseThrow(() -> new RuntimeException("User not found"));
+      friendshipRepository.deleteByUsers(user, loggedInUser);
    }
 
    public Integer getCommonFriendCount(User user) {
@@ -42,7 +58,7 @@ public class FriendshipService {
       return yourFriends.size();
    }
 
-   public  List<User> getFriends(User user) {
+   public List<User> getFriends(User user) {
       User loggedInUser = authenticationService.getLoggedInUser();
       return friendshipRepository.findAllByUser(user).stream()
             .map(friendship -> {

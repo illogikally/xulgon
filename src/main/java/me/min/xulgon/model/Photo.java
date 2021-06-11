@@ -22,4 +22,5 @@ public class Photo extends Content {
    @Enumerated(value = EnumType.STRING)
    private Privacy privacy;
    private String url;
+   private Float sizeRatio;
 }

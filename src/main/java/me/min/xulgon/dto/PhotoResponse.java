@@ -19,6 +19,7 @@ public class PhotoResponse {
    private String url;
    private String avatarUrl;
    private Boolean isReacted;
+   private Float sizeRatio;
    private Integer reactionCount;
    private Integer commentCount;
    private Integer shareCount;

@@ -13,10 +13,13 @@ import java.util.Optional;
 
 @Repository
 public interface FriendRequestRepository extends JpaRepository<FriendRequest, Long> {
-   Optional<FriendRequest> findByRequestorAndRequestee(User requestor, User requestee);
+
+   Optional<FriendRequest> findByRequesterAndRequestee(User requester, User requestee);
+
    @Transactional
    @Modifying
-   @Query("delete from FriendRequest f where f.requestor in (:requestor, :requestee) and f.requestee in (:requestor, :requestee)")
-   void deleteByUsers(User requestor, User requestee);
+   @Query("DELETE FROM FriendRequest f WHERE f.requester IN (:requester, :requestee) AND f.requestee IN (:requester, :requestee)")
+   void deleteByUsers(User requester, User requestee);
+
    List<FriendRequest> findAllByRequestee(User requestee);
 }

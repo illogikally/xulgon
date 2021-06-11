@@ -50,6 +50,7 @@ public class AuthenticationService {
             .expiresAt(Instant.now().plusMillis(jwtProvider.getJwtExpirationInMillis()))
             .profileId(this.getLoggedInUser().getProfile().getId())
             .username(this.getLoggedInUser().getFirstName())
+            .fullname(this.getLoggedInUser().getLastName() + " " + this.getLoggedInUser().getFirstName())
             .avatarUrl(this.getLoggedInUser().getAvatar().getUrl())
             .build();
    }

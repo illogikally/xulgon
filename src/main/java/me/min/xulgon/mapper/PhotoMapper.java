@@ -35,6 +35,7 @@ public class PhotoMapper {
             .user(authenticationService.getLoggedInUser())
             .reactions(new LinkedList<>())
             .photos(new LinkedList<>())
+            .sizeRatio(photoRequest.getSizeRatio())
             .comments(new LinkedList<>())
             .privacy(photoRequest.getPrivacy())
             .parent(getParent(photoRequest.getParentId()))
@@ -47,10 +48,11 @@ public class PhotoMapper {
 
       return PhotoResponse.builder()
             .id(photo.getId())
-            .parentId(photo.getParent().getId())
+            .parentId(photo.getParent() == null ? null : photo.getParent().getId())
             .userId(photo.getUser().getId())
             .username(getUsername(photo))
             .avatarUrl(photo.getUser().getAvatar().getUrl())
+            .sizeRatio(photo.getSizeRatio())
             .createdAt(toDate(photo.getCreatedAt()))
             .body(photo.getBody())
             .reactionCount(photo.getReactions().size())
@@ -63,9 +65,13 @@ public class PhotoMapper {
    }
 
    private Page getPage(PhotoRequest photoRequest) {
-      return pageRepository.findById(getParent(photoRequest.getParentId()).getPage().getId())
+      Long pageId = photoRequest.getPageId() != null ? photoRequest.getPageId()
+            : getParent(photoRequest.getParentId()).getPage().getId();
+
+      return pageRepository.findById(pageId)
             .orElseThrow(() -> new RuntimeException("Page not found"));
    }
+
    private String getUsername(Content content) {
       return content.getUser().getLastName() + " " + content.getUser().getFirstName();
    }
@@ -76,6 +82,7 @@ public class PhotoMapper {
    }
 
    private Content getParent(Long parentId) {
+      if (parentId == null) return null;
       return contentRepository.findById(parentId)
             .orElseThrow(() -> new RuntimeException("Content not found"));
    }

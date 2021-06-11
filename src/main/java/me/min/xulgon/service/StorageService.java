@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.Files;
@@ -30,5 +31,12 @@ public class StorageService {
          e.printStackTrace();
       }
       return name + extension;
+   }
+
+   public void delete(String name) {
+      File file = new File(DIR_PATH + name);
+      if (!file.delete()) {
+         throw new RuntimeException("Can't delete file");
+      }
    }
 }

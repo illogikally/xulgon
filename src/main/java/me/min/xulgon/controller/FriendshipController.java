@@ -18,7 +18,7 @@ public class FriendshipController {
 
    @PostMapping("/{requestId}")
    private ResponseEntity<Void> create(@PathVariable Long requestId) {
-      friendshipService.save(requestId);
+      friendshipService.createFriendship(requestId);
       return new ResponseEntity<>(HttpStatus.CREATED);
    }
 }
