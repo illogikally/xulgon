@@ -3,6 +3,7 @@ package me.min.xulgon.service;
 import lombok.AllArgsConstructor;
 import me.min.xulgon.model.FriendRequest;
 import me.min.xulgon.model.Friendship;
+import me.min.xulgon.model.FriendshipStatus;
 import me.min.xulgon.model.User;
 import me.min.xulgon.repository.FriendRequestRepository;
 import me.min.xulgon.repository.FriendshipRepository;
@@ -59,7 +60,6 @@ public class FriendshipService {
    }
 
    public List<User> getFriends(User user) {
-      User loggedInUser = authenticationService.getLoggedInUser();
       return friendshipRepository.findAllByUser(user).stream()
             .map(friendship -> {
                if (friendship.getUserA().equals(user)) {
@@ -67,8 +67,30 @@ public class FriendshipService {
                }
                return friendship.getUserA();
             })
-            .filter(u -> !u.getId().equals(loggedInUser.getId()))
             .collect(Collectors.toList());
+   }
+
+   public FriendshipStatus getFriendshipStatus(User user ) {
+      FriendshipStatus status = null;
+      User loggedInUser = authenticationService.getLoggedInUser();
+
+      if (friendshipRepository.findByUsers(user, loggedInUser).isPresent()) {
+         status = FriendshipStatus.FRIEND;
+      }
+
+      else if (friendRequestRepository.
+            findByRequesterAndRequestee(loggedInUser, user).isPresent()) {
+         status = FriendshipStatus.SENT;
+      }
+      else if (friendRequestRepository.
+            findByRequesterAndRequestee(user, loggedInUser).isPresent()) {
+         status = FriendshipStatus.RECEIVED;
+      }
+      else if (loggedInUser != user) {
+         status = FriendshipStatus.NULL;
+      }
+
+      return status;
    }
 
 }

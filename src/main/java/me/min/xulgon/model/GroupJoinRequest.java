@@ -10,16 +10,15 @@ import java.time.Instant;
 
 @Entity
 @Data
-@Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class GroupMember {
+@Builder
+public class GroupJoinRequest {
    @Id
-   @GeneratedValue
+   @GeneratedValue(strategy = GenerationType.IDENTITY)
    private Long id;
    private Instant createdAt;
-   @Enumerated(EnumType.STRING)
-   private GroupRole role;
+
    @ManyToOne
    private User user;
    @ManyToOne

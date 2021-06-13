@@ -1,6 +1,5 @@
 package me.min.xulgon.mapper;
 
-import com.github.marlonlom.utilities.timeago.TimeAgo;
 import lombok.AllArgsConstructor;
 import me.min.xulgon.dto.CommentRequest;
 import me.min.xulgon.dto.CommentResponse;
@@ -13,7 +12,6 @@ import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.util.LinkedList;
-import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
@@ -21,6 +19,7 @@ public class CommentMapper {
 
    private final AuthenticationService authenticationService;
    private final PageRepository pageRepository;
+   private final UserMapper userMapper;
    private final ContentRepository contentRepository;
    private final PhotoMapper photoMapper;
 
@@ -46,12 +45,10 @@ public class CommentMapper {
 
       return CommentResponse.builder()
             .id(comment.getId())
-            .userId(comment.getUser().getId())
             .parentType(comment.getParent().getType())
             .body(comment.getBody())
             .isReacted(isReacted(comment))
-            .username(getUsername(comment))
-            .avatarUrl(comment.getUser().getAvatar().getUrl())
+            .user(userMapper.toDto(comment.getUser()))
             .photo(getPhoto(comment))
             .parentId(comment.getParent().getId())
             .createdAgo(MappingUtil.getCreatedAgo(comment.getCreatedAt()))
@@ -69,6 +66,7 @@ public class CommentMapper {
    private String getUsername(Comment comment) {
       return comment.getUser().getLastName() + " " + comment.getUser().getFirstName();
    }
+
    private Page getPage(CommentRequest commentRequest) {
       return pageRepository.findById(getParent(commentRequest).getPage().getId())
             .orElseThrow(() -> new RuntimeException("Page not found"));

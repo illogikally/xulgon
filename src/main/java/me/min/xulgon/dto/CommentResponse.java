@@ -12,13 +12,11 @@ import me.min.xulgon.model.ContentType;
 @Builder
 public class CommentResponse {
    private Long id;
-   private Long userId;
    private Long parentId;
    private ContentType parentType;
    private String body;
+   private UserDto user;
    private Boolean isReacted;
-   private String username;
-   private String avatarUrl;
    private PhotoResponse photo;
    private String createdAgo;
    private Integer reactionCount;

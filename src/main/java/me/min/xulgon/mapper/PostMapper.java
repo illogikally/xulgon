@@ -27,6 +27,7 @@ public class PostMapper {
    private final PostRepository postRepository;
    private final PageRepository pageRepository;
    private final CommentMapper commentMapper;
+   private final UserMapper userMapper;
    private final  PhotoMapper photoMapper;
 
    public Post map(PostRequest postRequest) {
@@ -54,13 +55,11 @@ public class PostMapper {
       return PostResponse.builder()
             .id(post.getId())
             .pageId(post.getPage().getId())
-            .userId(post.getUser().getId())
             .reactionCount(post.getReactions().size())
             .commentCount(getCommentCount(post, 0))
-            .username(getUsername(post))
-            .comments(getFirstTwo(post))
+            .user(userMapper.toDto(post.getUser()))
+//            .comments(getFirstTwo(post))
             .body(post.getBody())
-            .avatarUrl(post.getUser().getAvatar().getUrl())
             .shareCount(0)
             .privacy(post.getPrivacy())
             .createdAt(toDate(post.getCreatedAt()))
@@ -76,6 +75,7 @@ public class PostMapper {
             .map(commentMapper::toDto)
             .collect(Collectors.toList());
    }
+
    private Integer getCommentCount(Content content, Integer count) {
       for (Comment comment: content.getComments()) {
          count = getCommentCount(comment, count+1);

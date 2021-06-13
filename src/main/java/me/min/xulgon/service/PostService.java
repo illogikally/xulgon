@@ -28,6 +28,18 @@ public class PostService {
    private final UserProfileRepository userProfileRepository;
    private final FriendshipRepository friendshipRepository;
    private final PhotoService photoService;
+   private final GroupRepository groupRepository;
+   private final GroupMemberRepository groupMemberRepository;
+   private final PageRepository pageRepository;
+
+   public List<PostResponse> getPostsByPage(Long id) {
+      Page page = pageRepository.findById(id)
+            .orElseThrow(RuntimeException::new);
+      if (page.getType() == PageType.GROUP) {
+         return getPostsByGroup(id);
+      }
+      return getPostsByProfile(id);
+   }
 
    @Transactional(readOnly = true)
    public List<PostResponse> getPostsByProfile(Long profileId) {
@@ -45,7 +57,21 @@ public class PostService {
                   .collect(Collectors.toList())))
             .map(postMapper::toDto)
             .collect(Collectors.toList());
+   }
 
+   @Transactional(readOnly = true)
+   public List<PostResponse> getPostsByGroup(Long groupId) {
+      Group group = groupRepository.findById(groupId)
+            .orElseThrow(RuntimeException::new);
+
+      User user = authenticationService.getLoggedInUser();
+      if (!group.getIsPrivate() || group.getMembers().stream().
+            anyMatch(member -> member.getUser().getId().equals(user.getId()))) {
+         return postRepository.findAllByPageOrderByCreatedAtDesc(group).stream()
+               .map(postMapper::toDto)
+               .collect(Collectors.toList());
+      }
+      return new ArrayList<>();
    }
 
    public PostResponse save(PostRequest postRequest,

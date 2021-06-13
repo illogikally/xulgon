@@ -17,9 +17,13 @@ public class UserMapper {
       return UserDto.builder()
             .id(user.getId())
             .profileId(user.getProfile().getId())
-            .avatarUrl(user.getAvatar().getUrl())
+            .friendshipStatus(friendshipService.getFriendshipStatus(user))
+            .avatarUrl(user.getProfile().getAvatar().getUrl())
             .username(user.getLastName() + " " + user.getFirstName())
             .commonFriendCount(friendshipService.getCommonFriendCount(user))
+            .hometown(user.getProfile().getHometown())
+            .workplace(user.getProfile().getWorkplace())
+            .school(user.getProfile().getSchool())
             .build();
    }
 }

@@ -25,7 +25,7 @@ public class FriendRequestMapper {
             .id(request.getId())
             .requesterProfileId(request.getRequester().getProfile().getId())
             .requesterId(request.getRequester().getId())
-            .requesterAvatarUrl(request.getRequester().getAvatar().getUrl())
+            .requesterAvatarUrl(request.getRequester().getProfile().getAvatar().getUrl())
             .requesterName(getRequesterName(request))
             .createdAgo(MappingUtil.getCreatedAgo(request.getCreatedAt()))
             .commonFriendCount(getCommonFriendCount(request))

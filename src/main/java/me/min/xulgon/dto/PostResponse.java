@@ -15,13 +15,11 @@ import java.util.List;
 public class PostResponse {
    private Long id;
    private Long pageId;
-   private Long userId;
-   private String username;
    private Boolean isReacted;
    private String createdAt;
+   private UserDto user;
    private Privacy privacy;
    private String body;
-   private String avatarUrl;
    private Integer reactionCount;
    private Integer commentCount;
    private Integer shareCount;

@@ -19,9 +19,10 @@ import java.util.LinkedList;
 @AllArgsConstructor
 public class PhotoMapper {
 
-   AuthenticationService authenticationService;
-   ContentRepository contentRepository;
-   PageRepository pageRepository;
+   private final AuthenticationService authenticationService;
+   private final ContentRepository contentRepository;
+   private final PageRepository pageRepository;
+   private final UserMapper userMapper;
 
    public Photo map(PhotoRequest photoRequest, String name) {
       if (photoRequest == null || name == null) return null;
@@ -49,10 +50,8 @@ public class PhotoMapper {
       return PhotoResponse.builder()
             .id(photo.getId())
             .parentId(photo.getParent() == null ? null : photo.getParent().getId())
-            .userId(photo.getUser().getId())
-            .username(getUsername(photo))
-            .avatarUrl(photo.getUser().getAvatar().getUrl())
             .sizeRatio(photo.getSizeRatio())
+            .user(userMapper.toDto(photo.getUser()))
             .createdAt(toDate(photo.getCreatedAt()))
             .body(photo.getBody())
             .reactionCount(photo.getReactions().size())

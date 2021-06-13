@@ -13,7 +13,7 @@ import java.util.List;
 public class UserProfileResponse {
    private Long id;
    private Long userId;
-   private String avatarUrl;
+   private PhotoResponse avatar;
    private String coverPhotoUrl;
    private String firstName;
    private String lastName;

@@ -39,19 +39,21 @@ public class AuthenticationService {
 
    public AuthenticationResponse login(AuthenticationRequest authenticationRequest) {
       Authentication authentication = authenticationManager.authenticate(
-            new UsernamePasswordAuthenticationToken(authenticationRequest.getUsername(), authenticationRequest.getPassword())
+            new UsernamePasswordAuthenticationToken(authenticationRequest.getUsername(),
+                  authenticationRequest.getPassword())
       );
       SecurityContextHolder.getContext().setAuthentication(authentication);
       String token = jwtProvider.generateToken(authentication);
       return AuthenticationResponse.builder()
             .token(token)
             .refreshToken("xxhaha")
-            .userId(this.getLoggedInUser().getId())
+            .userId(getLoggedInUser().getId())
             .expiresAt(Instant.now().plusMillis(jwtProvider.getJwtExpirationInMillis()))
-            .profileId(this.getLoggedInUser().getProfile().getId())
-            .username(this.getLoggedInUser().getFirstName())
-            .fullname(this.getLoggedInUser().getLastName() + " " + this.getLoggedInUser().getFirstName())
-            .avatarUrl(this.getLoggedInUser().getAvatar().getUrl())
+            .profileId(getLoggedInUser().getProfile().getId())
+            .username(getLoggedInUser().getFirstName())
+            .fullname(getLoggedInUser().getLastName() + " "
+                  + getLoggedInUser().getFirstName())
+            .avatarUrl(getLoggedInUser().getProfile().getAvatar().getUrl())
             .build();
    }
 
@@ -80,8 +82,9 @@ public class AuthenticationService {
 
    @Transactional(readOnly = true)
    public User getLoggedInUser() {
-      org.springframework.security.core.userdetails.User pricipal = (org.springframework.security.core.userdetails.User) SecurityContextHolder.getContext()
-            .getAuthentication().getPrincipal();
+      org.springframework.security.core.userdetails.User pricipal
+            = (org.springframework.security.core.userdetails.User) SecurityContextHolder
+            .getContext().getAuthentication().getPrincipal();
       return userRepository.findByUsername(pricipal.getUsername())
             .orElseThrow(() -> new RuntimeException("User not found"));
    }

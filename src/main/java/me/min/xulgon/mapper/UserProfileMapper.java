@@ -13,6 +13,7 @@ import me.min.xulgon.service.AuthenticationService;
 import me.min.xulgon.service.FriendshipService;
 import org.springframework.stereotype.Service;
 
+import java.util.AbstractMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -27,26 +28,27 @@ public class UserProfileMapper {
    private final AuthenticationService authenticationService;
    private final BlockRepository blockRepository;
    private final FriendshipService friendshipService;
+   private final UserMapper userMapper;
    private final PhotoMapper photoMapper;
    private final PhotoRepository photoRepository;
 
-   public UserProfileResponse toDto(UserProfile userProfile) {
-      if (userProfile == null) return null;
+   public UserProfileResponse toDto(UserProfile profile) {
+      if (profile == null) return null;
 
       return UserProfileResponse.builder()
-            .id(userProfile.getId())
-            .firstName(userProfile.getUser().getFirstName())
-            .lastName(userProfile.getUser().getLastName())
-            .userId(userProfile.getUser().getId())
-            .avatarUrl(userProfile.getAvatar().getUrl())
-            .coverPhotoUrl(userProfile.getCoverPhoto().getUrl())
-            .workplace(userProfile.getWorkplace())
-            .friends(getFriends(userProfile))
-            .photos(getPhotos(userProfile))
-            .school(userProfile.getSchool())
-            .hometown(userProfile.getHometown())
-            .friendshipStatus(getFriendshipStatus(userProfile))
-            .isBlocked(isBlocked(userProfile))
+            .id(profile.getId())
+            .firstName(profile.getUser().getFirstName())
+            .lastName(profile.getUser().getLastName())
+            .userId(profile.getUser().getId())
+            .avatar(photoMapper.toDto(profile.getAvatar()))
+            .coverPhotoUrl(profile.getCoverPhoto().getUrl())
+            .workplace(profile.getWorkplace())
+            .friends(getFriends(profile))
+            .photos(getPhotos(profile))
+            .school(profile.getSchool())
+            .hometown(profile.getHometown())
+            .friendshipStatus(friendshipService.getFriendshipStatus(profile.getUser()))
+            .isBlocked(isBlocked(profile))
             .build();
 
    }
@@ -61,49 +63,16 @@ public class UserProfileMapper {
 
    private List<UserDto> getFriends(UserProfile profile) {
       List<User> profileFriendList = friendshipService.getFriends(profile.getUser());
-      Map<User, Integer> map = profileFriendList.stream()
-            .collect(Collectors.toMap(user -> user, friendshipService::getCommonFriendCount));
-
-//      var x = new ArrayList<UserDto>();
-//      x.add(UserDto.builder().build());
-//      return x;
-      return map.entrySet().stream()
+      return profileFriendList.stream()
+            .map(user -> new AbstractMap.SimpleEntry<>(user,
+                  friendshipService.getCommonFriendCount(user)))
             .sorted(Map.Entry.comparingByValue())
             .limit(9)
-            .map(entry -> UserDto.builder()
-                     .id(entry.getKey().getId())
-                     .username(entry.getKey().getLastName() + " " + entry.getKey().getFirstName())
-                     .commonFriendCount(entry.getValue())
-                     .avatarUrl(entry.getKey().getAvatar().getUrl())
-                     .build()
-            )
+            .map(Map.Entry::getKey)
+            .map(userMapper::toDto)
             .collect(Collectors.toList());
    }
 
-
-   private FriendshipStatus getFriendshipStatus(UserProfile userProfile) {
-      FriendshipStatus status = null;
-      User loggedInUser = authenticationService.getLoggedInUser();
-
-      if (friendshipRepository.findByUsers(userProfile.getUser(),
-            loggedInUser).isPresent()) {
-         status = FriendshipStatus.FRIEND;
-      }
-
-      else if (friendRequestRepository.findByRequesterAndRequestee(loggedInUser,
-            userProfile.getUser()).isPresent()) {
-         status = FriendshipStatus.SEND;
-      }
-      else if (friendRequestRepository.findByRequesterAndRequestee(userProfile.getUser(),
-            loggedInUser).isPresent()) {
-         status = FriendshipStatus.RECEIVED;
-      }
-      else if (loggedInUser != userProfile.getUser()) {
-         status = FriendshipStatus.NULL;
-      }
-
-      return status;
-   }
 
    private boolean isBlocked(UserProfile userProfile) {
       return blockRepository.findByBlockerAndBlockee(userProfile.getUser(),

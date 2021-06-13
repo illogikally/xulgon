@@ -11,13 +11,11 @@ import lombok.NoArgsConstructor;
 @Builder
 public class PhotoResponse {
    private Long id;
-   private Long userId;
+   private UserDto user;
    private Long parentId;
-   private String username;
    private String createdAt;
    private String body;
    private String url;
-   private String avatarUrl;
    private Boolean isReacted;
    private Float sizeRatio;
    private Integer reactionCount;
