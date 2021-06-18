@@ -56,6 +56,7 @@ public class PhotoMapper {
             .body(photo.getBody())
             .reactionCount(photo.getReactions().size())
             .commentCount(photo.getComments().size())
+            .privacy(photo.getPrivacy())
             .shareCount(0)
             .isReacted(isReacted(photo))
             .url(photo.getUrl())

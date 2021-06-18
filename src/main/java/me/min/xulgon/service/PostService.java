@@ -26,10 +26,11 @@ public class PostService {
    private final PostMapper postMapper;
    private final AuthenticationService authenticationService;
    private final UserProfileRepository userProfileRepository;
+   private final CommentService commentService;
    private final FriendshipRepository friendshipRepository;
    private final PhotoService photoService;
    private final GroupRepository groupRepository;
-   private final GroupMemberRepository groupMemberRepository;
+   private final BlockService blockService;
    private final PageRepository pageRepository;
 
    public List<PostResponse> getPostsByPage(Long id) {
@@ -50,6 +51,7 @@ public class PostService {
       User loggedInUser = authenticationService.getLoggedInUser();
       Privacy privacy = getPrivacy(loggedInUser, userProfile.getUser());
 
+
       return posts.stream()
             .filter(post -> post.getPrivacy().ordinal() <= privacy.ordinal())
             .peek(post -> post.setPhotos(post.getPhotos().stream()
@@ -64,10 +66,12 @@ public class PostService {
       Group group = groupRepository.findById(groupId)
             .orElseThrow(RuntimeException::new);
 
-      User user = authenticationService.getLoggedInUser();
+      User loggedInUser = authenticationService.getLoggedInUser();
+
       if (!group.getIsPrivate() || group.getMembers().stream().
-            anyMatch(member -> member.getUser().getId().equals(user.getId()))) {
+            anyMatch(member -> member.getUser().getId().equals(loggedInUser.getId()))) {
          return postRepository.findAllByPageOrderByCreatedAtDesc(group).stream()
+               .filter(blockService::filter)
                .map(postMapper::toDto)
                .collect(Collectors.toList());
       }

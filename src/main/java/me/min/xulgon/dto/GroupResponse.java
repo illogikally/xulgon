@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import me.min.xulgon.model.GroupRole;
 
 @Data
 @Builder
@@ -12,6 +13,7 @@ import lombok.NoArgsConstructor;
 public class GroupResponse {
    private Long id;
    private Boolean isMember;
+   private GroupRole role;
    private Boolean isRequestSent;
    private String coverPhotoUrl;
    private String name;

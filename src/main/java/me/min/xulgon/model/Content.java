@@ -16,9 +16,11 @@ import java.util.List;
 @NoArgsConstructor
 @SuperBuilder
 @Inheritance(strategy = InheritanceType.JOINED)
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class Content {
    @Id
    @GeneratedValue
+   @EqualsAndHashCode.Include
    private Long id;
    @Lob
    private String body;

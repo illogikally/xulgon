@@ -13,6 +13,7 @@ public class UserDto {
    private Long profileId;
    private String avatarUrl;
    private String username;
+   private Boolean blocked;
    private FriendshipStatus friendshipStatus;
    private Integer commonFriendCount;
    private String workplace;

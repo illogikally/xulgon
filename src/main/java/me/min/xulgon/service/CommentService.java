@@ -26,6 +26,7 @@ public class CommentService {
    private final CommentRepository commentRepository;
    private final ContentRepository contentRepository;
    private final CommentMapper commentMapper;
+   private final BlockService blockService;
    private final StorageService storageService;
    private final PhotoService photoService;
 
@@ -42,11 +43,16 @@ public class CommentService {
       return commentMapper.toDto(comment);
    }
 
+   public void deleteComment(Long id) {
+      commentRepository.deleteById(id);
+   }
+
    @Transactional(readOnly = true)
    public List<CommentResponse> getCommentsByContent(Long contentId) {
       Content content = contentRepository.findById(contentId)
             .orElseThrow(() -> new RuntimeException("Content not found"));
       return commentRepository.findAllByParent(content).stream()
+            .filter(blockService::filter)
             .map(commentMapper::toDto)
             .collect(Collectors.toList());
 

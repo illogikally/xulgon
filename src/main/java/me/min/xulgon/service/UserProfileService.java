@@ -23,12 +23,9 @@ public class UserProfileService {
 
    private final UserProfileRepository userProfileRepository;
    private final UserProfileMapper userProfileMapper;
-   private final FriendshipService friendshipService;
    private final StorageService storageService;
    private final PhotoMapper photoMapper;
-   private final UserRepository userRepository;
    private final PhotoRepository photoRepository;
-   private final UserMapper userMapper;
 
    public UserProfileResponse getUserProfile(Long id) {
       UserProfile userProfile = userProfileRepository.findById(id)

@@ -23,5 +23,6 @@ public class UserProfileResponse {
    private FriendshipStatus friendshipStatus;
    private List<PhotoResponse> photos;
    private List<UserDto> friends;
-   private boolean isBlocked;
+   private Boolean blocked;
+   private Boolean isBlocked;
 }

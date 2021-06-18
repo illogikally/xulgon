@@ -21,6 +21,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.security.Principal;
 import java.time.Instant;
 import java.util.UUID;
 
@@ -82,10 +83,11 @@ public class AuthenticationService {
 
    @Transactional(readOnly = true)
    public User getLoggedInUser() {
-      org.springframework.security.core.userdetails.User pricipal
-            = (org.springframework.security.core.userdetails.User) SecurityContextHolder
-            .getContext().getAuthentication().getPrincipal();
-      return userRepository.findByUsername(pricipal.getUsername())
+      return getLoggedInUser(SecurityContextHolder.getContext().getAuthentication().getPrincipal());
+   }
+
+   public User getLoggedInUser(Object principal) {
+      return userRepository.findByUsername(((org.springframework.security.core.userdetails.User) principal).getUsername())
             .orElseThrow(() -> new RuntimeException("User not found"));
    }
    private String generateVerificationToken(User user) {

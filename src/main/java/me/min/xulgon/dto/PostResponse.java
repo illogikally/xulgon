@@ -23,7 +23,7 @@ public class PostResponse {
    private Integer reactionCount;
    private Integer commentCount;
    private Integer shareCount;
-   private List<CommentResponse> comments;
+//   private List<CommentResponse> comments;
    private List<PhotoResponse> photos;
    private PostResponse sharedPost;
 }

@@ -22,10 +22,6 @@ public class User {
    private String email;
    private Instant createdAt;
    private boolean enabled;
-   @OneToOne(fetch = FetchType.LAZY)
-   @EqualsAndHashCode.Exclude
-   private Photo avatar;
    @OneToOne(mappedBy = "user", fetch = FetchType.LAZY)
-   @EqualsAndHashCode.Exclude
    private UserProfile profile;
 }

@@ -19,7 +19,7 @@ import javax.persistence.OneToOne;
 public class UserProfile extends Page {
    @OneToOne(fetch = FetchType.LAZY)
    private User user;
-   @OneToOne(fetch = FetchType.LAZY)
+   @OneToOne
    private Photo avatar;
 
    private String workplace;

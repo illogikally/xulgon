@@ -23,6 +23,7 @@ public class FriendshipService {
    private final FriendshipRepository friendshipRepository;
    private final FriendRequestRepository friendRequestRepository;
    private final AuthenticationService authenticationService;
+   private final BlockService blockService;
    private final UserRepository userRepository;
 
    public void createFriendship(Long requesterId) {
@@ -60,13 +61,15 @@ public class FriendshipService {
    }
 
    public List<User> getFriends(User user) {
-      return friendshipRepository.findAllByUser(user).stream()
+      return friendshipRepository.findAllByUser(user)
+            .stream()
             .map(friendship -> {
                if (friendship.getUserA().equals(user)) {
                   return friendship.getUserB();
                }
                return friendship.getUserA();
             })
+            .filter(blockService::filter)
             .collect(Collectors.toList());
    }
 

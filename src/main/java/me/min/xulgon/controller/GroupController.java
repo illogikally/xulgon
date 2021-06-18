@@ -1,9 +1,9 @@
 package me.min.xulgon.controller;
 
 import lombok.AllArgsConstructor;
+import me.min.xulgon.dto.GroupJoinRequestDto;
 import me.min.xulgon.dto.GroupRequest;
 import me.min.xulgon.dto.GroupResponse;
-import me.min.xulgon.dto.PostResponse;
 import me.min.xulgon.service.GroupService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -29,21 +29,25 @@ public class GroupController {
       return ResponseEntity.ok(groupService.get(id));
    }
 
-   @PostMapping("/{id}/join-request")
+   @PostMapping("/{id}/join-requests")
    public ResponseEntity<Void> createJoinRequest(@PathVariable Long id) {
       groupService.createJoinRequest(id);
       return new ResponseEntity<>(HttpStatus.CREATED);
    }
 
 
-   @DeleteMapping("/{id}/join-request")
+   @DeleteMapping("/{id}/join-requests")
    public ResponseEntity<Void> deleteJoinRequest(@PathVariable Long id) {
       groupService.deleteJoinRequest(id);
       return new ResponseEntity<>(HttpStatus.OK);
    }
-//   @GetMapping("/{id}/posts")
-//   public ResponseEntity<List<PostResponse>> getPosts(@PathVariable Long id) {
-//
-//   }
+
+   @GetMapping("/{id}/join-requests")
+   public ResponseEntity<List<GroupJoinRequestDto>> getJoinRequests(@PathVariable Long id) {
+      return ResponseEntity.ok(groupService.getJoinRequests(id));
+   }
+
+
+
 }
 

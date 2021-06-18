@@ -23,6 +23,7 @@ public class UserController {
    private final FriendRequestService friendRequestService;
    private final FriendshipRepository friendshipRepository;
    private final UserRepository userRepository;
+   private final BlockService blockService;
    private final FriendshipService friendshipService;
    private final TimelineService timelineService;
    private final UserService userService;
@@ -64,4 +65,15 @@ public class UserController {
       return ResponseEntity.ok(timelineService.getTimeline());
    }
 
+   @PostMapping("/{id}/block")
+   public ResponseEntity<Void> block(@PathVariable Long id) {
+      blockService.block(id);
+      return new ResponseEntity<>(HttpStatus.CREATED);
+   }
+
+   @DeleteMapping("/{id}/block")
+   public ResponseEntity<Void> unblock(@PathVariable Long id) {
+      blockService.unblock(id);
+      return new ResponseEntity<>(HttpStatus.OK);
+   }
 }

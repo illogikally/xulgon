@@ -3,6 +3,7 @@ package me.min.xulgon.controller;
 import lombok.AllArgsConstructor;
 import me.min.xulgon.dto.*;
 import me.min.xulgon.model.UserProfile;
+import me.min.xulgon.service.BlockService;
 import me.min.xulgon.service.PhotoService;
 import me.min.xulgon.service.PostService;
 import me.min.xulgon.service.UserProfileService;
@@ -21,6 +22,8 @@ import java.util.List;
 public class UserProfileController {
 
    private final PostService postService;
+
+   private final BlockService blockService;
    private final UserProfileService userProfileService;
    private final PhotoService photoService;
 
@@ -32,6 +35,11 @@ public class UserProfileController {
    @GetMapping("/{id}/photos")
    public ResponseEntity<List<PhotoResponse>> getPhotosByPage(@PathVariable Long id) {
       return ResponseEntity.ok(photoService.getPhotosByPage(id));
+   }
+
+   @GetMapping("/{id}/is-blocked")
+   public ResponseEntity<Boolean> isBlocked(@PathVariable Long id) {
+      return ResponseEntity.ok(blockService.isBlocked(id));
    }
 
    @GetMapping("/{id}")
