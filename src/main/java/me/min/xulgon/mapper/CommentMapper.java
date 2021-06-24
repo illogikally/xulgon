@@ -3,7 +3,7 @@ package me.min.xulgon.mapper;
 import lombok.AllArgsConstructor;
 import me.min.xulgon.dto.CommentRequest;
 import me.min.xulgon.dto.CommentResponse;
-import me.min.xulgon.dto.PhotoResponse;
+import me.min.xulgon.dto.PhotoViewResponse;
 import me.min.xulgon.model.*;
 import me.min.xulgon.repository.ContentRepository;
 import me.min.xulgon.repository.PageRepository;
@@ -21,7 +21,7 @@ public class CommentMapper {
    private final PageRepository pageRepository;
    private final UserMapper userMapper;
    private final ContentRepository contentRepository;
-   private final PhotoMapper photoMapper;
+   private final PhotoViewMapper photoViewMapper;
 
 
    public Comment map(CommentRequest commentRequest) {
@@ -57,10 +57,10 @@ public class CommentMapper {
             .build();
    }
 
-   private PhotoResponse getPhoto(Comment comment) {
+   private PhotoViewResponse getPhoto(Comment comment) {
       if (comment.getPhotos() == null) return null;
       if (comment.getPhotos().isEmpty()) return null;
-      return photoMapper.toDto(comment.getPhotos().get(0));
+      return photoViewMapper.toDto(comment.getPhotos().get(0));
    }
 
    private String getUsername(Comment comment) {

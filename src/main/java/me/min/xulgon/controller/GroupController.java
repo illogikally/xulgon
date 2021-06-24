@@ -1,15 +1,16 @@
 package me.min.xulgon.controller;
 
 import lombok.AllArgsConstructor;
-import me.min.xulgon.dto.GroupJoinRequestDto;
-import me.min.xulgon.dto.GroupRequest;
-import me.min.xulgon.dto.GroupResponse;
+import me.min.xulgon.dto.*;
+import me.min.xulgon.model.GroupMember;
+import me.min.xulgon.repository.GroupRepository;
 import me.min.xulgon.service.GroupService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/groups")
@@ -17,6 +18,7 @@ import java.util.List;
 public class GroupController {
 
    private final GroupService groupService;
+   private final GroupRepository groupRepository;
 
    @PostMapping
    public ResponseEntity<Void> create(@RequestBody GroupRequest request) {
@@ -45,6 +47,22 @@ public class GroupController {
    @GetMapping("/{id}/join-requests")
    public ResponseEntity<List<GroupJoinRequestDto>> getJoinRequests(@PathVariable Long id) {
       return ResponseEntity.ok(groupService.getJoinRequests(id));
+   }
+
+   @GetMapping("/{id}/members")
+   public ResponseEntity<List<GroupMemberDto>> getMembers(@PathVariable Long id) {
+      var x =  groupRepository.findById(id)
+            .orElseThrow(RuntimeException::new)
+            .getMembers()
+            .stream()
+            .map(member -> GroupMemberDto.builder()
+                  .avatarUrl(member.getUser().getProfile().getAvatar().getUrl())
+                  .name(member.getUser().getLastName() + " " + member.getUser().getFirstName())
+                  .role(member.getRole())
+                  .build()
+            )
+            .collect(Collectors.toList());
+      return ResponseEntity.ok(x);
    }
 
 

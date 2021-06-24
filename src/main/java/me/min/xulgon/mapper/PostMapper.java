@@ -1,10 +1,7 @@
 package me.min.xulgon.mapper;
 
 import lombok.AllArgsConstructor;
-import me.min.xulgon.dto.CommentResponse;
-import me.min.xulgon.dto.PhotoResponse;
-import me.min.xulgon.dto.PostRequest;
-import me.min.xulgon.dto.PostResponse;
+import me.min.xulgon.dto.*;
 import me.min.xulgon.model.*;
 import me.min.xulgon.repository.PageRepository;
 import me.min.xulgon.repository.PostRepository;
@@ -23,12 +20,13 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 public class PostMapper {
 
+   private final PhotoMapper photoMapper;
    private final AuthenticationService authenticationService;
    private final PostRepository postRepository;
    private final PageRepository pageRepository;
    private final CommentMapper commentMapper;
    private final UserMapper userMapper;
-   private final  PhotoMapper photoMapper;
+   private final PhotoViewMapper photoViewMapper;
 
    public Post map(PostRequest postRequest) {
       if (postRequest == null) return null;

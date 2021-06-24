@@ -13,7 +13,7 @@ import java.util.List;
 public class UserProfileResponse {
    private Long id;
    private Long userId;
-   private PhotoResponse avatar;
+   private PhotoViewResponse avatar;
    private String coverPhotoUrl;
    private String firstName;
    private String lastName;
@@ -21,7 +21,7 @@ public class UserProfileResponse {
    private String school;
    private String hometown;
    private FriendshipStatus friendshipStatus;
-   private List<PhotoResponse> photos;
+   private List<PhotoViewResponse> photos;
    private List<UserDto> friends;
    private Boolean blocked;
    private Boolean isBlocked;

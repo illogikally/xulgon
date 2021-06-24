@@ -4,21 +4,23 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import me.min.xulgon.model.ContentType;
+import me.min.xulgon.model.Privacy;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class CommentResponse {
+public class PhotoViewResponse {
    private Long id;
-   private Long parentId;
-   private ContentType parentType;
-   private String body;
    private UserDto user;
+   private Long parentId;
+   private String createdAt;
+   private String body;
+   private String url;
+   private Privacy privacy;
    private Boolean isReacted;
-   private PhotoViewResponse photo;
-   private String createdAgo;
+   private Float sizeRatio;
    private Integer reactionCount;
-   private Integer replyCount;
+   private Integer commentCount;
+   private Integer shareCount;
 }

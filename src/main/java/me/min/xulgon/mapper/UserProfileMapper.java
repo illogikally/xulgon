@@ -1,7 +1,7 @@
 package me.min.xulgon.mapper;
 
 import lombok.AllArgsConstructor;
-import me.min.xulgon.dto.PhotoResponse;
+import me.min.xulgon.dto.PhotoViewResponse;
 import me.min.xulgon.dto.UserDto;
 import me.min.xulgon.dto.UserProfileResponse;
 import me.min.xulgon.model.*;
@@ -30,7 +30,7 @@ public class UserProfileMapper {
    private final BlockRepository blockRepository;
    private final FriendshipService friendshipService;
    private final UserMapper userMapper;
-   private final PhotoMapper photoMapper;
+   private final PhotoViewMapper photoViewMapper;
    private final PhotoRepository photoRepository;
    private final BlockService blockService;
 
@@ -42,7 +42,7 @@ public class UserProfileMapper {
             .firstName(profile.getUser().getFirstName())
             .lastName(profile.getUser().getLastName())
             .userId(profile.getUser().getId())
-            .avatar(photoMapper.toDto(profile.getAvatar()))
+            .avatar(photoViewMapper.toDto(profile.getAvatar()))
             .coverPhotoUrl(profile.getCoverPhoto().getUrl())
             .workplace(profile.getWorkplace())
             .friends(getFriends(profile))
@@ -56,11 +56,11 @@ public class UserProfileMapper {
 
    }
 
-   private List<PhotoResponse> getPhotos(UserProfile userProfile) {
+   private List<PhotoViewResponse> getPhotos(UserProfile userProfile) {
       return photoRepository.findAllByPage(userProfile)
             .stream()
             .sorted((photo1, photo2) -> (int) -(photo1.getCreatedAt().toEpochMilli()- photo2.getCreatedAt().toEpochMilli()))
-            .map(photoMapper::toDto)
+            .map(photoViewMapper::toDto)
             .limit(9)
             .collect(Collectors.toList());
    }

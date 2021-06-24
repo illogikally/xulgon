@@ -7,8 +7,10 @@ import me.min.xulgon.mapper.PostMapper;
 import me.min.xulgon.model.User;
 import me.min.xulgon.repository.PostRepository;
 import me.min.xulgon.repository.UserProfileRepository;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
+import java.awt.print.Pageable;
 import java.util.ArrayList;
 import java.util.List;
 

@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import me.min.xulgon.dto.GroupJoinRequestDto;
 import me.min.xulgon.dto.GroupRequest;
 import me.min.xulgon.dto.GroupResponse;
+import me.min.xulgon.dto.UserDto;
 import me.min.xulgon.mapper.GroupMapper;
 import me.min.xulgon.mapper.MappingUtil;
 import me.min.xulgon.mapper.UserMapper;

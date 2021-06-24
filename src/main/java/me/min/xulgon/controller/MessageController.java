@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.messaging.simp.annotation.SendToUser;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -28,13 +29,15 @@ public class MessageController {
    private final MessageMapper messageMapper;
 
    @MessageMapping("/chat")
-   public void send(@Payload MessageRequest request, Principal principal) {
+   @SendToUser("/queue/chat")
+   public MessageResponse send(@Payload MessageRequest request, Principal principal) {
       Message message = messageService.save(request, principal);
       String receiver = message.getReceiver().getUsername();
+      MessageResponse messageResponse = messageMapper.toDto(message);
       simpMessagingTemplate.convertAndSendToUser(receiver,
             "/queue/chat",
-            messageMapper.toDto(message));
-
+            messageResponse);
+      return messageResponse;
    }
 
    @GetMapping("/with/{userId}")

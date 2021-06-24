@@ -3,9 +3,12 @@ package me.min.xulgon.service;
 import lombok.AllArgsConstructor;
 import me.min.xulgon.dto.PhotoRequest;
 import me.min.xulgon.dto.PhotoResponse;
+import me.min.xulgon.dto.PhotoViewResponse;
 import me.min.xulgon.mapper.PhotoMapper;
+import me.min.xulgon.mapper.PhotoViewMapper;
 import me.min.xulgon.model.*;
 import me.min.xulgon.repository.*;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -19,24 +22,25 @@ import java.util.stream.Collectors;
 @Transactional
 public class PhotoService {
 
-   private final PhotoMapper photoMapper;
+   private final PhotoViewMapper photoViewMapper;
    private final PhotoRepository photoRepository;
    private final StorageService storageService;
    private final PageRepository pageRepository;
    private final PostRepository postRepository;
+   private final PhotoMapper photoMapper;
 
 
    public Photo save(PhotoRequest photoRequest, MultipartFile photo) {
-      return  photoRepository.save(photoMapper.map(photoRequest, storageService.store(photo)));
+      return  photoRepository.save(photoViewMapper.map(photoRequest, storageService.store(photo)));
    }
 
 
    @Transactional(readOnly = true)
-   public PhotoResponse get(Long id) {
+   public PhotoViewResponse get(Long id) {
       Photo photo = photoRepository.findById(id)
             .orElseThrow(() -> new RuntimeException("Photo not found"));
 
-      return photoMapper.toDto(photo);
+      return photoViewMapper.toDto(photo);
    }
 
    @Transactional(readOnly = true)
@@ -44,7 +48,7 @@ public class PhotoService {
       Page page = pageRepository.findById(id)
             .orElseThrow(() -> new RuntimeException("Page not found"));
 
-      return postRepository.findAllByPageOrderByCreatedAtDesc(page)
+      return postRepository.findAllByPageOrderByCreatedAtDesc(page, Pageable.unpaged())
             .stream()
             .map(Post::getPhotos)
             .flatMap(Collection::stream)
