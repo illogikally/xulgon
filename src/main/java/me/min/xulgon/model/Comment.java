@@ -15,7 +15,8 @@ import javax.persistence.ManyToOne;
 @NoArgsConstructor
 @SuperBuilder
 public class Comment extends Content {
-   @ManyToOne(fetch = FetchType.LAZY)
-   @ToString.Exclude
-   private Content parent;
+   @ManyToOne
+   private Content parentContent;
+   @ManyToOne
+   private Post post;
 }

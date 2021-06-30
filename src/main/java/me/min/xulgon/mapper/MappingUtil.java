@@ -11,11 +11,9 @@ public class MappingUtil {
    public static String getCreatedAgo(Instant instant) {
       return TimeAgo.using(instant.toEpochMilli())
             .replace("yesterday", "hôm qua")
-            .replace("one", "một")
             .replace("just now", "vừa tức thì")
-            .replace("about", "khoảng")
-            .replace("an", "một")
-            .replace("ago", "trước")
+            .replaceAll("(about|ago)", "")
+            .replaceAll("(an|one)", "1")
             .replaceAll("hours?", "giờ")
             .replaceAll("seconds?", "giây")
             .replaceAll("minutes?", "phút")

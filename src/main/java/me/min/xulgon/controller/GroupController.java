@@ -57,7 +57,7 @@ public class GroupController {
             .stream()
             .map(member -> GroupMemberDto.builder()
                   .avatarUrl(member.getUser().getProfile().getAvatar().getUrl())
-                  .name(member.getUser().getLastName() + " " + member.getUser().getFirstName())
+                  .name(member.getUser().getFullName())
                   .role(member.getRole())
                   .build()
             )

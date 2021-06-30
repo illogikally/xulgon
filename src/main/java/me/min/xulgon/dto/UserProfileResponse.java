@@ -15,8 +15,7 @@ public class UserProfileResponse {
    private Long userId;
    private PhotoViewResponse avatar;
    private String coverPhotoUrl;
-   private String firstName;
-   private String lastName;
+   private String fullName;
    private String workplace;
    private String school;
    private String hometown;

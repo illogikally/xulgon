@@ -5,6 +5,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
+import org.jetbrains.annotations.NotNull;
 
 import javax.persistence.*;
 import java.time.Instant;
@@ -27,16 +28,19 @@ public class Content {
    @Enumerated(value = EnumType.STRING)
    private ContentType type;
    private Instant createdAt;
+   private Integer commentCount;
+   private Integer reactionCount;
 
-   @ManyToOne(fetch = FetchType.LAZY)
+   @ManyToOne//(fetch = FetchType.LAZY)
    private Page page;
-   @ManyToOne(fetch = FetchType.LAZY)
+   @ManyToOne//(fetch = FetchType.LAZY)
+   @NotNull
    private User user;
    @OneToMany(mappedBy = "content", cascade = CascadeType.ALL)
    private List<Reaction> reactions;
-   @OneToMany(mappedBy = "parent", cascade = CascadeType.ALL)
+   @OneToMany(mappedBy = "parentContent", cascade = CascadeType.ALL)
    private List<Comment> comments;
-   @OneToMany(mappedBy = "parent", cascade = CascadeType.ALL)
+   @OneToMany(mappedBy = "parentContent", cascade = CascadeType.ALL)
    private List<Photo> photos;
 
 }

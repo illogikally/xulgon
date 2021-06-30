@@ -33,7 +33,7 @@ public class FriendRequestMapper {
    }
 
    private String getRequesterName(FriendRequest request) {
-      return request.getRequester().getLastName() + " " + request.getRequester().getFirstName();
+      return request.getRequester().getFullName();
    }
 
    private Integer getCommonFriendCount(FriendRequest friendRequest) {

@@ -7,8 +7,9 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class CommentRequest {
-   private Long parentId;
-   private String body;
-   private Long postId;
+public class RegisterDto {
+   private String username;
+   private String password;
+   private String firstName;
+   private String lastName;
 }

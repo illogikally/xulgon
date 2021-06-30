@@ -3,6 +3,7 @@ package me.min.xulgon.controller;
 import lombok.AllArgsConstructor;
 import me.min.xulgon.dto.AuthenticationRequest;
 import me.min.xulgon.dto.AuthenticationResponse;
+import me.min.xulgon.dto.RegisterDto;
 import me.min.xulgon.service.AuthenticationService;
 import me.min.xulgon.service.RefreshTokenService;
 import org.springframework.http.HttpStatus;
@@ -32,5 +33,11 @@ public class AuthenticationController {
    public ResponseEntity<String> logout(@Validated @RequestBody String refreshToken) {
       refreshTokenService.deleteRefreshToken(refreshToken);
       return ResponseEntity.status(HttpStatus.OK).body("Refresh token is deleted.");
+   }
+
+   @PostMapping("/account/register")
+   public ResponseEntity<Void> register(@RequestBody RegisterDto registerDto) {
+      authenticationService.register(registerDto);
+      return new ResponseEntity<>(HttpStatus.CREATED);
    }
 }

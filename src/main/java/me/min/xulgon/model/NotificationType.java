@@ -1,9 +1,8 @@
 package me.min.xulgon.model;
 
 public enum NotificationType {
-   TAG,
-   REPLY,
-   NEW_POST,
+   REACTION,
+   COMMENT,
    GROUP_NEW_POST,
    GROUP_COMMENT_MENTION
 }

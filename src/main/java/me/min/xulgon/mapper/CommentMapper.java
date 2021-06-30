@@ -7,6 +7,7 @@ import me.min.xulgon.dto.PhotoViewResponse;
 import me.min.xulgon.model.*;
 import me.min.xulgon.repository.ContentRepository;
 import me.min.xulgon.repository.PageRepository;
+import me.min.xulgon.repository.PostRepository;
 import me.min.xulgon.service.AuthenticationService;
 import org.springframework.stereotype.Service;
 
@@ -18,6 +19,7 @@ import java.util.LinkedList;
 public class CommentMapper {
 
    private final AuthenticationService authenticationService;
+   private final PostRepository postRepository;
    private final PageRepository pageRepository;
    private final UserMapper userMapper;
    private final ContentRepository contentRepository;
@@ -28,16 +30,23 @@ public class CommentMapper {
       if (commentRequest == null) return null;
 
       return Comment.builder()
-            .parent(getParent(commentRequest))
+            .parentContent(getParent(commentRequest))
             .type(ContentType.COMMENT)
+            .commentCount(0)
+            .reactionCount(0)
             .user(authenticationService.getLoggedInUser())
             .createdAt(Instant.now())
+            .post(getPost(commentRequest))
             .page(getPage(commentRequest))
             .body(commentRequest.getBody())
             .comments(new LinkedList<>())
             .reactions(new LinkedList<>())
             .build();
+   }
 
+   private Post getPost(CommentRequest commentRequest) {
+      return postRepository.findById(commentRequest.getPostId())
+            .orElseThrow(RuntimeException::new);
    }
 
    public CommentResponse toDto(Comment comment) {
@@ -45,15 +54,16 @@ public class CommentMapper {
 
       return CommentResponse.builder()
             .id(comment.getId())
-            .parentType(comment.getParent().getType())
+            .parentType(comment.getParentContent().getType())
             .body(comment.getBody())
             .isReacted(isReacted(comment))
+            .postId(comment.getPost().getId())
             .user(userMapper.toDto(comment.getUser()))
             .photo(getPhoto(comment))
-            .parentId(comment.getParent().getId())
+            .parentId(comment.getParentContent().getId())
             .createdAgo(MappingUtil.getCreatedAgo(comment.getCreatedAt()))
-            .reactionCount(comment.getReactions().size())
-            .replyCount(comment.getComments().size())
+            .reactionCount(comment.getReactionCount())
+            .replyCount(comment.getCommentCount())
             .build();
    }
 
@@ -64,7 +74,7 @@ public class CommentMapper {
    }
 
    private String getUsername(Comment comment) {
-      return comment.getUser().getLastName() + " " + comment.getUser().getFirstName();
+      return comment.getUser().getFullName();
    }
 
    private Page getPage(CommentRequest commentRequest) {

@@ -8,7 +8,6 @@ import me.min.xulgon.dto.PostResponse;
 import me.min.xulgon.mapper.PostMapper;
 import me.min.xulgon.model.*;
 import me.min.xulgon.repository.*;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,9 +22,10 @@ import java.util.stream.Collectors;
 @Transactional
 @Slf4j
 public class PostService {
+
    private final PostRepository postRepository;
    private final PostMapper postMapper;
-   private final AuthenticationService authenticationService;
+   private final AuthenticationService authService;
    private final UserProfileRepository userProfileRepository;
    private final FriendshipRepository friendshipRepository;
    private final PhotoService photoService;
@@ -50,11 +50,10 @@ public class PostService {
             .orElseThrow(() -> new RuntimeException("Profile not found"));
 
       List<Post> posts = postRepository.findAllByPageOrderByCreatedAtDesc(userProfile, pageable);
-      User loggedInUser = authenticationService.getLoggedInUser();
-      Privacy privacy = getPrivacy(loggedInUser, userProfile.getUser());
+      Privacy privacy = getPrivacy(userProfile.getUser());
 
       return posts.stream()
-            .filter(post -> post.getPrivacy().ordinal() <= privacy.ordinal())
+            .filter(this::privacyFilter)
             .peek(post -> post.setPhotos(post.getPhotos().stream()
                   .filter(photo -> photo.getPrivacy().ordinal() <= privacy.ordinal())
                   .collect(Collectors.toList())))
@@ -71,7 +70,7 @@ public class PostService {
       Group group = groupRepository.findById(groupId)
             .orElseThrow(RuntimeException::new);
 
-      User loggedInUser = authenticationService.getLoggedInUser();
+      User loggedInUser = authService.getLoggedInUser();
 
       if (!group.getIsPrivate() || group.getMembers().stream().
             anyMatch(member -> member.getUser().getId().equals(loggedInUser.getId()))) {
@@ -88,6 +87,13 @@ public class PostService {
    }
 
 
+   public PostResponse get(Long id) {
+      return postRepository.findById(id)
+            .filter(this::privacyFilter)
+            .map(postMapper::toDto)
+            .orElse(null);
+   }
+
    public PostResponse save(PostRequest postRequest,
                             List<MultipartFile> photos,
                             List<PhotoRequest> photoRequests) {
@@ -103,9 +109,22 @@ public class PostService {
       return postMapper.toDto(savedPost);
    }
 
-   private Privacy getPrivacy(User userA, User userB) {
-      return userA.equals(userB) ? Privacy.ME
-            : friendshipRepository.findByUsers(userA, userB).isPresent()
+   private boolean privacyFilter(Post post) {
+      Privacy privacy = getPrivacy(post.getUser());
+      if (post.getPage().getType().equals(PageType.GROUP)) {
+         return groupRepository.findById(post.getPage().getId())
+               .get()
+               .getMembers()
+               .stream()
+               .anyMatch(member -> member.getUser().equals(authService.getLoggedInUser()));
+      }
+      return post.getPrivacy().ordinal() <= privacy.ordinal();
+   }
+
+   private Privacy getPrivacy(User user) {
+      User me = authService.getLoggedInUser();
+      return me.equals(user) ? Privacy.ME
+            : friendshipRepository.findByUsers(me, user).isPresent()
                   ? Privacy.FRIEND : Privacy.PUBLIC;
    }
 }

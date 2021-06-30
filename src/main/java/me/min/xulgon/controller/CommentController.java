@@ -30,4 +30,9 @@ public class CommentController {
       return new ResponseEntity<>(HttpStatus.OK);
    }
 
+   @GetMapping("/{id}")
+   public ResponseEntity<CommentResponse> get(@PathVariable Long id) {
+      return ResponseEntity.ok(commentService.get(id));
+   }
+
 }

@@ -24,8 +24,6 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 public class UserProfileMapper {
 
-   private final FriendshipRepository friendshipRepository;
-   private final FriendRequestRepository friendRequestRepository;
    private final AuthenticationService authenticationService;
    private final BlockRepository blockRepository;
    private final FriendshipService friendshipService;
@@ -39,11 +37,11 @@ public class UserProfileMapper {
 
       return UserProfileResponse.builder()
             .id(profile.getId())
-            .firstName(profile.getUser().getFirstName())
-            .lastName(profile.getUser().getLastName())
+            .fullName(profile.getUser().getFullName())
             .userId(profile.getUser().getId())
             .avatar(photoViewMapper.toDto(profile.getAvatar()))
-            .coverPhotoUrl(profile.getCoverPhoto().getUrl())
+            .coverPhotoUrl(profile.getCoverPhoto() == null
+                  ? null : profile.getCoverPhoto().getUrl())
             .workplace(profile.getWorkplace())
             .friends(getFriends(profile))
             .photos(getPhotos(profile))
@@ -60,8 +58,8 @@ public class UserProfileMapper {
       return photoRepository.findAllByPage(userProfile)
             .stream()
             .sorted((photo1, photo2) -> (int) -(photo1.getCreatedAt().toEpochMilli()- photo2.getCreatedAt().toEpochMilli()))
-            .map(photoViewMapper::toDto)
             .limit(9)
+            .map(photoViewMapper::toDto)
             .collect(Collectors.toList());
    }
 

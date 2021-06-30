@@ -21,8 +21,11 @@ public class Notification {
    private Instant createdAt;
    @Enumerated(value = EnumType.STRING)
    private NotificationType type;
-   private Long targetId;
-   private Boolean seen;
+   private Boolean isRead;
+   @ManyToOne
+   private Content content;
+   @ManyToOne
+   private Page page;
    @ManyToOne
    private User actor;
    @ManyToOne

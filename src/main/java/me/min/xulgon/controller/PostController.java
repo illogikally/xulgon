@@ -37,4 +37,9 @@ public class PostController {
       contentService.deleteContent(id);
       return new ResponseEntity<>(HttpStatus.OK);
    }
+
+   @GetMapping("/{id}")
+   public ResponseEntity<PostResponse> get(@PathVariable Long id) {
+      return ResponseEntity.ok(postService.get(id));
+   }
 }

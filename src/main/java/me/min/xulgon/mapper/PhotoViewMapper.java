@@ -35,11 +35,13 @@ public class PhotoViewMapper {
             .page(getPage(photoRequest))
             .user(authenticationService.getLoggedInUser())
             .reactions(new LinkedList<>())
+            .reactionCount(0)
+            .commentCount(0)
             .photos(new LinkedList<>())
             .sizeRatio(photoRequest.getSizeRatio())
             .comments(new LinkedList<>())
             .privacy(photoRequest.getPrivacy())
-            .parent(getParent(photoRequest.getParentId()))
+            .parentContent(getParent(photoRequest.getParentId()))
             .url("http://localhost:8080/contents/" + name)
             .build();
    }
@@ -49,13 +51,13 @@ public class PhotoViewMapper {
 
       return PhotoViewResponse.builder()
             .id(photo.getId())
-            .parentId(photo.getParent() == null ? null : photo.getParent().getId())
+            .parentId(photo.getParentContent() == null ? null : photo.getParentContent().getId())
             .sizeRatio(photo.getSizeRatio())
             .user(userMapper.toDto(photo.getUser()))
             .createdAt(toDate(photo.getCreatedAt()))
             .body(photo.getBody())
-            .reactionCount(photo.getReactions().size())
-            .commentCount(photo.getComments().size())
+            .reactionCount(photo.getReactionCount())
+            .commentCount(photo.getCommentCount())
             .privacy(photo.getPrivacy())
             .shareCount(0)
             .isReacted(isReacted(photo))
@@ -73,7 +75,7 @@ public class PhotoViewMapper {
    }
 
    private String getUsername(Content content) {
-      return content.getUser().getLastName() + " " + content.getUser().getFirstName();
+      return content.getUser().getFullName();
    }
 
    private String toDate(Instant instant) {

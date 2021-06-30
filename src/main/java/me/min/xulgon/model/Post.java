@@ -19,6 +19,4 @@ public class Post extends Content {
    private Privacy privacy;
    @ManyToOne
    private Post sharedPost;
-
-
 }

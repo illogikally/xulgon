@@ -22,7 +22,7 @@ public class UserMapper {
             .blocked(blockService.blocked(user))
             .friendshipStatus(friendshipService.getFriendshipStatus(user))
             .avatarUrl(user.getProfile().getAvatar().getUrl())
-            .username(user.getLastName() + " " + user.getFirstName())
+            .username(user.getFullName())
             .commonFriendCount(friendshipService.getCommonFriendCount(user))
             .hometown(user.getProfile().getHometown())
             .workplace(user.getProfile().getWorkplace())

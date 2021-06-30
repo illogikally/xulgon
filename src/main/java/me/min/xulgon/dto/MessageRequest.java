@@ -10,4 +10,5 @@ import lombok.NoArgsConstructor;
 public class MessageRequest {
    private String message;
    private Long receiverId;
+   private Long conversationId;
 }

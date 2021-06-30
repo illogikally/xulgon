@@ -18,7 +18,9 @@ public class Message {
    private Long id;
    private String message;
    private Instant createdAt;
-   private Boolean seen;
+   private Boolean isRead;
+   @ManyToOne
+   private Conversation conversation;
    @ManyToOne
    private User sender;
    @ManyToOne

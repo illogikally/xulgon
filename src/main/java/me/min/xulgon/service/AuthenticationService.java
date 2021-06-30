@@ -2,12 +2,9 @@ package me.min.xulgon.service;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import me.min.xulgon.dto.AuthenticationRequest;
-import me.min.xulgon.dto.AuthenticationResponse;
-import me.min.xulgon.dto.SignupRequest;
-import me.min.xulgon.model.UserProfile;
-import me.min.xulgon.model.VerificationToken;
-import me.min.xulgon.model.User;
+import me.min.xulgon.dto.*;
+import me.min.xulgon.model.*;
+import me.min.xulgon.repository.PhotoRepository;
 import me.min.xulgon.repository.UserProfileRepository;
 import me.min.xulgon.repository.VerificationTokenRepository;
 import me.min.xulgon.repository.UserRepository;
@@ -32,6 +29,7 @@ import java.util.UUID;
 @Slf4j
 public class AuthenticationService {
    private final JwtProvider jwtProvider;
+   private final PhotoRepository photoRepository;
    private final AuthenticationManager authenticationManager;
    private final PasswordEncoder passwordEncoder;
    private final UserRepository userRepository;
@@ -45,24 +43,27 @@ public class AuthenticationService {
       );
       SecurityContextHolder.getContext().setAuthentication(authentication);
       String token = jwtProvider.generateToken(authentication);
+      User loggedInUser = getLoggedInUser();
       return AuthenticationResponse.builder()
             .token(token)
             .refreshToken("xxhaha")
-            .userId(getLoggedInUser().getId())
+            .userId(loggedInUser.getId())
             .expiresAt(Instant.now().plusMillis(jwtProvider.getJwtExpirationInMillis()))
-            .profileId(getLoggedInUser().getProfile().getId())
-            .username(getLoggedInUser().getFirstName())
-            .fullname(getLoggedInUser().getLastName() + " "
-                  + getLoggedInUser().getFirstName())
-            .avatarUrl(getLoggedInUser().getProfile().getAvatar().getUrl())
+            .profileId(loggedInUser.getProfile().getId())
+            .username(loggedInUser.getFirstName())
+            .fullname(loggedInUser.getFullName())
+            .avatarUrl(getAvatarUrl(loggedInUser))
             .build();
    }
 
+   private String getAvatarUrl(User user) {
+      return user.getProfile().getAvatar() == null ? null
+            : user.getProfile().getAvatar().getUrl();
+   }
    public void signUp(SignupRequest signupRequest) {
       User user = User.builder()
             .username(signupRequest.getUsername())
             .password(passwordEncoder.encode(signupRequest.getPassword()))
-            .email(signupRequest.getEmail())
             .firstName(signupRequest.getFirstName())
             .lastName(signupRequest.getLastName())
             .createdAt(Instant.now())
@@ -73,6 +74,38 @@ public class AuthenticationService {
       userProfileRepository.save(UserProfile.builder().user(user).build());
 
       String token = generateVerificationToken(user);
+   }
+
+   public void register(RegisterDto registerDto) {
+      User user = User.builder()
+            .id(null)
+            .username(registerDto.getUsername())
+            .password(passwordEncoder.encode(registerDto.getPassword()))
+            .firstName(registerDto.getFirstName())
+            .lastName(registerDto.getLastName())
+            .createdAt(Instant.now())
+            .enabled(true)
+            .fullName(registerDto.getLastName() + " " + registerDto.getFirstName())
+            .build();
+
+      user = userRepository.save(user);
+
+      Photo avatar = Photo.builder()
+            .url("http://localhost:8080/contents/default-avatar.png")
+            .createdAt(Instant.now())
+            .user(user)
+            .sizeRatio(1F)
+            .type(ContentType.PHOTO)
+            .privacy(Privacy.PUBLIC)
+            .build();
+
+      avatar = photoRepository.save(avatar);
+      userProfileRepository.save(UserProfile.builder()
+            .user(user)
+            .avatar(avatar)
+            .type(PageType.PROFILE)
+            .name(user.getFullName())
+            .build());
    }
 
    public boolean verifyAccount(String token) {

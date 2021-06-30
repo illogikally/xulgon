@@ -15,5 +15,7 @@ public class MessageResponse {
    private String createdAgo;
    private Long userId;
    private String userAvatarUrl;
+   private Boolean isRead;
    private String username;
+   private Long conversationId;
 }

@@ -4,7 +4,6 @@ import lombok.*;
 
 import javax.persistence.*;
 import java.time.Instant;
-import java.util.List;
 
 @Entity
 @Data
@@ -13,15 +12,18 @@ import java.util.List;
 @Builder
 public class User {
    @Id
-   @GeneratedValue
+   @GeneratedValue(strategy = GenerationType.IDENTITY)
+   @Column(name = "id")
    private Long id;
    private String username;
    private String password;
    private String firstName;
    private String lastName;
-   private String email;
+   private String fullName;
    private Instant createdAt;
-   private boolean enabled;
+   private Integer unreadMessageCount;
+   private Integer unreadNotificationCount;
+   private Boolean enabled;
    @OneToOne(mappedBy = "user", fetch = FetchType.LAZY)
    private UserProfile profile;
 }

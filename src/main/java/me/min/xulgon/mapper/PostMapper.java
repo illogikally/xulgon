@@ -34,6 +34,8 @@ public class PostMapper {
       return Post.builder()
             .type(ContentType.POST)
             .createdAt(Instant.now())
+            .commentCount(0)
+            .reactionCount(0)
             .body(postRequest.getBody())
             .comments(new LinkedList<>())
             .reactions(new LinkedList<>())
@@ -53,8 +55,8 @@ public class PostMapper {
       return PostResponse.builder()
             .id(post.getId())
             .pageId(post.getPage().getId())
-            .reactionCount(post.getReactions().size())
-            .commentCount(getCommentCount(post, 0))
+            .reactionCount(post.getReactionCount())
+            .commentCount(post.getCommentCount())
             .user(userMapper.toDto(post.getUser()))
 //            .comments(getFirstTwo(post))
             .body(post.getBody())
@@ -82,11 +84,12 @@ public class PostMapper {
    }
 
    private String getUsername(Content content) {
-      return content.getUser().getLastName() + " " + content.getUser().getFirstName();
+      return content.getUser().getFullName();
    }
 
    private List<PhotoResponse> getPhotoResponses(List<Photo> photos) {
       return photos.stream()
+            .limit(4)
             .map(photoMapper::toDto)
             .collect(Collectors.toList());
    }
