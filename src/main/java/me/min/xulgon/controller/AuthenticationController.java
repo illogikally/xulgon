@@ -3,6 +3,7 @@ package me.min.xulgon.controller;
 import lombok.AllArgsConstructor;
 import me.min.xulgon.dto.AuthenticationRequest;
 import me.min.xulgon.dto.AuthenticationResponse;
+import me.min.xulgon.dto.RefreshTokenDto;
 import me.min.xulgon.dto.RegisterDto;
 import me.min.xulgon.service.AuthenticationService;
 import me.min.xulgon.service.RefreshTokenService;
@@ -23,12 +24,6 @@ public class AuthenticationController {
       return authenticationService.login(authenticationRequest);
    }
 
-   @GetMapping("/account/verify")
-   public ResponseEntity<String> verifyAccount(@RequestParam String token) {
-      authenticationService.verifyAccount(token);
-      return new ResponseEntity<>("Account has been successfully activated", HttpStatus.OK);
-   }
-
    @PostMapping("/token/delete")
    public ResponseEntity<String> logout(@Validated @RequestBody String refreshToken) {
       refreshTokenService.deleteRefreshToken(refreshToken);
@@ -39,5 +34,10 @@ public class AuthenticationController {
    public ResponseEntity<Void> register(@RequestBody RegisterDto registerDto) {
       authenticationService.register(registerDto);
       return new ResponseEntity<>(HttpStatus.CREATED);
+   }
+
+   @PostMapping("/token/refresh")
+   public ResponseEntity<AuthenticationResponse> refreshToken(@RequestBody RefreshTokenDto refreshTokenDto) {
+      return ResponseEntity.ok(authenticationService.refreshToken(refreshTokenDto));
    }
 }

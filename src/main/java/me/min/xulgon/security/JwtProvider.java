@@ -26,13 +26,7 @@ public class JwtProvider {
    private Long jwtExpirationInMillis;
 
    public String generateToken(Authentication authentication) {
-      org.springframework.security.core.userdetails.User principal = (org.springframework.security.core.userdetails.User) authentication.getPrincipal();
-      return Jwts.builder()
-            .setSubject(principal.getUsername())
-            .setIssuedAt(Date.from(Instant.now()))
-            .signWith(SignatureAlgorithm.HS256, key)
-            .setExpiration(Date.from(Instant.now().plusMillis(jwtExpirationInMillis)))
-            .compact();
+      return generateTokenWithUserName(authentication.getName());
    }
 
    public boolean validateToken(String jwt) {
@@ -54,6 +48,15 @@ public class JwtProvider {
       var auth = new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
       auth.setDetails(new WebAuthenticationDetailsSource());
       return auth;
+   }
+
+   public String generateTokenWithUserName(String username) {
+      return Jwts.builder()
+            .setSubject(username)
+            .setIssuedAt(Date.from(Instant.now()))
+            .signWith(SignatureAlgorithm.HS256, key)
+            .setExpiration(Date.from(Instant.now().plusMillis(jwtExpirationInMillis)))
+            .compact();
    }
 
 

@@ -12,15 +12,12 @@ import me.min.xulgon.security.JwtProvider;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.security.Principal;
 import java.time.Instant;
-import java.util.UUID;
 
 
 @Service
@@ -29,6 +26,8 @@ import java.util.UUID;
 @Slf4j
 public class AuthenticationService {
    private final JwtProvider jwtProvider;
+
+   private final RefreshTokenService refreshTokenService;
    private final PhotoRepository photoRepository;
    private final AuthenticationManager authenticationManager;
    private final PasswordEncoder passwordEncoder;
@@ -44,36 +43,24 @@ public class AuthenticationService {
       SecurityContextHolder.getContext().setAuthentication(authentication);
       String token = jwtProvider.generateToken(authentication);
       User loggedInUser = getLoggedInUser();
+      return authResponseMapper(loggedInUser,
+            token,
+            refreshTokenService.generateRefreshToken().getToken());
+   }
+
+   private AuthenticationResponse authResponseMapper(User user,
+                                                     String token,
+                                                     String refreshToken) {
       return AuthenticationResponse.builder()
             .token(token)
-            .refreshToken("xxhaha")
-            .userId(loggedInUser.getId())
+            .refreshToken(refreshToken)
+            .userId(user.getId())
             .expiresAt(Instant.now().plusMillis(jwtProvider.getJwtExpirationInMillis()))
-            .profileId(loggedInUser.getProfile().getId())
-            .username(loggedInUser.getFirstName())
-            .fullname(loggedInUser.getFullName())
-            .avatarUrl(getAvatarUrl(loggedInUser))
+            .profileId(user.getProfile().getId())
+            .username(user.getUsername())
+            .userFullName(user.getFullName())
+            .avatarUrl(user.getProfile().getAvatar().getUrl())
             .build();
-   }
-
-   private String getAvatarUrl(User user) {
-      return user.getProfile().getAvatar() == null ? null
-            : user.getProfile().getAvatar().getUrl();
-   }
-   public void signUp(SignupRequest signupRequest) {
-      User user = User.builder()
-            .username(signupRequest.getUsername())
-            .password(passwordEncoder.encode(signupRequest.getPassword()))
-            .firstName(signupRequest.getFirstName())
-            .lastName(signupRequest.getLastName())
-            .createdAt(Instant.now())
-            .enabled(true)
-            .build();
-
-      userRepository.save(user);
-      userProfileRepository.save(UserProfile.builder().user(user).build());
-
-      String token = generateVerificationToken(user);
    }
 
    public void register(RegisterDto registerDto) {
@@ -108,12 +95,6 @@ public class AuthenticationService {
             .build());
    }
 
-   public boolean verifyAccount(String token) {
-      VerificationToken verificationToken = verificationTokenRepository.findByToken(token)
-            .orElseThrow(() -> new RuntimeException("Token not found."));
-      return !verificationToken.getExpiryDate().isAfter(Instant.now());
-   }
-
    @Transactional(readOnly = true)
    public User getLoggedInUser() {
       return getLoggedInUser(SecurityContextHolder.getContext().getAuthentication().getPrincipal());
@@ -123,16 +104,12 @@ public class AuthenticationService {
       return userRepository.findByUsername(((org.springframework.security.core.userdetails.User) principal).getUsername())
             .orElseThrow(() -> new RuntimeException("User not found"));
    }
-   private String generateVerificationToken(User user) {
-      String token = UUID.randomUUID().toString();
-      VerificationToken verificationToken = VerificationToken.builder()
-            .token(token)
-            .user(user)
-            .expiryDate(Instant.now().plusSeconds(3600L))
-            .build();
 
-      verificationTokenRepository.save(verificationToken);
-      return token;
+   public AuthenticationResponse refreshToken(RefreshTokenDto refreshTokenDto) {
+      refreshTokenService.validateRefreshToken(refreshTokenDto.getToken());
+      String token = jwtProvider.generateTokenWithUserName(refreshTokenDto.getUsername());
+      User user = userRepository.findByUsername(refreshTokenDto.getUsername())
+            .orElseThrow(RuntimeException::new);
+      return authResponseMapper(user, token, refreshTokenDto.getToken());
    }
-
 }
