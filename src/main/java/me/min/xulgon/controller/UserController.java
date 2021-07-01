@@ -8,6 +8,7 @@ import me.min.xulgon.dto.UserDto;
 import me.min.xulgon.repository.FriendshipRepository;
 import me.min.xulgon.repository.UserRepository;
 import me.min.xulgon.service.*;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -75,5 +76,10 @@ public class UserController {
    public ResponseEntity<Void> unblock(@PathVariable Long id) {
       blockService.unblock(id);
       return new ResponseEntity<>(HttpStatus.OK);
+   }
+
+   @GetMapping("/group-feed")
+   public ResponseEntity<List<PostResponse>> getGroupFeed(Pageable pageable) {
+      return ResponseEntity.ok(userService.getGroupFeed(pageable));
    }
 }

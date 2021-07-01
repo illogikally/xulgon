@@ -65,7 +65,5 @@ public class GroupController {
       return ResponseEntity.ok(x);
    }
 
-
-
 }
 

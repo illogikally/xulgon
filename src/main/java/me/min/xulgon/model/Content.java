@@ -31,9 +31,9 @@ public class Content {
    private Integer commentCount;
    private Integer reactionCount;
 
-   @ManyToOne//(fetch = FetchType.LAZY)
+   @ManyToOne(fetch = FetchType.LAZY)
    private Page page;
-   @ManyToOne//(fetch = FetchType.LAZY)
+   @ManyToOne(fetch = FetchType.LAZY)
    @NotNull
    private User user;
    @OneToMany(mappedBy = "content", cascade = CascadeType.ALL)
