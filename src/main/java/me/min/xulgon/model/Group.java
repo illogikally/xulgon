@@ -24,6 +24,4 @@ public class Group extends Page{
    private List<GroupMember> members;
    @OneToMany(mappedBy = "group")
    private List<GroupJoinRequest> joinRequests;
-   @OneToMany(mappedBy = "page")
-   private List<Post> posts;
 }

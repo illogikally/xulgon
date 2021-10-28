@@ -14,7 +14,9 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -89,6 +91,7 @@ public class PostService {
 
    public PostResponse get(Long id) {
       return postRepository.findById(id)
+            .filter(this::groupFilter)
             .filter(this::privacyFilter)
             .map(postMapper::toDto)
             .orElse(null);
@@ -109,16 +112,22 @@ public class PostService {
       return postMapper.toDto(savedPost);
    }
 
-   private boolean privacyFilter(Post post) {
+   public boolean privacyFilter(Post post) {
       Privacy privacy = getPrivacy(post.getUser());
-      if (post.getPage().getType().equals(PageType.GROUP)) {
-         return groupRepository.findById(post.getPage().getId())
-               .get()
-               .getMembers()
-               .stream()
-               .anyMatch(member -> member.getUser().equals(authService.getLoggedInUser()));
-      }
       return post.getPrivacy().ordinal() <= privacy.ordinal();
+   }
+
+   public boolean groupFilter(Post post) {
+      Optional<Group> groupOptional =  groupRepository.findById(post.getPage().getId());
+      if (groupOptional.isPresent()) {
+         Group group = groupOptional.get();
+         if (group.getIsPrivate()) {
+            return group.getMembers()
+                  .stream()
+                  .anyMatch(member -> member.getUser().equals(authService.getLoggedInUser()));
+         }
+      }
+      return true;
    }
 
    private Privacy getPrivacy(User user) {

@@ -2,7 +2,9 @@ package me.min.xulgon.service;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.mapstruct.ap.shaded.freemarker.template.utility.StringUtil;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
@@ -22,15 +24,17 @@ public class StorageService {
 
    public String store(MultipartFile photo) {
       String name = UUID.randomUUID().toString();
-      String originalName = photo.getOriginalFilename() == null ? "" : photo.getOriginalFilename();
-      String extension = originalName.replaceAll(".+(?=\\.)", "");
-      Path path = Paths.get(DIR_PATH, name + extension);
+      String extension = StringUtils.getFilenameExtension(photo.getOriginalFilename());
+//      String originalName = photo.getOriginalFilename() == null ? "" : photo.getOriginalFilename();
+//      String extension = originalName.replaceAll(".+(?=\\.)", "");
+      String fileName = name + "." + extension;
+      Path path = Paths.get(DIR_PATH, fileName);
       try (OutputStream os = Files.newOutputStream(path)) {
          os.write(photo.getBytes());
       } catch (IOException e) {
          e.printStackTrace();
       }
-      return name + extension;
+      return fileName;
    }
 
    public void delete(String name) {

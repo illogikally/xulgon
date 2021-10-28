@@ -21,9 +21,8 @@ public class GroupController {
    private final GroupRepository groupRepository;
 
    @PostMapping
-   public ResponseEntity<Void> create(@RequestBody GroupRequest request) {
-      groupService.create(request);
-      return new ResponseEntity<>(HttpStatus.CREATED);
+   public ResponseEntity<Long> create(@RequestBody GroupRequest request) {
+      return ResponseEntity.ok(groupService.create(request));
    }
 
    @GetMapping("/{id}")
@@ -51,19 +50,28 @@ public class GroupController {
 
    @GetMapping("/{id}/members")
    public ResponseEntity<List<GroupMemberDto>> getMembers(@PathVariable Long id) {
-      var x =  groupRepository.findById(id)
-            .orElseThrow(RuntimeException::new)
-            .getMembers()
-            .stream()
-            .map(member -> GroupMemberDto.builder()
-                  .avatarUrl(member.getUser().getProfile().getAvatar().getUrl())
-                  .name(member.getUser().getFullName())
-                  .role(member.getRole())
-                  .build()
-            )
-            .collect(Collectors.toList());
-      return ResponseEntity.ok(x);
+      return ResponseEntity.ok(groupService.getMembers(id));
    }
+
+   @DeleteMapping("/{id}/quit")
+   public ResponseEntity<Void> quit(@PathVariable Long id) {
+      this.groupService.quit(id);
+      return new ResponseEntity<>(HttpStatus.OK);
+   }
+
+   @PutMapping("/{id}/promote/{userId}")
+   public ResponseEntity<Void> promote(@PathVariable Long id, @PathVariable Long userId) {
+      groupService.promote(id, userId);
+      return new ResponseEntity<>(HttpStatus.OK);
+   }
+
+   @DeleteMapping("/{id}/kick/{userId}")
+   public ResponseEntity<Void> kick(@PathVariable Long id, @PathVariable Long userId) {
+      groupService.kick(id, userId);
+      return new ResponseEntity<>(HttpStatus.OK);
+   }
+
+
 
 }
 

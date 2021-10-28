@@ -11,6 +11,8 @@ import me.min.xulgon.repository.UserProfileRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
+
 @Service
 @AllArgsConstructor
 public class UserProfileService {
@@ -19,6 +21,9 @@ public class UserProfileService {
    private final UserProfileMapper userProfileMapper;
    private final StorageService storageService;
    private final PhotoViewMapper photoViewMapper;
+   private final UserService userService;
+
+
    private final PhotoRepository photoRepository;
 
    public UserProfileResponse getUserProfile(Long id) {
@@ -26,6 +31,12 @@ public class UserProfileService {
             .orElseThrow(() -> new RuntimeException("Profile not found"));
 
       return userProfileMapper.toDto(userProfile);
+   }
+
+   public List<UserDto> getFriends(Long id) {
+      UserProfile profile = userProfileRepository.findById(id)
+            .orElseThrow(RuntimeException::new);
+      return userService.getFriends(profile.getUser().getId());
    }
 
    public void updateAvatar(Long profileId, Long photoId) {

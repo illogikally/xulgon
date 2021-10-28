@@ -16,7 +16,7 @@ import java.time.Instant;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class Followage {
+public class Follow {
    @Id
    @GeneratedValue
    private Long id;

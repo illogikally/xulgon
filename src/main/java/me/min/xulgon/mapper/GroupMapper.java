@@ -2,15 +2,14 @@ package me.min.xulgon.mapper;
 
 import me.min.xulgon.dto.GroupRequest;
 import me.min.xulgon.dto.GroupResponse;
-import me.min.xulgon.model.Group;
-import me.min.xulgon.model.GroupMember;
-import me.min.xulgon.model.GroupRole;
-import me.min.xulgon.model.User;
+import me.min.xulgon.model.*;
+import me.min.xulgon.repository.PhotoRepository;
 import me.min.xulgon.service.AuthenticationService;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.time.Instant;
 import java.util.ArrayList;
 
 @Mapper(componentModel = "spring",
@@ -19,10 +18,13 @@ public abstract class GroupMapper {
 
    @Autowired
    AuthenticationService authService;
+   @Autowired
+   PhotoRepository photoRepository;
 
    @Mapping(target = "id", ignore = true)
    @Mapping(target = "type", constant = "GROUP")
    @Mapping(target = "members", expression = "java(new ArrayList<>())")
+   @Mapping(target = "coverPhoto", expression = "java(getCoverPhoto(groupRequest))")
    public abstract Group map(GroupRequest groupRequest);
 
 
@@ -48,6 +50,21 @@ public abstract class GroupMapper {
             .findAny()
             .orElse(null);
 
+   }
+
+   Photo getCoverPhoto(GroupRequest groupRequest) {
+      User loggedInUser = authService.getLoggedInUser();
+      Photo photo = Photo.builder()
+            .user(loggedInUser)
+            .createdAt(Instant.now())
+            .url("http://localhost:8080/contents/default-group-cover.png")
+            .privacy(Privacy.PUBLIC)
+            .commentCount(0)
+            .reactionCount(0)
+            .build();
+
+      photo = photoRepository.save(photo);
+      return photo;
    }
 
    Boolean isRequestSent(Group group) {

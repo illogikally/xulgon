@@ -101,8 +101,9 @@ public class AuthenticationService {
    }
 
    public User getLoggedInUser(Object principal) {
-      return userRepository.findByUsername(((org.springframework.security.core.userdetails.User) principal).getUsername())
-            .orElseThrow(() -> new RuntimeException("User not found"));
+      return userRepository
+              .findByUsername(((org.springframework.security.core.userdetails.User) principal).getUsername())
+              .orElseThrow(() -> new RuntimeException("User not found"));
    }
 
    public AuthenticationResponse refreshToken(RefreshTokenDto refreshTokenDto) {

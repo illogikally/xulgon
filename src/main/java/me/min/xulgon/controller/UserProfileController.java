@@ -30,6 +30,11 @@ public class UserProfileController {
        return ResponseEntity.ok(postService.getPostsByProfile(id, pageable));
    }
 
+   @GetMapping("/{id}/friends")
+   public ResponseEntity<List<UserDto>> getFriends(@PathVariable Long id) {
+      return ResponseEntity.ok(userProfileService.getFriends(id));
+   }
+
    @GetMapping("/{id}/is-blocked")
    public ResponseEntity<Boolean> isBlocked(@PathVariable Long id) {
       return ResponseEntity.ok(blockService.isBlocked(id));

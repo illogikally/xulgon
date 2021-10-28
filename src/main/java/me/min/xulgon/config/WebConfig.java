@@ -24,7 +24,11 @@ public class WebConfig implements WebMvcConfigurer {
    @Override
    public void addResourceHandlers(ResourceHandlerRegistry registry) {
       registry.addResourceHandler("/contents/**")
-              .addResourceLocations("file:/C://Storage/");
+                  .addResourceLocations("file:/media/xael/B89E89AF9E8966AA/Storage/");
+//              .addResourceLocations("file:/C://Storage/");
+
+//      registry.addResourceHandler("/contents/**")
+//            .addResourceLocations("file:/usr/local/Storage/");
 
       registry.addResourceHandler("/swagger-ui.html")
             .addResourceLocations("classpath:/META-INF/resources/");

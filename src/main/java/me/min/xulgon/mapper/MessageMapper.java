@@ -56,6 +56,7 @@ public class MessageMapper {
             : conversationRepository.save(new Conversation());
    }
 
+
    private User getSender(Principal principal) {
       return userRepository.findByUsername(principal.getName())
             .orElseThrow(RuntimeException::new);

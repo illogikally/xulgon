@@ -59,7 +59,6 @@ public class JwtProvider {
             .compact();
    }
 
-
    public Long getJwtExpirationInMillis() {
      return jwtExpirationInMillis;
    }

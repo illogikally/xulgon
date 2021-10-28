@@ -1,17 +1,13 @@
 package me.min.xulgon.service;
 
 import lombok.AllArgsConstructor;
-import me.min.xulgon.dto.GroupJoinRequestDto;
-import me.min.xulgon.dto.GroupRequest;
-import me.min.xulgon.dto.GroupResponse;
-import me.min.xulgon.dto.UserDto;
+import me.min.xulgon.dto.*;
 import me.min.xulgon.mapper.GroupMapper;
 import me.min.xulgon.mapper.MappingUtil;
 import me.min.xulgon.mapper.UserMapper;
 import me.min.xulgon.model.*;
-import me.min.xulgon.repository.GroupJoinRequestRepository;
-import me.min.xulgon.repository.GroupMemberRepository;
-import me.min.xulgon.repository.GroupRepository;
+import me.min.xulgon.repository.*;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -22,6 +18,9 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 public class GroupService {
 
+   private final UserRepository userRepository;
+
+   private final FollowRepository followRepository;
    private final GroupMapper groupMapper;
    private final GroupRepository groupRepository;
    private final AuthenticationService authService;
@@ -29,9 +28,9 @@ public class GroupService {
    private final UserMapper userMapper;
    private final GroupJoinRequestRepository groupJoinRequestRepository;
 
-   public void create(GroupRequest groupRequest) {
-      Group group = groupRepository.save(groupMapper.map(groupRequest));
-
+   public Long create(GroupRequest groupRequest) {
+      Group group = groupMapper.map(groupRequest);
+      group = groupRepository.save(group);
       GroupMember member = GroupMember.builder()
             .group(group)
             .createdAt(Instant.now())
@@ -40,6 +39,28 @@ public class GroupService {
             .build();
 
       groupMemberRepository.save(member);
+      followRepository.save(Follow.builder()
+            .user(authService.getLoggedInUser())
+            .page(group)
+            .createdAt(Instant.now())
+            .build());
+
+      return group.getId();
+   }
+
+   public List<GroupMemberDto> getMembers(Long id) {
+      return groupRepository.findById(id)
+            .orElseThrow(RuntimeException::new)
+            .getMembers()
+            .stream()
+            .map(member -> GroupMemberDto.builder()
+                  .user(userMapper.toDto(member.getUser()))
+                  .avatarUrl(member.getUser().getProfile().getAvatar().getUrl())
+                  .name(member.getUser().getFullName())
+                  .role(member.getRole())
+                  .build()
+            )
+            .collect(Collectors.toList());
    }
 
    public GroupResponse get(Long id) {
@@ -68,6 +89,30 @@ public class GroupService {
       groupJoinRequestRepository.deleteByUserAndGroup(user, group);
    }
 
+   public void promote(Long groupId, Long userId) {
+      Group group = groupRepository.findById(groupId)
+            .orElseThrow(RuntimeException::new);
+      User user = userRepository.findById(userId)
+            .orElseThrow(RuntimeException::new);
+
+      groupMemberRepository.findByUserAndGroup(user, group)
+            .stream()
+            .peek(member -> member.setRole(GroupRole.ADMIN))
+            .findAny()
+            .ifPresent(groupMemberRepository::save);
+   }
+
+   public void kick(Long groupId, Long userId) {
+      Group group = groupRepository.findById(groupId)
+            .orElseThrow(RuntimeException::new);
+      User user = userRepository.findById(userId)
+            .orElseThrow(RuntimeException::new);
+
+      groupMemberRepository.deleteByUserAndGroup(user, group);
+      followRepository.deleteByUserAndPage(user, group);
+
+   }
+
    public List<GroupJoinRequestDto> getJoinRequests(Long groupId) {
       Group group = groupRepository.findById(groupId)
             .orElseThrow(RuntimeException::new);
@@ -79,6 +124,13 @@ public class GroupService {
                   .createdAgo(MappingUtil.getCreatedAgo(request.getCreatedAt()))
                   .build())
             .collect(Collectors.toList());
+   }
 
+   public void quit(Long groupId) {
+      Group group = groupRepository.findById(groupId)
+            .orElseThrow(RuntimeException::new);
+      User user = authService.getLoggedInUser();
+      groupMemberRepository.deleteByUserAndGroup(user, group);
+      followRepository.deleteByUserAndPage(user, group);
    }
 }

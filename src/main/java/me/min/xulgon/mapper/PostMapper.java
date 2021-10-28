@@ -54,7 +54,9 @@ public class PostMapper {
 
       return PostResponse.builder()
             .id(post.getId())
+            .pageName(post.getPage().getName())
             .pageId(post.getPage().getId())
+            .pageType(post.getPage().getType())
             .reactionCount(post.getReactionCount())
             .commentCount(post.getCommentCount())
             .user(userMapper.toDto(post.getUser()))

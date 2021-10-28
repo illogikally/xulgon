@@ -3,6 +3,7 @@ package me.min.xulgon.controller;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import me.min.xulgon.dto.FriendRequestDto;
+import me.min.xulgon.dto.GroupResponse;
 import me.min.xulgon.dto.PostResponse;
 import me.min.xulgon.dto.UserDto;
 import me.min.xulgon.repository.FriendshipRepository;
@@ -26,7 +27,6 @@ public class UserController {
    private final UserRepository userRepository;
    private final BlockService blockService;
    private final FriendshipService friendshipService;
-   private final TimelineService timelineService;
    private final UserService userService;
 
    @PostMapping("/{id}/friend-requests")
@@ -61,9 +61,14 @@ public class UserController {
       return new ResponseEntity<>(HttpStatus.CREATED);
    }
 
-   @GetMapping("/timeline")
-   public ResponseEntity<List<PostResponse>> getTimeline() {
-      return ResponseEntity.ok(timelineService.getTimeline());
+   @GetMapping("/news-feed")
+   public ResponseEntity<List<PostResponse>> getTimeline(Pageable pageable) {
+      return ResponseEntity.ok(userService.getNewsFeed(pageable));
+   }
+
+   @GetMapping("/groups")
+   public ResponseEntity<List<GroupResponse>> getJoinedGroups() {
+      return ResponseEntity.ok(userService.getJoinedGroups());
    }
 
    @PostMapping("/{id}/block")
@@ -81,5 +86,11 @@ public class UserController {
    @GetMapping("/group-feed")
    public ResponseEntity<List<PostResponse>> getGroupFeed(Pageable pageable) {
       return ResponseEntity.ok(userService.getGroupFeed(pageable));
+   }
+
+   @DeleteMapping("/{id}/unfollow")
+   public ResponseEntity<Void> unfollow(@PathVariable Long id) {
+      userService.unfollow(id);
+      return new ResponseEntity<>(HttpStatus.OK);
    }
 }

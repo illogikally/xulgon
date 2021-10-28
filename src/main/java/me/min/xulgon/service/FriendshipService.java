@@ -1,10 +1,8 @@
 package me.min.xulgon.service;
 
 import lombok.AllArgsConstructor;
-import me.min.xulgon.model.FriendRequest;
-import me.min.xulgon.model.Friendship;
-import me.min.xulgon.model.FriendshipStatus;
-import me.min.xulgon.model.User;
+import me.min.xulgon.model.*;
+import me.min.xulgon.repository.FollowRepository;
 import me.min.xulgon.repository.FriendRequestRepository;
 import me.min.xulgon.repository.FriendshipRepository;
 import me.min.xulgon.repository.UserRepository;
@@ -20,6 +18,8 @@ import java.util.stream.Collectors;
 @Transactional
 public class FriendshipService {
 
+
+   private final FollowRepository followRepository;
    private final FriendshipRepository friendshipRepository;
    private final FriendRequestRepository friendRequestRepository;
    private final AuthenticationService authenticationService;
@@ -41,6 +41,17 @@ public class FriendshipService {
             .build()
       );
       friendRequestRepository.deleteById(request.getId());
+      followRepository.save(Follow.builder()
+            .page(requester.getProfile())
+            .createdAt(Instant.now())
+            .user(authenticationService.getLoggedInUser())
+            .build());
+
+      followRepository.save(Follow.builder()
+            .page(authenticationService.getLoggedInUser().getProfile())
+            .createdAt(Instant.now())
+            .user(requester)
+            .build());
    }
 
    public void delete(Long userId) {
@@ -48,6 +59,8 @@ public class FriendshipService {
       User user = userRepository.findById(userId)
             .orElseThrow(() -> new RuntimeException("User not found"));
       friendshipRepository.deleteByUsers(user, loggedInUser);
+      followRepository.deleteByUserAndPage(user, loggedInUser.getProfile());
+      followRepository.deleteByUserAndPage(loggedInUser, user.getProfile());
    }
 
    public Integer getCommonFriendCount(User user) {

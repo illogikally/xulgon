@@ -29,11 +29,9 @@ public class PhotoService {
    private final PostRepository postRepository;
    private final PhotoMapper photoMapper;
 
-
    public Photo save(PhotoRequest photoRequest, MultipartFile photo) {
       return  photoRepository.save(photoViewMapper.map(photoRequest, storageService.store(photo)));
    }
-
 
    @Transactional(readOnly = true)
    public PhotoViewResponse get(Long id) {
@@ -63,5 +61,4 @@ public class PhotoService {
       photoRepository.delete(photo);
       storageService.delete(name);
    }
-
 }

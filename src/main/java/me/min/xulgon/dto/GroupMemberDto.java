@@ -11,6 +11,7 @@ import me.min.xulgon.model.GroupRole;
 @Builder
 @NoArgsConstructor
 public class GroupMemberDto {
+   private UserDto user;
    private String avatarUrl;
    private String name;
    private GroupRole role;

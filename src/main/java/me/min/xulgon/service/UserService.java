@@ -1,8 +1,10 @@
 package me.min.xulgon.service;
 
 import lombok.AllArgsConstructor;
+import me.min.xulgon.dto.GroupResponse;
 import me.min.xulgon.dto.PostResponse;
 import me.min.xulgon.dto.UserDto;
+import me.min.xulgon.mapper.GroupMapper;
 import me.min.xulgon.mapper.PostMapper;
 import me.min.xulgon.mapper.UserMapper;
 import me.min.xulgon.model.*;
@@ -20,6 +22,10 @@ import java.util.stream.Collectors;
 @Transactional
 public class UserService {
    private final UserRepository userRepository;
+   private final GroupMapper groupMapper;
+
+   private final FollowRepository followRepository;
+   private final PostService postService;
    private final PostMapper postMapper;
    private final PostRepository postRepository;
    private final GroupMemberRepository groupMemberRepository;
@@ -46,6 +52,34 @@ public class UserService {
             .stream()
             .map(postMapper::toDto)
             .collect(Collectors.toList());
+   }
+
+   @Transactional(readOnly = true)
+   public List<GroupResponse> getJoinedGroups() {
+      User loggedInUser = authService.getLoggedInUser();
+      return groupMemberRepository.findAllByUser(loggedInUser)
+            .stream()
+            .map(GroupMember::getGroup)
+            .map(groupMapper::toDto)
+            .collect(Collectors.toList());
+   }
+
+   @Transactional(readOnly = true)
+   public List<PostResponse> getNewsFeed(Pageable pageable) {
+      User loggedInUser = authService.getLoggedInUser();
+      return postRepository.getUserNewsFeed(loggedInUser.getId(),
+            pageable.getPageSize(),
+            pageable.getOffset())
+            .stream()
+            .filter(postService::privacyFilter)
+            .map(postMapper::toDto)
+            .collect(Collectors.toList());
+   }
+
+   public void unfollow(Long id) {
+      User user = userRepository.findById(id)
+            .orElseThrow(RuntimeException::new);
+      followRepository.deleteByUserAndPage(authService.getLoggedInUser(), user.getProfile());
    }
 
 }
