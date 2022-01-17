@@ -29,10 +29,12 @@ public class NotificationService {
    }
 
    public List<NotificationDto> get() {
-      return notifRepository.findAllByRecipientOrderByCreatedAtDesc(authService.getLoggedInUser())
-            .stream()
-            .map(notificationMapper::toDto)
-            .collect(Collectors.toList());
+      return List.of(NotificationDto.builder().build());
+//      return notifRepository
+//            .findAllByRecipientOrderByCreatedAtDesc(authService.getLoggedInUser())
+//            .stream()
+//            .map(notificationMapper::toDto)
+//            .collect(Collectors.toList());
    }
 
    public void read(Long id) {

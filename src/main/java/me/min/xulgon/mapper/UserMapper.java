@@ -22,21 +22,21 @@ public class UserMapper {
    public UserDto toDto(User user) {
       return UserDto.builder()
             .id(user.getId())
-            .profileId(user.getProfile().getId())
+            .profileId(user.getUserPage().getId())
             .blocked(blockService.blocked(user))
             .friendshipStatus(friendshipService.getFriendshipStatus(user))
             .isFollow(isFollow(user))
-            .avatarUrl(user.getProfile().getAvatar().getUrl())
+            .avatarUrl(user.getUserPage().getAvatar().getUrl())
             .username(user.getFullName())
             .commonFriendCount(friendshipService.getCommonFriendCount(user))
-            .hometown(user.getProfile().getHometown())
-            .workplace(user.getProfile().getWorkplace())
-            .school(user.getProfile().getSchool())
+            .hometown(user.getUserPage().getHometown())
+            .workplace(user.getUserPage().getWorkplace())
+            .school(user.getUserPage().getSchool())
             .build();
    }
 
    private Boolean isFollow(User user) {
-      return followRepository.findByUserAndPage(authService.getLoggedInUser(), user.getProfile())
+      return followRepository.findByUserAndPage(authService.getLoggedInUser(), user.getUserPage())
             .isPresent();
    }
 }

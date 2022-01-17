@@ -51,23 +51,23 @@ public class ReactionService {
       reactionRepository.save(mapToReaction(reactionDto, content));
       modifyContentReactionCount(1, content);
 
-      if (!content.getUser().equals(authService.getLoggedInUser())) {
-         Notification notif = Notification.builder()
-               .actor(authService.getLoggedInUser())
-               .recipient(content.getUser())
-               .isRead(false)
-               .type(NotificationType.REACTION)
-               .content(content)
-               .createdAt(Instant.now())
-               .page(content.getPage())
-               .build();
+//      if (!content.getUser().equals(authService.getLoggedInUser())) {
+//         Notification notif = Notification.builder()
+//               .actor(authService.getLoggedInUser())
+//               .recipient(content.getUser())
+//               .isRead(false)
+//               .type(NotificationType.REACTION)
+//               .content(content)
+//               .createdAt(Instant.now())
+//               .page(content.getPage())
+//               .build();
 
-         notif = notificationRepository.save(notif);
-         simpMessagingTemplate.convertAndSendToUser(
-               content.getUser().getUsername(),
-               "/queue/notification",
-               notificationMapper.toDto(notif));
-      }
+//         notif = notificationRepository.save(notif);
+//         simpMessagingTemplate.convertAndSendToUser(
+//               content.getUser().getUsername(),
+//               "/queue/notification",
+//               notificationMapper.toDto(notif));
+//      }
    }
 
    private void modifyContentReactionCount(Integer amount, Content content) {

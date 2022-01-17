@@ -20,7 +20,7 @@ import java.util.UUID;
 @Slf4j
 public class StorageService {
 
-   private final String DIR_PATH = "C://Storage/";
+   private final String DIR_PATH = "/mnt/c/Storage";
 
    public String store(MultipartFile photo) {
       String name = UUID.randomUUID().toString();

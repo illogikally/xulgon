@@ -1,11 +1,12 @@
 package me.min.xulgon.model;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import lombok.experimental.SuperBuilder;
+import org.springframework.lang.Nullable;
 
 import javax.persistence.*;
+import java.util.Optional;
+
 @Entity
 @Data
 @AllArgsConstructor
@@ -20,5 +21,10 @@ public class Page {
    @Enumerated(value = EnumType.STRING)
    private PageType type;
    @OneToOne
+   @Nullable
    private Photo coverPhoto;
+
+   public Optional<Photo> getCoverPhoto() {
+      return Optional.ofNullable(coverPhoto);
+   }
 }

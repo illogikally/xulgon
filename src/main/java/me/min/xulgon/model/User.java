@@ -13,7 +13,6 @@ import java.time.Instant;
 public class User {
    @Id
    @GeneratedValue(strategy = GenerationType.IDENTITY)
-   @Column(name = "id")
    private Long id;
    private String username;
    private String password;
@@ -25,5 +24,5 @@ public class User {
    private Integer unreadNotificationCount;
    private Boolean enabled;
    @OneToOne(mappedBy = "user", fetch = FetchType.LAZY)
-   private UserProfile profile;
+   private UserPage userPage;
 }

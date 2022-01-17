@@ -12,7 +12,6 @@ import me.min.xulgon.repository.*;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.PostMapping;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -68,8 +67,8 @@ public class UserService {
    public List<PostResponse> getNewsFeed(Pageable pageable) {
       User loggedInUser = authService.getLoggedInUser();
       return postRepository.getUserNewsFeed(loggedInUser.getId(),
-            pageable.getPageSize(),
-            pageable.getOffset())
+                  pageable.getPageSize(),
+                  pageable.getOffset())
             .stream()
             .filter(postService::privacyFilter)
             .map(postMapper::toDto)
@@ -79,7 +78,7 @@ public class UserService {
    public void unfollow(Long id) {
       User user = userRepository.findById(id)
             .orElseThrow(RuntimeException::new);
-      followRepository.deleteByUserAndPage(authService.getLoggedInUser(), user.getProfile());
+      followRepository.deleteByUserAndPage(authService.getLoggedInUser(), user.getUserPage());
    }
 
 }

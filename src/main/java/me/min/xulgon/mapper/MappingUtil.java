@@ -13,7 +13,7 @@ public class MappingUtil {
             .replace("yesterday", "hôm qua")
             .replace("just now", "vừa tức thì")
             .replaceAll("(about|ago)", "")
-            .replaceAll("(an|one)", "1")
+            .replaceAll("(an|one|a)", "1")
             .replaceAll("hours?", "giờ")
             .replaceAll("seconds?", "giây")
             .replaceAll("minutes?", "phút")

@@ -8,6 +8,8 @@ import me.min.xulgon.mapper.CommentMapper;
 import me.min.xulgon.mapper.NotificationMapper;
 import me.min.xulgon.model.*;
 import me.min.xulgon.repository.*;
+import me.min.xulgon.util.Util;
+import org.springframework.data.domain.Pageable;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,6 +22,7 @@ import java.util.stream.Collectors;
 @Service
 @AllArgsConstructor
 @Transactional
+
 public class CommentService {
    private final CommentRepository commentRepository;
    private final NotificationMapper notificationMapper;
@@ -39,6 +42,7 @@ public class CommentService {
             .map(commentMapper::toDto)
             .orElseThrow(RuntimeException::new);
    }
+
    public CommentResponse save(CommentRequest commentRequest,
                                MultipartFile photoMultipart) {
       Comment comment = commentRepository.save(commentMapper.map(commentRequest));
@@ -51,25 +55,26 @@ public class CommentService {
       }
 
       modifyParentsCommentCount(comment);
+      return commentMapper.toDto(comment);
+   }
+
+   private void createNotification(Comment comment) {
       User loggedInUser = authService.getLoggedInUser();
       if (!comment.getParentContent().getUser().equals(loggedInUser)) {
-
-         Notification notification = Notification.builder()
+         ReplyNotification notification = ReplyNotification.builder()
                .actor(loggedInUser)
                .createdAt(Instant.now())
                .recipient(comment.getParentContent().getUser())
                .isRead(false)
-               .content(comment)
-               .page(comment.getPage())
                .type(NotificationType.COMMENT)
                .build();
 
          notification = notificationRepository.save(notification);
-         simpMessagingTemplate.convertAndSendToUser(comment.getParentContent().getUser().getUsername(),
-               "/queue/notification",
-               notificationMapper.toDto(notification));
+//         simpMessagingTemplate.convertAndSendToUser(
+//               comment.getParentContent().getUser().getUsername(),
+//               "/queue/notification",
+//               notificationMapper.toDto(notification));
       }
-      return commentMapper.toDto(comment);
    }
 
    private void modifyParentsCommentCount(Comment comment) {
@@ -77,11 +82,11 @@ public class CommentService {
       switch (parent.getType()) {
          case POST:
          case PHOTO:
-            parent.setCommentCount(parent.getCommentCount()+1);
+            parent.setCommentCount(parent.getCommentCount() + 1);
             contentService.save(parent);
             break;
          case COMMENT:
-            parent.setCommentCount(parent.getCommentCount()+1);
+            parent.setCommentCount(parent.getCommentCount() + 1);
             contentService.save(parent);
             modifyParentsCommentCount((Comment) parent);
             break;
@@ -95,10 +100,13 @@ public class CommentService {
    }
 
    @Transactional(readOnly = true)
-   public List<CommentResponse> getCommentsByContent(Long contentId) {
+   public List<CommentResponse> getCommentsByContent(Long contentId,
+                                                     Pageable pageable) {
       Content content = contentRepository.findById(contentId)
             .orElseThrow(() -> new RuntimeException("Content not found"));
-      return commentRepository.findAllByParentContent(content).stream()
+      return commentRepository.findAllByParentContent(content, pageable)
+//      return commentRepository.getContentComments(contentId, limit, offset)
+            .stream()
             .filter(blockService::filter)
             .map(commentMapper::toDto)
             .collect(Collectors.toList());

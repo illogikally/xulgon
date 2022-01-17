@@ -36,9 +36,10 @@ public abstract class GroupMapper {
    public abstract GroupResponse toDto(Group group);
 
    String getPhotoUrl(Group group) {
-      if (group.getCoverPhoto() == null) return null;
-
-      return group.getCoverPhoto().getUrl();
+      return (group.getCoverPhoto().orElse(new Photo())).getUrl();
+//      if (group.getCoverPhoto() == null) return null;
+//
+//      return group.getCoverPhoto().getUrl();
    }
 
    GroupRole getRole(Group group) {

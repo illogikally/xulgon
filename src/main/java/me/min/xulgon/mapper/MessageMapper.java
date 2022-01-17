@@ -30,7 +30,7 @@ public class MessageMapper {
       return MessageResponse.builder()
             .username(getUsername(message))
             .id(message.getId())
-            .userAvatarUrl(message.getSender().getProfile().getAvatar().getUrl())
+            .userAvatarUrl(message.getSender().getUserPage().getAvatar().getUrl())
             .isRead(message.getIsRead())
             .conversationId(message.getConversation().getId())
             .createdAgo(MappingUtil.getCreatedAgo(message.getCreatedAt()))

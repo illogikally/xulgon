@@ -8,6 +8,7 @@ import me.min.xulgon.mapper.PhotoMapper;
 import me.min.xulgon.mapper.PhotoViewMapper;
 import me.min.xulgon.model.*;
 import me.min.xulgon.repository.*;
+import me.min.xulgon.util.LimPageable;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

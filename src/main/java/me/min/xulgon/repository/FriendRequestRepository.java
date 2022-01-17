@@ -20,7 +20,7 @@ public interface FriendRequestRepository extends JpaRepository<FriendRequest, Lo
    @Modifying
    @Query("DELETE FROM FriendRequest f " +
          "WHERE f.requester IN (:requester, :requestee) " +
-            "AND f.requestee IN (:requester, :requestee)")
+         "AND f.requestee IN (:requester, :requestee)")
    void deleteByUsers(User requester, User requestee);
 
    List<FriendRequest> findAllByRequestee(User requestee);

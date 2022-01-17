@@ -42,13 +42,13 @@ public class FriendshipService {
       );
       friendRequestRepository.deleteById(request.getId());
       followRepository.save(Follow.builder()
-            .page(requester.getProfile())
+            .page(requester.getUserPage())
             .createdAt(Instant.now())
             .user(authenticationService.getLoggedInUser())
             .build());
 
       followRepository.save(Follow.builder()
-            .page(authenticationService.getLoggedInUser().getProfile())
+            .page(authenticationService.getLoggedInUser().getUserPage())
             .createdAt(Instant.now())
             .user(requester)
             .build());
@@ -59,8 +59,8 @@ public class FriendshipService {
       User user = userRepository.findById(userId)
             .orElseThrow(() -> new RuntimeException("User not found"));
       friendshipRepository.deleteByUsers(user, loggedInUser);
-      followRepository.deleteByUserAndPage(user, loggedInUser.getProfile());
-      followRepository.deleteByUserAndPage(loggedInUser, user.getProfile());
+      followRepository.deleteByUserAndPage(user, loggedInUser.getUserPage());
+      followRepository.deleteByUserAndPage(loggedInUser, user.getUserPage());
    }
 
    public Integer getCommonFriendCount(User user) {

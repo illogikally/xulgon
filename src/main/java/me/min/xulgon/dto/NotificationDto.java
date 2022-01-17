@@ -10,13 +10,13 @@ import me.min.xulgon.model.NotificationType;
 public class NotificationDto {
    private Long id;
    private NotificationType type;
-   private String contentBody;
+   private String text;
    private Boolean isRead;
-   private Long contentId;
-   private ContentType contentType;
+   private Long targetId;
+   private ContentType targetType;
    private String pageName;
    private Long postId;
    private String actorName;
    private String createdAgo;
-   private String actorAvatar;
+   private String actorAvatarUrl;
 }

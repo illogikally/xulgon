@@ -6,12 +6,11 @@ import me.min.xulgon.dto.UserDto;
 import me.min.xulgon.dto.UserProfileResponse;
 import me.min.xulgon.model.*;
 import me.min.xulgon.repository.BlockRepository;
-import me.min.xulgon.repository.FriendRequestRepository;
-import me.min.xulgon.repository.FriendshipRepository;
 import me.min.xulgon.repository.PhotoRepository;
 import me.min.xulgon.service.AuthenticationService;
 import me.min.xulgon.service.BlockService;
 import me.min.xulgon.service.FriendshipService;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.util.AbstractMap;
@@ -22,7 +21,7 @@ import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
-public class UserProfileMapper {
+public class UserPageMapper {
 
    private final AuthenticationService authenticationService;
    private final BlockRepository blockRepository;
@@ -32,7 +31,7 @@ public class UserProfileMapper {
    private final PhotoRepository photoRepository;
    private final BlockService blockService;
 
-   public UserProfileResponse toDto(UserProfile profile) {
+   public UserProfileResponse toDto(UserPage profile) {
       if (profile == null) return null;
 
       return UserProfileResponse.builder()
@@ -40,8 +39,7 @@ public class UserProfileMapper {
             .fullName(profile.getUser().getFullName())
             .userId(profile.getUser().getId())
             .avatar(photoViewMapper.toDto(profile.getAvatar()))
-            .coverPhotoUrl(profile.getCoverPhoto() == null
-                  ? null : profile.getCoverPhoto().getUrl())
+            .coverPhotoUrl((profile.getCoverPhoto().orElseGet(Photo::new)).getUrl())
             .workplace(profile.getWorkplace())
             .friends(getFriends(profile))
             .photos(getPhotos(profile))
@@ -54,16 +52,20 @@ public class UserProfileMapper {
 
    }
 
-   private List<PhotoViewResponse> getPhotos(UserProfile userProfile) {
-      return photoRepository.findAllByPage(userProfile)
+   private List<PhotoViewResponse> getPhotos(UserPage userPage) {
+      return photoRepository.findAllByPageOrderByCreatedAtDesc(userPage, PageRequest.ofSize(9))
             .stream()
-            .sorted((photo1, photo2) -> (int) -(photo1.getCreatedAt().toEpochMilli()- photo2.getCreatedAt().toEpochMilli()))
-            .limit(9)
             .map(photoViewMapper::toDto)
             .collect(Collectors.toList());
+//      return photoRepository.findAllByPage(userPage)
+//            .stream()
+//            .sorted((photo1, photo2) -> (int) -(photo1.getCreatedAt().toEpochMilli()- photo2.getCreatedAt().toEpochMilli()))
+//            .limit(9)
+//            .map(photoViewMapper::toDto)
+//            .collect(Collectors.toList());
    }
 
-   private List<UserDto> getFriends(UserProfile profile) {
+   private List<UserDto> getFriends(UserPage profile) {
       List<User> profileFriendList = friendshipService.getFriends(profile.getUser());
       return profileFriendList.stream()
             .map(user -> new AbstractMap.SimpleEntry<>(user,
@@ -76,8 +78,8 @@ public class UserProfileMapper {
    }
 
 
-   private boolean isBlocked(UserProfile userProfile) {
-      return blockRepository.findByBlockerAndBlockee(userProfile.getUser(),
+   private boolean isBlocked(UserPage userPage) {
+      return blockRepository.findByBlockerAndBlockee(userPage.getUser(),
             authenticationService.getLoggedInUser()).isPresent();
    }
 }

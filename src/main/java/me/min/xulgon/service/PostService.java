@@ -14,7 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
-import java.util.Collection;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -28,7 +28,7 @@ public class PostService {
    private final PostRepository postRepository;
    private final PostMapper postMapper;
    private final AuthenticationService authService;
-   private final UserProfileRepository userProfileRepository;
+   private final UserPageRepository userPageRepository;
    private final FriendshipRepository friendshipRepository;
    private final PhotoService photoService;
    private final GroupRepository groupRepository;
@@ -48,17 +48,19 @@ public class PostService {
 
    @Transactional(readOnly = true)
    public List<PostResponse> getPostsByProfile(Long profileId, Pageable pageable) {
-      UserProfile userProfile = userProfileRepository.findById(profileId)
+      UserPage userPage = userPageRepository.findById(profileId)
             .orElseThrow(() -> new RuntimeException("Profile not found"));
 
-      List<Post> posts = postRepository.findAllByPageOrderByCreatedAtDesc(userProfile, pageable);
-      Privacy privacy = getPrivacy(userProfile.getUser());
+      List<Post> posts = postRepository.findAllByPageOrderByCreatedAtDesc(userPage, pageable);
+      Privacy privacy = getPrivacy(userPage.getUser());
 
       return posts.stream()
             .filter(this::privacyFilter)
-            .peek(post -> post.setPhotos(post.getPhotos().stream()
-                  .filter(photo -> photo.getPrivacy().ordinal() <= privacy.ordinal())
-                  .collect(Collectors.toList())))
+            .peek(post -> post.setPhotos(
+                  post.getPhotos()
+                        .stream()
+                        .filter(photo -> photo.getPrivacy().ordinal() <= privacy.ordinal())
+                        .collect(Collectors.toList())))
             .map(postMapper::toDto)
             .collect(Collectors.toList());
    }
@@ -115,6 +117,14 @@ public class PostService {
    public boolean privacyFilter(Post post) {
       Privacy privacy = getPrivacy(post.getUser());
       return post.getPrivacy().ordinal() <= privacy.ordinal();
+   }
+
+   public List<String> getAllowedPrivacyList(Post post) {
+      Privacy privacy = getPrivacy(post.getUser());
+      return Arrays.stream(Privacy.values())
+            .filter(p -> p.ordinal() <= privacy.ordinal())
+            .map(Enum::toString)
+            .collect(Collectors.toList());
    }
 
    public boolean groupFilter(Post post) {

@@ -55,7 +55,7 @@ public class GroupService {
             .stream()
             .map(member -> GroupMemberDto.builder()
                   .user(userMapper.toDto(member.getUser()))
-                  .avatarUrl(member.getUser().getProfile().getAvatar().getUrl())
+                  .avatarUrl(member.getUser().getUserPage().getAvatar().getUrl())
                   .name(member.getUser().getFullName())
                   .role(member.getRole())
                   .build()

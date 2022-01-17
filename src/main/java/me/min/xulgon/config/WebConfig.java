@@ -24,7 +24,7 @@ public class WebConfig implements WebMvcConfigurer {
    @Override
    public void addResourceHandlers(ResourceHandlerRegistry registry) {
       registry.addResourceHandler("/contents/**")
-                  .addResourceLocations("file:/media/xael/B89E89AF9E8966AA/Storage/");
+                  .addResourceLocations("file:/mnt/c/Storage/");
 //              .addResourceLocations("file:/C://Storage/");
 
 //      registry.addResourceHandler("/contents/**")

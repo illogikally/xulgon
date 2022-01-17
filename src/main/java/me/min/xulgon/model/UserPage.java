@@ -9,6 +9,8 @@ import lombok.experimental.SuperBuilder;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.OneToOne;
+import javax.persistence.Table;
+import java.util.Optional;
 
 @EqualsAndHashCode(callSuper = true)
 @Entity
@@ -16,7 +18,8 @@ import javax.persistence.OneToOne;
 @AllArgsConstructor
 @SuperBuilder
 @NoArgsConstructor
-public class UserProfile extends Page {
+@Table(name = "user_profile")
+public class UserPage extends Page {
    @OneToOne(fetch = FetchType.LAZY)
    private User user;
    @OneToOne
@@ -27,4 +30,5 @@ public class UserProfile extends Page {
    private String hometown;
 
 }
+
 

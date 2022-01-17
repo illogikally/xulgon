@@ -23,9 +23,9 @@ public class FriendRequestMapper {
    public FriendRequestDto toDto(FriendRequest request) {
       return FriendRequestDto.builder()
             .id(request.getId())
-            .requesterProfileId(request.getRequester().getProfile().getId())
+            .requesterProfileId(request.getRequester().getUserPage().getId())
             .requesterId(request.getRequester().getId())
-            .requesterAvatarUrl(request.getRequester().getProfile().getAvatar().getUrl())
+            .requesterAvatarUrl(request.getRequester().getUserPage().getAvatar().getUrl())
             .requesterName(getRequesterName(request))
             .createdAgo(MappingUtil.getCreatedAgo(request.getCreatedAt()))
             .commonFriendCount(getCommonFriendCount(request))

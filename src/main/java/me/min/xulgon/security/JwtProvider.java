@@ -30,8 +30,13 @@ public class JwtProvider {
    }
 
    public boolean validateToken(String jwt) {
-      Jwts.parser().setSigningKey(key).parseClaimsJws(jwt);
-      return true;
+      try {
+         Jwts.parser().setSigningKey(key).parseClaimsJws(jwt);
+         return true;
+      }
+      catch (Exception ignored) {
+         return false;
+      }
    }
 
    public String getUsernameFromJwt(String token) {

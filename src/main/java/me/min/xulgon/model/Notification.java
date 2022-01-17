@@ -1,10 +1,8 @@
 package me.min.xulgon.model;
 
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
+import lombok.experimental.SuperBuilder;
 
 import javax.persistence.*;
 import java.time.Instant;
@@ -13,17 +11,17 @@ import java.time.Instant;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Builder
+@SuperBuilder
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class Notification {
    @Id
    @GeneratedValue(strategy = GenerationType.IDENTITY)
+   @EqualsAndHashCode.Include
    private Long id;
    private Instant createdAt;
    @Enumerated(value = EnumType.STRING)
    private NotificationType type;
    private Boolean isRead;
-   @ManyToOne
-   private Content content;
    @ManyToOne
    private Page page;
    @ManyToOne

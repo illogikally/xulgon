@@ -4,7 +4,7 @@ import lombok.AllArgsConstructor;
 import me.min.xulgon.model.Block;
 import me.min.xulgon.model.Content;
 import me.min.xulgon.model.User;
-import me.min.xulgon.model.UserProfile;
+import me.min.xulgon.model.UserPage;
 import me.min.xulgon.repository.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,7 +20,7 @@ public class BlockService {
 
    private final BlockRepository blockRepository;
    private final AuthenticationService authService;
-   private final UserProfileRepository userProfileRepository;
+   private final UserPageRepository userPageRepository;
    private final FriendRequestRepository friendRequestRepository;
    private final UserRepository userRepository;
    private final FriendshipRepository friendshipRepository;
@@ -40,7 +40,6 @@ public class BlockService {
             .collect(Collectors.toList());
    }
 
-
    @Transactional(readOnly = true)
    public boolean filter(User user) {
       return getBlockersId().stream()
@@ -54,7 +53,7 @@ public class BlockService {
 
    @Transactional(readOnly = true)
    public Boolean isBlocked(Long profileId) {
-      UserProfile profile = userProfileRepository.findById(profileId)
+      UserPage profile = userPageRepository.findById(profileId)
             .orElseThrow(RuntimeException::new);
 
       return blockRepository.findByBlockerAndBlockee(profile.getUser(), authService.getLoggedInUser())

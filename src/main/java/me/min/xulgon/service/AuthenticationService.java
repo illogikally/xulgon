@@ -5,7 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import me.min.xulgon.dto.*;
 import me.min.xulgon.model.*;
 import me.min.xulgon.repository.PhotoRepository;
-import me.min.xulgon.repository.UserProfileRepository;
+import me.min.xulgon.repository.UserPageRepository;
 import me.min.xulgon.repository.VerificationTokenRepository;
 import me.min.xulgon.repository.UserRepository;
 import me.min.xulgon.security.JwtProvider;
@@ -33,7 +33,7 @@ public class AuthenticationService {
    private final PasswordEncoder passwordEncoder;
    private final UserRepository userRepository;
    private final VerificationTokenRepository verificationTokenRepository;
-   private final UserProfileRepository userProfileRepository;
+   private final UserPageRepository userPageRepository;
 
    public AuthenticationResponse login(AuthenticationRequest authenticationRequest) {
       Authentication authentication = authenticationManager.authenticate(
@@ -56,10 +56,10 @@ public class AuthenticationService {
             .refreshToken(refreshToken)
             .userId(user.getId())
             .expiresAt(Instant.now().plusMillis(jwtProvider.getJwtExpirationInMillis()))
-            .profileId(user.getProfile().getId())
+            .profileId(user.getUserPage().getId())
             .username(user.getUsername())
             .userFullName(user.getFullName())
-            .avatarUrl(user.getProfile().getAvatar().getUrl())
+            .avatarUrl(user.getUserPage().getAvatar().getUrl())
             .build();
    }
 
@@ -87,7 +87,7 @@ public class AuthenticationService {
             .build();
 
       avatar = photoRepository.save(avatar);
-      userProfileRepository.save(UserProfile.builder()
+      userPageRepository.save(UserPage.builder()
             .user(user)
             .avatar(avatar)
             .type(PageType.PROFILE)

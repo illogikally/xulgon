@@ -82,7 +82,7 @@ public class MessageService {
             .latestMessage(messageMapper.toDto(message))
             .id(message.getConversation().getId())
             .user(UserBasicDto.builder()
-                  .avatarUrl(participant.getProfile().getAvatar().getUrl())
+                  .avatarUrl(participant.getUserPage().getAvatar().getUrl())
                   .username(participant.getFullName())
                   .id(participant.getId())
                   .build())
