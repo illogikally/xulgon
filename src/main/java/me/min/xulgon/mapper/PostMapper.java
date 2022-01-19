@@ -42,7 +42,7 @@ public class PostMapper {
             .photos(new LinkedList<>())
             .privacy(postRequest.getPrivacy())
             .page(getPage(postRequest.getPageId()))
-            .user(authenticationService.getLoggedInUser())
+            .user(authenticationService.getPrincipal())
             .sharedPost(getSharedPost(postRequest.getSharedPostId()))
             .build();
 
@@ -102,7 +102,7 @@ public class PostMapper {
    }
 
    private boolean isReacted(Content content) {
-      User user = authenticationService.getLoggedInUser();
+      User user = authenticationService.getPrincipal();
 
       return content.getReactions().stream()
             .map(Reaction::getUser)

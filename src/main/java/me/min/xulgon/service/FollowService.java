@@ -21,6 +21,6 @@ public class FollowService {
       Page page = pageRepository.findById(pageId)
             .orElseThrow(RuntimeException::new);
 
-      followRepository.deleteByUserAndPage(authService.getLoggedInUser(), page);
+      followRepository.deleteByUserAndPage(authService.getPrincipal(), page);
    }
 }

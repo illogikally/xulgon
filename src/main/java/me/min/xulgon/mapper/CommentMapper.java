@@ -34,7 +34,7 @@ public class CommentMapper {
             .type(ContentType.COMMENT)
             .commentCount(0)
             .reactionCount(0)
-            .user(authenticationService.getLoggedInUser())
+            .user(authenticationService.getPrincipal())
             .createdAt(Instant.now())
             .post(getPost(commentRequest))
             .page(getPage(commentRequest))
@@ -88,7 +88,7 @@ public class CommentMapper {
    }
 
    boolean isReacted(Comment comment) {
-      User user = authenticationService.getLoggedInUser();
+      User user = authenticationService.getPrincipal();
 
       return comment.getReactions().stream()
             .map(Reaction::getUser)

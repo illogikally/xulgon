@@ -59,10 +59,10 @@ public class CommentService {
    }
 
    private void createNotification(Comment comment) {
-      User loggedInUser = authService.getLoggedInUser();
-      if (!comment.getParentContent().getUser().equals(loggedInUser)) {
+      User principal = authService.getPrincipal();
+      if (!comment.getParentContent().getUser().equals(principal)) {
          ReplyNotification notification = ReplyNotification.builder()
-               .actor(loggedInUser)
+               .actor(principal)
                .createdAt(Instant.now())
                .recipient(comment.getParentContent().getUser())
                .isRead(false)

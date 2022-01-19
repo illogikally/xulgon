@@ -42,15 +42,17 @@ public class AuthenticationService {
       );
       SecurityContextHolder.getContext().setAuthentication(authentication);
       String token = jwtProvider.generateToken(authentication);
-      User loggedInUser = getLoggedInUser();
-      return authResponseMapper(loggedInUser,
+      User principal = getPrincipal();
+      return authenticationResponseMapper(
+            principal,
             token,
-            refreshTokenService.generateRefreshToken().getToken());
+            refreshTokenService.generateRefreshToken().getToken()
+      );
    }
 
-   private AuthenticationResponse authResponseMapper(User user,
-                                                     String token,
-                                                     String refreshToken) {
+   private AuthenticationResponse authenticationResponseMapper(User user,
+                                                               String token,
+                                                               String refreshToken) {
       return AuthenticationResponse.builder()
             .token(token)
             .refreshToken(refreshToken)
@@ -96,11 +98,11 @@ public class AuthenticationService {
    }
 
    @Transactional(readOnly = true)
-   public User getLoggedInUser() {
-      return getLoggedInUser(SecurityContextHolder.getContext().getAuthentication().getPrincipal());
+   public User getPrincipal() {
+      return getPrincipal(SecurityContextHolder.getContext().getAuthentication().getPrincipal());
    }
 
-   public User getLoggedInUser(Object principal) {
+   public User getPrincipal(Object principal) {
       return userRepository
               .findByUsername(((org.springframework.security.core.userdetails.User) principal).getUsername())
               .orElseThrow(() -> new RuntimeException("User not found"));
@@ -111,6 +113,6 @@ public class AuthenticationService {
       String token = jwtProvider.generateTokenWithUserName(refreshTokenDto.getUsername());
       User user = userRepository.findByUsername(refreshTokenDto.getUsername())
             .orElseThrow(RuntimeException::new);
-      return authResponseMapper(user, token, refreshTokenDto.getToken());
+      return authenticationResponseMapper(user, token, refreshTokenDto.getToken());
    }
 }

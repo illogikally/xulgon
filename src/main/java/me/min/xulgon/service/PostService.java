@@ -74,10 +74,10 @@ public class PostService {
       Group group = groupRepository.findById(groupId)
             .orElseThrow(RuntimeException::new);
 
-      User loggedInUser = authService.getLoggedInUser();
+      User principal = authService.getPrincipal();
 
       if (!group.getIsPrivate() || group.getMembers().stream().
-            anyMatch(member -> member.getUser().getId().equals(loggedInUser.getId()))) {
+            anyMatch(member -> member.getUser().getId().equals(principal.getId()))) {
          return postRepository.findAllByPageOrderByCreatedAtDesc(group, pageable).stream()
                .filter(blockService::filter)
                .map(postMapper::toDto)
@@ -134,14 +134,14 @@ public class PostService {
          if (group.getIsPrivate()) {
             return group.getMembers()
                   .stream()
-                  .anyMatch(member -> member.getUser().equals(authService.getLoggedInUser()));
+                  .anyMatch(member -> member.getUser().equals(authService.getPrincipal()));
          }
       }
       return true;
    }
 
    private Privacy getPrivacy(User user) {
-      User me = authService.getLoggedInUser();
+      User me = authService.getPrincipal();
       return me.equals(user) ? Privacy.ME
             : friendshipRepository.findByUsers(me, user).isPresent()
                   ? Privacy.FRIEND : Privacy.PUBLIC;

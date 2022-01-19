@@ -37,7 +37,7 @@ public class ReactionService {
             .orElseThrow(() -> new RuntimeException("Content not found"));
 
       Optional<Reaction> reactionOptional = reactionRepository.findTopByContentAndUserOrderByIdDesc(
-            content, authService.getLoggedInUser()
+            content, authService.getPrincipal()
       );
 
       if (reactionOptional.isPresent()) {
@@ -51,9 +51,9 @@ public class ReactionService {
       reactionRepository.save(mapToReaction(reactionDto, content));
       modifyContentReactionCount(1, content);
 
-//      if (!content.getUser().equals(authService.getLoggedInUser())) {
+//      if (!content.getUser().equals(authService.getPrincipal())) {
 //         Notification notif = Notification.builder()
-//               .actor(authService.getLoggedInUser())
+//               .actor(authService.getPrincipal())
 //               .recipient(content.getUser())
 //               .isRead(false)
 //               .type(NotificationType.REACTION)
@@ -79,7 +79,7 @@ public class ReactionService {
       return Reaction.builder()
             .type(reactionDto.getType())
             .content(content)
-            .user(authService.getLoggedInUser())
+            .user(authService.getPrincipal())
             .build();
    }
 }

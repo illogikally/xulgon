@@ -80,6 +80,6 @@ public class UserPageMapper {
 
    private boolean isBlocked(UserPage userPage) {
       return blockRepository.findByBlockerAndBlockee(userPage.getUser(),
-            authenticationService.getLoggedInUser()).isPresent();
+            authenticationService.getPrincipal()).isPresent();
    }
 }

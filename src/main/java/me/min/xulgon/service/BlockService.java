@@ -27,13 +27,13 @@ public class BlockService {
 
    public Boolean blocked(User user) {
       return blockRepository.findByBlockerAndBlockee(
-            authService.getLoggedInUser(), user
+            authService.getPrincipal(), user
       ).isPresent();
    }
 
    @Transactional(readOnly = true)
    public List<Long> getBlockersId() {
-      return blockRepository.findAllByBlockee(authService.getLoggedInUser())
+      return blockRepository.findAllByBlockee(authService.getPrincipal())
             .stream()
             .map(Block::getBlocker)
             .map(User::getId)
@@ -56,7 +56,7 @@ public class BlockService {
       UserPage profile = userPageRepository.findById(profileId)
             .orElseThrow(RuntimeException::new);
 
-      return blockRepository.findByBlockerAndBlockee(profile.getUser(), authService.getLoggedInUser())
+      return blockRepository.findByBlockerAndBlockee(profile.getUser(), authService.getPrincipal())
             .isPresent();
    }
 
@@ -64,13 +64,13 @@ public class BlockService {
       User blockee = userRepository.findById(blockeeId)
             .orElseThrow(RuntimeException::new);
       Block block = Block.builder()
-            .blocker(authService.getLoggedInUser())
+            .blocker(authService.getPrincipal())
             .blockee(blockee)
             .createdAt(Instant.now())
             .build();
 
-      friendshipRepository.deleteByUsers(authService.getLoggedInUser(), blockee);
-      friendRequestRepository.deleteByUsers(authService.getLoggedInUser(), blockee);
+      friendshipRepository.deleteByUsers(authService.getPrincipal(), blockee);
+      friendRequestRepository.deleteByUsers(authService.getPrincipal(), blockee);
       blockRepository.save(block);
    }
 
@@ -78,7 +78,7 @@ public class BlockService {
       User blockee = userRepository.findById(blockeeId)
             .orElseThrow(RuntimeException::new);
 
-      blockRepository.deleteByBlockerAndBlockee(authService.getLoggedInUser(), blockee);
+      blockRepository.deleteByBlockerAndBlockee(authService.getPrincipal(), blockee);
 
    }
 }

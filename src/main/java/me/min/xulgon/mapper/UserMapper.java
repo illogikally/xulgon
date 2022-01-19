@@ -36,7 +36,7 @@ public class UserMapper {
    }
 
    private Boolean isFollow(User user) {
-      return followRepository.findByUserAndPage(authService.getLoggedInUser(), user.getUserPage())
+      return followRepository.findByUserAndPage(authService.getPrincipal(), user.getUserPage())
             .isPresent();
    }
 }

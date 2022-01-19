@@ -20,9 +20,9 @@ public class JwtProvider {
 
    @Autowired
    private UserDetailsService userDetailsService;
-   @Value("${jwt.signing.key}")
+   @Value("${jwt.signing-key}")
    private String key;
-   @Value("${jwt.expiration.time}")
+   @Value("${jwt.expiration-time}")
    private Long jwtExpirationInMillis;
 
    public String generateToken(Authentication authentication) {

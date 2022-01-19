@@ -21,7 +21,7 @@ public class NotificationService {
    private final NotificationRepository notifRepository;
 
    public NotifCountDto getNotifCount() {
-      User user = authService.getLoggedInUser();
+      User user = authService.getPrincipal();
       return NotifCountDto.builder()
             .unreadMessageCount(user.getUnreadMessageCount())
             .unreadNotifCount(user.getUnreadNotificationCount())
@@ -31,7 +31,7 @@ public class NotificationService {
    public List<NotificationDto> get() {
       return List.of(NotificationDto.builder().build());
 //      return notifRepository
-//            .findAllByRecipientOrderByCreatedAtDesc(authService.getLoggedInUser())
+//            .findAllByRecipientOrderByCreatedAtDesc(authService.getPrincipal())
 //            .stream()
 //            .map(notificationMapper::toDto)
 //            .collect(Collectors.toList());

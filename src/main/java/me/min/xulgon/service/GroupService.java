@@ -34,13 +34,13 @@ public class GroupService {
       GroupMember member = GroupMember.builder()
             .group(group)
             .createdAt(Instant.now())
-            .user(authService.getLoggedInUser())
+            .user(authService.getPrincipal())
             .role(GroupRole.ADMIN)
             .build();
 
       groupMemberRepository.save(member);
       followRepository.save(Follow.builder()
-            .user(authService.getLoggedInUser())
+            .user(authService.getPrincipal())
             .page(group)
             .createdAt(Instant.now())
             .build());
@@ -70,7 +70,7 @@ public class GroupService {
    }
 
    public void createJoinRequest(Long groupId) {
-      User user = authService.getLoggedInUser();
+      User user = authService.getPrincipal();
       Group group = groupRepository.findById(groupId)
             .orElseThrow(RuntimeException::new);
 
@@ -83,7 +83,7 @@ public class GroupService {
    }
 
    public void deleteJoinRequest(Long groupId) {
-      User user = authService.getLoggedInUser();
+      User user = authService.getPrincipal();
       Group group = groupRepository.findById(groupId)
             .orElseThrow(RuntimeException::new);
       groupJoinRequestRepository.deleteByUserAndGroup(user, group);
@@ -129,7 +129,7 @@ public class GroupService {
    public void quit(Long groupId) {
       Group group = groupRepository.findById(groupId)
             .orElseThrow(RuntimeException::new);
-      User user = authService.getLoggedInUser();
+      User user = authService.getPrincipal();
       groupMemberRepository.deleteByUserAndGroup(user, group);
       followRepository.deleteByUserAndPage(user, group);
    }

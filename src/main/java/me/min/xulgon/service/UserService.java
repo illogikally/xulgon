@@ -44,8 +44,8 @@ public class UserService {
 
    @Transactional(readOnly = true)
    public List<PostResponse> getGroupFeed(Pageable pageable) {
-      User loggedInUser =  authService.getLoggedInUser();
-      return postRepository.getUserGroupFeed(loggedInUser.getId(),
+      User principal =  authService.getPrincipal();
+      return postRepository.getUserGroupFeed(principal.getId(),
             pageable.getPageSize(),
             pageable.getOffset())
             .stream()
@@ -55,8 +55,8 @@ public class UserService {
 
    @Transactional(readOnly = true)
    public List<GroupResponse> getJoinedGroups() {
-      User loggedInUser = authService.getLoggedInUser();
-      return groupMemberRepository.findAllByUser(loggedInUser)
+      User principal = authService.getPrincipal();
+      return groupMemberRepository.findAllByUser(principal)
             .stream()
             .map(GroupMember::getGroup)
             .map(groupMapper::toDto)
@@ -65,8 +65,8 @@ public class UserService {
 
    @Transactional(readOnly = true)
    public List<PostResponse> getNewsFeed(Pageable pageable) {
-      User loggedInUser = authService.getLoggedInUser();
-      return postRepository.getUserNewsFeed(loggedInUser.getId(),
+      User principal = authService.getPrincipal();
+      return postRepository.getUserNewsFeed(principal.getId(),
                   pageable.getPageSize(),
                   pageable.getOffset())
             .stream()
@@ -78,7 +78,7 @@ public class UserService {
    public void unfollow(Long id) {
       User user = userRepository.findById(id)
             .orElseThrow(RuntimeException::new);
-      followRepository.deleteByUserAndPage(authService.getLoggedInUser(), user.getUserPage());
+      followRepository.deleteByUserAndPage(authService.getPrincipal(), user.getUserPage());
    }
 
 }

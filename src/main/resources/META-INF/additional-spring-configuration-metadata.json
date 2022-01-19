@@ -9,6 +9,16 @@
       "name": "jwt.signing.key",
       "type": "java.lang.String",
       "description": "Secret key for signing JWT"
+    },
+    {
+      "name": "jwt.expiration-time",
+      "type": "java.lang.String",
+      "description": "Description for jwt.expiration-time."
+    },
+    {
+      "name": "jwt.signing-key",
+      "type": "java.lang.String",
+      "description": "Description for jwt.signing-key."
     }
   ]
 }

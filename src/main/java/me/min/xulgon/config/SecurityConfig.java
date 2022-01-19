@@ -10,10 +10,14 @@ import org.springframework.security.config.annotation.authentication.builders.Au
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 
 @EnableWebSecurity
@@ -31,13 +35,19 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
    @Override
    protected void configure(HttpSecurity http) throws Exception {
       http.cors().and().csrf().disable()
+            .oauth2Login()
+            .successHandler(this::successHandler)
+            .and()
             .authorizeRequests()
-            .antMatchers("/api/authentication/**",
+            .antMatchers(
+                  "/api/authentication/**",
+                  "/oauth2/**",
+                  "/login/**",
                   "/ws/**",
                   "/contents/**")
-
             .permitAll()
-            .antMatchers("/v2/api-docs",
+            .antMatchers(
+                  "/v2/api-docs",
                   "/configuration/ui",
                   "/swagger-resources/**",
                   "/configuration/security",
@@ -46,7 +56,14 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
             .permitAll()
             .anyRequest()
             .authenticated();
+
       http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+   }
+
+   private void successHandler(HttpServletRequest request,
+                               HttpServletResponse response,
+                               Authentication authentication) {
+      System.out.println(authentication);
    }
 
    @Autowired

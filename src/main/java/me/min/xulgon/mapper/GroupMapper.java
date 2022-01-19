@@ -46,7 +46,7 @@ public abstract class GroupMapper {
       return group.getMembers()
             .stream()
             .filter(member ->
-                  member.getUser().getId().equals(authService.getLoggedInUser().getId()))
+                  member.getUser().getId().equals(authService.getPrincipal().getId()))
             .map(GroupMember::getRole)
             .findAny()
             .orElse(null);
@@ -54,9 +54,9 @@ public abstract class GroupMapper {
    }
 
    Photo getCoverPhoto(GroupRequest groupRequest) {
-      User loggedInUser = authService.getLoggedInUser();
+      User principal = authService.getPrincipal();
       Photo photo = Photo.builder()
-            .user(loggedInUser)
+            .user(principal)
             .createdAt(Instant.now())
             .url("http://localhost:8080/contents/default-group-cover.png")
             .privacy(Privacy.PUBLIC)
@@ -69,14 +69,14 @@ public abstract class GroupMapper {
    }
 
    Boolean isRequestSent(Group group) {
-      User user = authService.getLoggedInUser();
+      User user = authService.getPrincipal();
       return group.getJoinRequests()
             .stream()
             .anyMatch(request -> request.getUser().getId().equals(user.getId()));
    }
 
    Boolean isMember(Group group) {
-      User user = authService.getLoggedInUser();
+      User user = authService.getPrincipal();
       return group.getMembers()
             .stream()
             .anyMatch(member -> member.getUser().getId().equals(user.getId()));

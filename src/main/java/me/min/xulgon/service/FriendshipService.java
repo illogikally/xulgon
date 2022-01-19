@@ -30,7 +30,7 @@ public class FriendshipService {
       User requester = userRepository.findById(requesterId)
             .orElseThrow(() -> new RuntimeException("User not found"));
       FriendRequest request = friendRequestRepository.findByRequesterAndRequestee(
-            requester, authenticationService.getLoggedInUser()
+            requester, authenticationService.getPrincipal()
       )
             .orElseThrow(() -> new RuntimeException("Friendresiq not found"));
 
@@ -44,29 +44,29 @@ public class FriendshipService {
       followRepository.save(Follow.builder()
             .page(requester.getUserPage())
             .createdAt(Instant.now())
-            .user(authenticationService.getLoggedInUser())
+            .user(authenticationService.getPrincipal())
             .build());
 
       followRepository.save(Follow.builder()
-            .page(authenticationService.getLoggedInUser().getUserPage())
+            .page(authenticationService.getPrincipal().getUserPage())
             .createdAt(Instant.now())
             .user(requester)
             .build());
    }
 
    public void delete(Long userId) {
-      User loggedInUser = authenticationService.getLoggedInUser();
+      User principal = authenticationService.getPrincipal();
       User user = userRepository.findById(userId)
             .orElseThrow(() -> new RuntimeException("User not found"));
-      friendshipRepository.deleteByUsers(user, loggedInUser);
-      followRepository.deleteByUserAndPage(user, loggedInUser.getUserPage());
-      followRepository.deleteByUserAndPage(loggedInUser, user.getUserPage());
+      friendshipRepository.deleteByUsers(user, principal);
+      followRepository.deleteByUserAndPage(user, principal.getUserPage());
+      followRepository.deleteByUserAndPage(principal, user.getUserPage());
    }
 
    public Integer getCommonFriendCount(User user) {
-      User loggedInUser = authenticationService.getLoggedInUser();
+      User principal = authenticationService.getPrincipal();
 
-      List<User> yourFriends = getFriends(loggedInUser);
+      List<User> yourFriends = getFriends(principal);
       List<User> theirFriends = getFriends(user);
 
       yourFriends.retainAll(theirFriends);
@@ -88,21 +88,21 @@ public class FriendshipService {
 
    public FriendshipStatus getFriendshipStatus(User user ) {
       FriendshipStatus status = null;
-      User loggedInUser = authenticationService.getLoggedInUser();
+      User principal = authenticationService.getPrincipal();
 
-      if (friendshipRepository.findByUsers(user, loggedInUser).isPresent()) {
+      if (friendshipRepository.findByUsers(user, principal).isPresent()) {
          status = FriendshipStatus.FRIEND;
       }
 
       else if (friendRequestRepository.
-            findByRequesterAndRequestee(loggedInUser, user).isPresent()) {
+            findByRequesterAndRequestee(principal, user).isPresent()) {
          status = FriendshipStatus.SENT;
       }
       else if (friendRequestRepository.
-            findByRequesterAndRequestee(user, loggedInUser).isPresent()) {
+            findByRequesterAndRequestee(user, principal).isPresent()) {
          status = FriendshipStatus.RECEIVED;
       }
-      else if (loggedInUser != user) {
+      else if (principal != user) {
          status = FriendshipStatus.NULL;
       }
 

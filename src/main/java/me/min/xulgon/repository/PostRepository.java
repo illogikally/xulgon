@@ -12,19 +12,13 @@ import java.util.List;
 @Repository
 public interface PostRepository extends JpaRepository<Post, Long> {
    List<Post> findAllByPageOrderByCreatedAtDesc(Page page, Pageable pageable);
+   List<Post> findAllByBodyContainsOrderByCreatedAtDesc(String body);
 
    @Query(nativeQuery = true,
          value = "select * from post p inner join content c on p.id = c.id " +
-               "where page_id in (" +
-               "select group_id from group_member where user_id = :userId" +
-               ") order by c.created_at desc limit :limit offset :offset")
-   List<Post> getUserGroupFeed(Long userId, long limit, long offset);
-   @Query(nativeQuery = true,
-         value = "select * from post p inner join content c on p.id = c.id " +
-               "where page_id in (" +
-               "select group_id from group_member where user_id = :pageId" +
-               ") order by c.created_at desc limit :limit offset :offset")
-   List<Post> getPageTimeline(Long pageId, long limit, long offset);
+               "where page_id in (select group_id from group_member where user_id = :userId) " +
+               "order by c.created_at desc limit :offset, :size")
+   List<Post> getUserGroupFeed(Long userId, long size, long offset);
 
    @Query(nativeQuery = true,
          value = "select * from post p inner join content c on p.id = c.id " +
@@ -33,5 +27,4 @@ public interface PostRepository extends JpaRepository<Post, Long> {
                "order by c.created_at desc " +
                "limit :offset, :size")
    List<Post> getUserNewsFeed(Long userId, long size, long offset);
-   List<Post> findAllByBodyContainsOrderByCreatedAtDesc(String body);
 }

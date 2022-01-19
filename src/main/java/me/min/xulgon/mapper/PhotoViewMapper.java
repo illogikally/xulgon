@@ -33,7 +33,7 @@ public class PhotoViewMapper {
             .type(ContentType.PHOTO)
             .createdAt(Instant.now())
             .page(getPage(photoRequest))
-            .user(authenticationService.getLoggedInUser())
+            .user(authenticationService.getPrincipal())
             .reactions(new LinkedList<>())
             .reactionCount(0)
             .commentCount(0)
@@ -90,7 +90,7 @@ public class PhotoViewMapper {
    }
 
    private boolean isReacted(Content content) {
-      User user = authenticationService.getLoggedInUser();
+      User user = authenticationService.getPrincipal();
 
       return content.getReactions().stream()
             .map(Reaction::getUser)

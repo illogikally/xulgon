@@ -39,14 +39,14 @@ public class MessageService {
       User user = userRepository.findById(userId)
             .orElseThrow(RuntimeException::new);
 
-      return messageRepository.findAllByUsers(user, authService.getLoggedInUser())
+      return messageRepository.findAllByUsers(user, authService.getPrincipal())
             .stream()
             .map(messageMapper::toDto)
             .collect(Collectors.toList());
 
    }
 
-   public User getLoggedInUser(Principal principal) {
+   public User getPrincipal(Principal principal) {
       return userRepository.findByUsername(principal.getName())
             .orElseThrow(RuntimeException::new);
    }
@@ -56,11 +56,11 @@ public class MessageService {
    }
 
    public Integer getUnreadCount() {
-      return messageRepository.countUnread(this.authService.getLoggedInUser().getId());
+      return messageRepository.countUnread(this.authService.getPrincipal().getId());
    }
 
    public List<ConversationNotifDto> getLatest() {
-      return messageRepository.getRecentConversations(authService.getLoggedInUser().getId())
+      return messageRepository.getRecentConversations(authService.getPrincipal().getId())
             .stream()
             .map(this::conversationNotifMapper)
             .collect(Collectors.toList());
@@ -75,7 +75,7 @@ public class MessageService {
    }
 
    private ConversationNotifDto conversationNotifMapper(Message message) {
-      User participant = message.getSender().equals(authService.getLoggedInUser())
+      User participant = message.getSender().equals(authService.getPrincipal())
             ? message.getReceiver() : message.getSender();
 
       return ConversationNotifDto.builder()
