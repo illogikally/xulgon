@@ -1,9 +1,12 @@
 package me.min.xulgon.config;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AllArgsConstructor;
+import me.min.xulgon.repository.InMemoryRequestRepository;
 import me.min.xulgon.security.JwtAuthenticationFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.BeanIds;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
@@ -15,16 +18,23 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.util.List;
 
 
+@Configuration
 @EnableWebSecurity
 @AllArgsConstructor
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
    private final JwtAuthenticationFilter jwtAuthenticationFilter;
    private final UserDetailsService userDetailsService;
+   private final ObjectMapper mapper;
 
    @Bean(BeanIds.AUTHENTICATION_MANAGER)
    @Override
@@ -36,6 +46,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
    protected void configure(HttpSecurity http) throws Exception {
       http.cors().and().csrf().disable()
             .oauth2Login()
+            .authorizationEndpoint()
+            .authorizationRequestRepository(new InMemoryRequestRepository())
+            .and()
             .successHandler(this::successHandler)
             .and()
             .authorizeRequests()
@@ -60,10 +73,23 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
       http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
    }
 
+   @Bean
+   public CorsConfigurationSource corsConfigurationSource() {
+      CorsConfiguration config = new CorsConfiguration();
+      config.setAllowedMethods(List.of("*"));
+      config.setAllowedOrigins(List.of("*"));
+      config.setAllowedHeaders(List.of("*"));
+
+      UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+      source.registerCorsConfiguration("/**", config);
+      return source;
+   }
+
    private void successHandler(HttpServletRequest request,
                                HttpServletResponse response,
-                               Authentication authentication) {
-      System.out.println(authentication);
+                               Authentication authentication) throws IOException {
+      System.out.println(mapper.writeValueAsString(authentication));
+      response.getWriter().write("{\"bing\": \"chilling\"}");
    }
 
    @Autowired
