@@ -38,6 +38,8 @@ public class AuthenticationController {
 
    @PostMapping("/token/refresh")
    public ResponseEntity<AuthenticationResponse> refreshToken(@RequestBody RefreshTokenDto refreshTokenDto) {
-      return ResponseEntity.ok(authenticationService.refreshToken(refreshTokenDto));
+      var kk = authenticationService.refreshToken(refreshTokenDto);
+      System.out.println(kk);
+      return ResponseEntity.ok(kk);
    }
 }

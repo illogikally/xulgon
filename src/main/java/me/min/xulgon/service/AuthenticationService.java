@@ -14,10 +14,13 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
+import java.util.Map;
 
 
 @Service
@@ -53,11 +56,12 @@ public class AuthenticationService {
    private AuthenticationResponse authenticationResponseMapper(User user,
                                                                String token,
                                                                String refreshToken) {
+      var exp = Instant.now().plusMillis(jwtProvider.getJwtExpirationInMillis()).toEpochMilli();
       return AuthenticationResponse.builder()
             .token(token)
             .refreshToken(refreshToken)
             .userId(user.getId())
-            .expiresAt(Instant.now().plusMillis(jwtProvider.getJwtExpirationInMillis()))
+            .expiresAt(exp)
             .profileId(user.getUserPage().getId())
             .username(user.getUsername())
             .userFullName(user.getFullName())
@@ -70,6 +74,8 @@ public class AuthenticationService {
             .id(null)
             .username(registerDto.getUsername())
             .password(passwordEncoder.encode(registerDto.getPassword()))
+            .provider(Provider.LOCAL)
+            .email(registerDto.getEmail())
             .firstName(registerDto.getFirstName())
             .lastName(registerDto.getLastName())
             .createdAt(Instant.now())
@@ -95,6 +101,27 @@ public class AuthenticationService {
             .type(PageType.PROFILE)
             .name(user.getFullName())
             .build());
+   }
+
+   public void createUser(OAuth2AuthenticationToken auth) {
+      String name = auth.getName();
+      OAuth2User principle = auth.getPrincipal();
+      Provider provider = Provider.valueOf(auth.getAuthorizedClientRegistrationId());
+
+      User user = User.builder()
+            .id(null)
+            .username(null)
+            .password(null)
+            .firstName(principle.getAttribute("given_name"))
+            .lastName(principle.getAttribute("family_name"))
+            .createdAt(Instant.now())
+            .provider(provider)
+            .email(principle.getAttribute("email"))
+            .enabled(true)
+            .fullName(principle.getAttribute("name"))
+            .build();
+
+
    }
 
    @Transactional(readOnly = true)

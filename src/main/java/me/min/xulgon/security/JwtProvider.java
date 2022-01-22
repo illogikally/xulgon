@@ -22,7 +22,7 @@ public class JwtProvider {
    private UserDetailsService userDetailsService;
    @Value("${jwt.signing-key}")
    private String key;
-   @Value("${jwt.expiration-time}")
+   @Value("${jwt.expiration-time-in-millis}")
    private Long jwtExpirationInMillis;
 
    public String generateToken(Authentication authentication) {
@@ -65,7 +65,7 @@ public class JwtProvider {
    }
 
    public Long getJwtExpirationInMillis() {
-     return jwtExpirationInMillis;
+      return jwtExpirationInMillis;
    }
 }
 

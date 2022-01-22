@@ -32,6 +32,7 @@ import java.util.List;
 @EnableWebSecurity
 @AllArgsConstructor
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
+
    private final JwtAuthenticationFilter jwtAuthenticationFilter;
    private final UserDetailsService userDetailsService;
    private final ObjectMapper mapper;
@@ -55,6 +56,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
             .antMatchers(
                   "/api/authentication/**",
                   "/oauth2/**",
+                  "/api/users/existed",
                   "/login/**",
                   "/ws/**",
                   "/contents/**")
@@ -89,8 +91,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
    private void successHandler(HttpServletRequest request,
                                HttpServletResponse response,
                                Authentication authentication) throws IOException {
-      System.out.println(mapper.writeValueAsString(authentication));
-      response.getWriter().write("{\"bing\": \"chilling\"}");
+      response.getWriter().write(mapper.writeValueAsString(authentication));
    }
 
    @Autowired

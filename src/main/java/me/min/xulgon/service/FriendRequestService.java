@@ -31,7 +31,6 @@ public class FriendRequestService {
    public void save(Long requesteeId) {
       User requestee = userRepository.findById(requesteeId)
             .orElseThrow(() -> new RuntimeException("User not found"));
-      log.error("Requestee " + requesteeId + "/// resutertet " + authenticationService.getPrincipal().getId() );
       friendRequestRepository.save(FriendRequest.builder()
             .requester(authenticationService.getPrincipal())
             .requestee(requestee)

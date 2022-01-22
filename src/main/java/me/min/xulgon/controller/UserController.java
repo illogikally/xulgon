@@ -11,6 +11,7 @@ import me.min.xulgon.repository.UserRepository;
 import me.min.xulgon.service.*;
 import me.min.xulgon.util.LimPageable;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.repository.query.Param;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -94,5 +95,13 @@ public class UserController {
    public ResponseEntity<Void> unfollow(@PathVariable Long id) {
       userService.unfollow(id);
       return new ResponseEntity<>(HttpStatus.OK);
+   }
+
+   @GetMapping("/existed")
+   public ResponseEntity<Boolean> existed(@RequestParam("username") String username) {
+      log.error(username);
+      var ok = userService.isUserExisted(username);
+      log.error(ok.toString());
+      return ResponseEntity.ok(ok);
    }
 }

@@ -19,6 +19,9 @@ public class User {
    private String firstName;
    private String lastName;
    private String fullName;
+   private String email;
+   private Provider provider;
+   private String oauth2Name;
    private Instant createdAt;
    private Integer unreadMessageCount;
    private Integer unreadNotificationCount;

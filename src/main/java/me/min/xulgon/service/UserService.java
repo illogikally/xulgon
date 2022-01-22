@@ -81,4 +81,7 @@ public class UserService {
       followRepository.deleteByUserAndPage(authService.getPrincipal(), user.getUserPage());
    }
 
+   public Boolean isUserExisted(String username) {
+      return userRepository.findByUsername(username).isPresent();
+   }
 }
