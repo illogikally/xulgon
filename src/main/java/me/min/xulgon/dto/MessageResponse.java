@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.Instant;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -14,6 +16,7 @@ public class MessageResponse {
    private String message;
    private String createdAgo;
    private Long userId;
+   private Long createdAt;
    private String userAvatarUrl;
    private Boolean isRead;
    private String username;

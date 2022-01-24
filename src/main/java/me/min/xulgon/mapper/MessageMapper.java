@@ -34,6 +34,7 @@ public class MessageMapper {
             .isRead(message.getIsRead())
             .conversationId(message.getConversation().getId())
             .createdAgo(MappingUtil.getCreatedAgo(message.getCreatedAt()))
+            .createdAt(message.getCreatedAt().toEpochMilli())
             .userId(message.getSender().getId())
             .message(message.getMessage())
             .build();

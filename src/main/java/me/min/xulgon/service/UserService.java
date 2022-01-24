@@ -1,6 +1,7 @@
 package me.min.xulgon.service;
 
 import lombok.AllArgsConstructor;
+import me.min.xulgon.dto.AuthenticationResponse;
 import me.min.xulgon.dto.GroupResponse;
 import me.min.xulgon.dto.PostResponse;
 import me.min.xulgon.dto.UserDto;
@@ -10,6 +11,7 @@ import me.min.xulgon.mapper.UserMapper;
 import me.min.xulgon.model.*;
 import me.min.xulgon.repository.*;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -83,5 +85,10 @@ public class UserService {
 
    public Boolean isUserExisted(String username) {
       return userRepository.findByUsername(username).isPresent();
+   }
+
+   public Boolean isUserExisted(String oauth2Name, Provider provider) {
+      return userRepository.findByOauth2NameAndProvider(oauth2Name, provider)
+            .isPresent();
    }
 }

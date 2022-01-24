@@ -24,7 +24,6 @@ public class UserPage extends Page {
    private User user;
    @OneToOne
    private Photo avatar;
-
    private String workplace;
    private String school;
    private String hometown;

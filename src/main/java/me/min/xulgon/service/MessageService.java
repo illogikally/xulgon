@@ -9,7 +9,9 @@ import me.min.xulgon.mapper.MessageMapper;
 import me.min.xulgon.mapper.UserMapper;
 import me.min.xulgon.model.Message;
 import me.min.xulgon.model.User;
+import me.min.xulgon.model.UserPage;
 import me.min.xulgon.repository.MessageRepository;
+import me.min.xulgon.repository.UserPageRepository;
 import me.min.xulgon.repository.UserRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,6 +30,7 @@ public class MessageService {
    private final AuthenticationService authService;
    private final UserRepository userRepository;
    private final MessageMapper messageMapper;
+   private final UserPageRepository userPageRepository;
 
 
 
@@ -84,6 +87,7 @@ public class MessageService {
             .user(UserBasicDto.builder()
                   .avatarUrl(participant.getUserPage().getAvatar().getUrl())
                   .username(participant.getFullName())
+                  .profileId(participant.getUserPage().getId())
                   .id(participant.getId())
                   .build())
             .build();

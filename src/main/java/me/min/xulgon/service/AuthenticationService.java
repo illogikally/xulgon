@@ -56,7 +56,7 @@ public class AuthenticationService {
    private AuthenticationResponse authenticationResponseMapper(User user,
                                                                String token,
                                                                String refreshToken) {
-      var exp = Instant.now().plusMillis(jwtProvider.getJwtExpirationInMillis()).toEpochMilli();
+      Long exp = Instant.now().plusMillis(jwtProvider.getJwtExpirationInMillis()).toEpochMilli();
       return AuthenticationResponse.builder()
             .token(token)
             .refreshToken(refreshToken)
@@ -82,9 +82,11 @@ public class AuthenticationService {
             .enabled(true)
             .fullName(registerDto.getLastName() + " " + registerDto.getFirstName())
             .build();
+      saveUser(user);
+   }
 
+   private User saveUser(User user) {
       user = userRepository.save(user);
-
       Photo avatar = Photo.builder()
             .url("http://localhost:8080/contents/default-avatar.png")
             .createdAt(Instant.now())
@@ -101,27 +103,44 @@ public class AuthenticationService {
             .type(PageType.PROFILE)
             .name(user.getFullName())
             .build());
+
+      return user;
    }
 
-   public void createUser(OAuth2AuthenticationToken auth) {
-      String name = auth.getName();
+   private User createGoogleUser(OAuth2AuthenticationToken auth) {
       OAuth2User principle = auth.getPrincipal();
-      Provider provider = Provider.valueOf(auth.getAuthorizedClientRegistrationId());
 
       User user = User.builder()
             .id(null)
-            .username(null)
+            .username(auth.getName() + "google")
             .password(null)
             .firstName(principle.getAttribute("given_name"))
             .lastName(principle.getAttribute("family_name"))
             .createdAt(Instant.now())
-            .provider(provider)
+            .provider(Provider.GOOGLE)
             .email(principle.getAttribute("email"))
             .enabled(true)
             .fullName(principle.getAttribute("name"))
             .build();
+      return saveUser(user);
+   }
 
+   public User createUserFromOauth2(OAuth2AuthenticationToken auth) {
+      switch (auth.getAuthorizedClientRegistrationId()) {
+         case "google": return createGoogleUser(auth);
+         default: break;
+      }
+      return null;
+   }
 
+   public AuthenticationResponse oauth2Login(OAuth2AuthenticationToken auth) {
+      String oauth2Name = auth.getName();
+      Provider provider = Provider.valueOf(auth.getAuthorizedClientRegistrationId());
+      User user = userRepository.findByOauth2NameAndProvider(oauth2Name, provider)
+            .orElse(saveUser(createUserFromOauth2(auth)));
+
+      String authToken = jwtProvider.generateTokenWithUserName(user.getUsername());
+      return null;
    }
 
    @Transactional(readOnly = true)

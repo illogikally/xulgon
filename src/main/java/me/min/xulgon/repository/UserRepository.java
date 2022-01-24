@@ -1,9 +1,11 @@
 package me.min.xulgon.repository;
 
+import me.min.xulgon.model.Provider;
 import me.min.xulgon.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import javax.swing.text.html.Option;
 import java.util.List;
 import java.util.Optional;
 
@@ -12,4 +14,5 @@ public interface UserRepository extends JpaRepository<User, Long> {
    Optional<User> findByUsername(String username);
    List<User> findAllByFullNameContains(String name);
    Optional<User> findByEmail(String email);
+   Optional<User> findByOauth2NameAndProvider(String name, Provider provider);
 }

@@ -8,5 +8,6 @@ import lombok.Data;
 public class UserBasicDto {
    private Long id;
    private String username;
+   private Long profileId;
    private String avatarUrl;
 }
