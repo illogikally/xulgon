@@ -2,17 +2,23 @@ package me.min.xulgon.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
 import me.min.xulgon.repository.InMemoryRequestRepository;
 import me.min.xulgon.security.JwtAuthenticationFilter;
+import me.min.xulgon.service.AuthenticationService;
+import me.min.xulgon.service.LoginService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.BeanIds;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -34,9 +40,11 @@ import java.util.List;
 @AllArgsConstructor
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
-   private final JwtAuthenticationFilter jwtAuthenticationFilter;
-   private final UserDetailsService userDetailsService;
-   private final ObjectMapper mapper;
+   private JwtAuthenticationFilter jwtAuthenticationFilter;
+   private UserDetailsService userDetailsService;
+   private ObjectMapper mapper;
+   private AuthenticationService authService;
+
 
    @Bean(BeanIds.AUTHENTICATION_MANAGER)
    @Override
@@ -46,7 +54,12 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
    @Override
    protected void configure(HttpSecurity http) throws Exception {
-      http.cors().and().csrf().disable()
+      http.cors()
+            .and()
+            .csrf().disable()
+            .httpBasic().disable()
+            .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+            .and()
             .oauth2Login()
             .authorizationEndpoint()
             .authorizationRequestRepository(new InMemoryRequestRepository())
@@ -93,8 +106,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                                HttpServletResponse response,
                                Authentication authentication) throws IOException {
 
-
-      response.getWriter().write(mapper.writeValueAsString(authentication));
+      var auth = (OAuth2AuthenticationToken) authentication;
+      var res = authService.oauth2Login(auth);
+      response.getWriter().write(mapper.writeValueAsString(res));
    }
 
    @Autowired

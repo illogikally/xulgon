@@ -3,6 +3,7 @@ package me.min.xulgon.service;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.mapstruct.ap.shaded.freemarker.template.utility.StringUtil;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
@@ -16,17 +17,15 @@ import java.nio.file.Paths;
 import java.util.UUID;
 
 @Service
-@AllArgsConstructor
 @Slf4j
 public class StorageService {
 
-   private final String DIR_PATH = "/mnt/c/Storage";
+   @Value("${resource.path}")
+   private String DIR_PATH;
 
    public String store(MultipartFile photo) {
       String name = UUID.randomUUID().toString();
       String extension = StringUtils.getFilenameExtension(photo.getOriginalFilename());
-//      String originalName = photo.getOriginalFilename() == null ? "" : photo.getOriginalFilename();
-//      String extension = originalName.replaceAll(".+(?=\\.)", "");
       String fileName = name + "." + extension;
       Path path = Paths.get(DIR_PATH, fileName);
       try (OutputStream os = Files.newOutputStream(path)) {
@@ -38,7 +37,7 @@ public class StorageService {
    }
 
    public void delete(String name) {
-      File file = new File(DIR_PATH + name);
+      File file = new File(Paths.get(DIR_PATH, name).toString());
       if (!file.delete()) {
          throw new RuntimeException("Can't delete file");
       }

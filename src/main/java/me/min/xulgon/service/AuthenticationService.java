@@ -1,59 +1,34 @@
 package me.min.xulgon.service;
 
 import lombok.AllArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import me.min.xulgon.dto.*;
 import me.min.xulgon.model.*;
 import me.min.xulgon.repository.PhotoRepository;
 import me.min.xulgon.repository.UserPageRepository;
-import me.min.xulgon.repository.VerificationTokenRepository;
 import me.min.xulgon.repository.UserRepository;
 import me.min.xulgon.security.JwtProvider;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
-import java.util.Map;
+import java.util.Optional;
 
 
 @Service
 @AllArgsConstructor
 @Transactional
-@Slf4j
 public class AuthenticationService {
    private final JwtProvider jwtProvider;
-
    private final RefreshTokenService refreshTokenService;
    private final PhotoRepository photoRepository;
-   private final AuthenticationManager authenticationManager;
-   private final PasswordEncoder passwordEncoder;
    private final UserRepository userRepository;
-   private final VerificationTokenRepository verificationTokenRepository;
    private final UserPageRepository userPageRepository;
 
-   public AuthenticationResponse login(AuthenticationRequest authenticationRequest) {
-      Authentication authentication = authenticationManager.authenticate(
-            new UsernamePasswordAuthenticationToken(authenticationRequest.getUsername(),
-                  authenticationRequest.getPassword())
-      );
-      SecurityContextHolder.getContext().setAuthentication(authentication);
-      String token = jwtProvider.generateToken(authentication);
-      User principal = getPrincipal();
-      return authenticationResponseMapper(
-            principal,
-            token,
-            refreshTokenService.generateRefreshToken().getToken()
-      );
-   }
 
-   private AuthenticationResponse authenticationResponseMapper(User user,
+   public AuthenticationResponse authenticationResponseMapper(User user,
                                                                String token,
                                                                String refreshToken) {
       Long exp = Instant.now().plusMillis(jwtProvider.getJwtExpirationInMillis()).toEpochMilli();
@@ -61,31 +36,18 @@ public class AuthenticationService {
             .token(token)
             .refreshToken(refreshToken)
             .userId(user.getId())
-            .expiresAt(exp)
             .profileId(user.getUserPage().getId())
+            .firstName(user.getFirstName())
+            .lastName(user.getLastName())
+            .expiresAt(exp)
             .username(user.getUsername())
             .userFullName(user.getFullName())
             .avatarUrl(user.getUserPage().getAvatar().getUrl())
             .build();
    }
 
-   public void register(RegisterDto registerDto) {
-      User user = User.builder()
-            .id(null)
-            .username(registerDto.getUsername())
-            .password(passwordEncoder.encode(registerDto.getPassword()))
-            .provider(Provider.LOCAL)
-            .email(registerDto.getEmail())
-            .firstName(registerDto.getFirstName())
-            .lastName(registerDto.getLastName())
-            .createdAt(Instant.now())
-            .enabled(true)
-            .fullName(registerDto.getLastName() + " " + registerDto.getFirstName())
-            .build();
-      saveUser(user);
-   }
 
-   private User saveUser(User user) {
+   public User saveUser(User user) {
       user = userRepository.save(user);
       Photo avatar = Photo.builder()
             .url("http://localhost:8080/contents/default-avatar.png")
@@ -97,22 +59,23 @@ public class AuthenticationService {
             .build();
 
       avatar = photoRepository.save(avatar);
-      userPageRepository.save(UserPage.builder()
+      UserPage page = userPageRepository.save(UserPage.builder()
             .user(user)
             .avatar(avatar)
             .type(PageType.PROFILE)
             .name(user.getFullName())
             .build());
 
+      user.setUserPage(page);
       return user;
    }
 
-   private User createGoogleUser(OAuth2AuthenticationToken auth) {
+   private User googleOauth2UserMapper(OAuth2AuthenticationToken auth) {
       OAuth2User principle = auth.getPrincipal();
 
-      User user = User.builder()
+      return User.builder()
             .id(null)
-            .username(auth.getName() + "google")
+            .username(auth.getName() + "GOOGLE")
             .password(null)
             .firstName(principle.getAttribute("given_name"))
             .lastName(principle.getAttribute("family_name"))
@@ -122,25 +85,28 @@ public class AuthenticationService {
             .enabled(true)
             .fullName(principle.getAttribute("name"))
             .build();
-      return saveUser(user);
    }
 
    public User createUserFromOauth2(OAuth2AuthenticationToken auth) {
+      System.out.println("CREATING NEW USER");
       switch (auth.getAuthorizedClientRegistrationId()) {
-         case "google": return createGoogleUser(auth);
-         default: break;
+         case "google": return googleOauth2UserMapper(auth);
+         default: throw new RuntimeException("Oauth2 Provider not found!");
       }
-      return null;
    }
 
    public AuthenticationResponse oauth2Login(OAuth2AuthenticationToken auth) {
-      String oauth2Name = auth.getName();
-      Provider provider = Provider.valueOf(auth.getAuthorizedClientRegistrationId());
-      User user = userRepository.findByOauth2NameAndProvider(oauth2Name, provider)
-            .orElse(saveUser(createUserFromOauth2(auth)));
-
+      Provider provider = Provider.valueOf(auth.getAuthorizedClientRegistrationId().toUpperCase());
+      String oauth2Name = auth.getName() + provider;
+      User user = userRepository.findByUsername(oauth2Name)
+            .orElseGet(() -> saveUser(createUserFromOauth2(auth)));
       String authToken = jwtProvider.generateTokenWithUserName(user.getUsername());
-      return null;
+
+      return authenticationResponseMapper(
+              user,
+              authToken,
+              refreshTokenService.generateRefreshToken().getToken()
+      );
    }
 
    @Transactional(readOnly = true)

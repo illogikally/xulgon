@@ -23,9 +23,10 @@ public class UserDetailsServiceImpl implements UserDetailsService {
    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
       User user = userRepository.findByUsername(username)
             .orElseThrow(() -> new RuntimeException("User not found."));
+      String password = user.getPassword() == null ? "oauth2User" : user.getPassword();
       return new org.springframework.security.core.userdetails.User(
             user.getUsername(),
-            user.getPassword(),
+            password,
             user.getEnabled(),
             true,
             true,

@@ -9,6 +9,11 @@
       "name": "jwt.expiration-time-in-millis",
       "type": "java.lang.String",
       "description": "Description for jwt.expiration-time-in-millis."
+    },
+    {
+      "name": "resource.path",
+      "type": "java.lang.String",
+      "description": "Description for resource.path."
     }
   ]
 }

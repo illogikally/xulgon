@@ -16,6 +16,8 @@ public class AuthenticationResponse {
    private String refreshToken;
    private Long expiresAt;
    private String userFullName;
+   private String firstName;
+   private String lastName;
    private String username;
    private Long userId;
    private Long profileId;

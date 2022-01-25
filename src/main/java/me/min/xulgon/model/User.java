@@ -20,6 +20,7 @@ public class User {
    private String lastName;
    private String fullName;
    private String email;
+   @Enumerated(value = EnumType.STRING)
    private Provider provider;
    private String oauth2Name;
    private Instant createdAt;
