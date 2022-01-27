@@ -51,11 +51,18 @@ public class PostService {
       UserPage userPage = userPageRepository.findById(profileId)
             .orElseThrow(() -> new RuntimeException("Profile not found"));
 
-      List<Post> posts = postRepository.findAllByPageOrderByCreatedAtDesc(userPage, pageable);
+//      List<Post> posts = postRepository.findAllByPageOrderByCreatedAtDesc(userPage, pageable);
+      List<Post> posts = postRepository.getProfilePosts(
+            userPage.getId(),
+            authService.getPrincipal().getId(),
+            pageable.getPageSize(),
+            pageable.getOffset()
+      );
+
       Privacy privacy = getPrivacy(userPage.getUser());
 
       return posts.stream()
-            .filter(this::privacyFilter)
+//            .filter(this::privacyFilter)
             .peek(post -> post.setPhotos(
                   post.getPhotos()
                         .stream()

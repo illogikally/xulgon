@@ -34,24 +34,30 @@ public class FriendshipService {
       )
             .orElseThrow(() -> new RuntimeException("Friendresiq not found"));
 
+      User principal = authenticationService.getPrincipal();
       friendshipRepository.save(Friendship.builder()
             .createdAt(Instant.now())
             .userA(request.getRequestee())
             .userB(request.getRequester())
             .build()
       );
-      friendRequestRepository.deleteById(request.getId());
-      followRepository.save(Follow.builder()
-            .page(requester.getUserPage())
-            .createdAt(Instant.now())
-            .user(authenticationService.getPrincipal())
-            .build());
 
-      followRepository.save(Follow.builder()
-            .page(authenticationService.getPrincipal().getUserPage())
-            .createdAt(Instant.now())
-            .user(requester)
-            .build());
+      friendRequestRepository.deleteById(request.getId());
+      followRepository.findByUserAndPage(principal, requester.getUserPage())
+            .orElseGet(() -> followRepository.save(Follow.builder()
+                  .page(requester.getUserPage())
+                  .createdAt(Instant.now())
+                  .user(principal)
+                  .build())
+            );
+
+      followRepository.findByUserAndPage(requester, principal.getUserPage())
+            .orElseGet(() -> followRepository.save(Follow.builder()
+                  .page(principal.getUserPage())
+                  .createdAt(Instant.now())
+                  .user(requester)
+                  .build())
+            );
    }
 
    public void delete(Long userId) {

@@ -88,10 +88,11 @@ public class AuthenticationService {
    }
 
    public User createUserFromOauth2(OAuth2AuthenticationToken auth) {
-      System.out.println("CREATING NEW USER");
       switch (auth.getAuthorizedClientRegistrationId()) {
-         case "google": return googleOauth2UserMapper(auth);
-         default: throw new RuntimeException("Oauth2 Provider not found!");
+         case "google":
+            return googleOauth2UserMapper(auth);
+         default:
+            throw new RuntimeException("Oauth2 Provider not found!");
       }
    }
 

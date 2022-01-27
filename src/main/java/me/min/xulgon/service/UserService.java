@@ -9,10 +9,12 @@ import me.min.xulgon.mapper.PostMapper;
 import me.min.xulgon.mapper.UserMapper;
 import me.min.xulgon.model.*;
 import me.min.xulgon.repository.*;
+import me.min.xulgon.util.Util;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.text.MessageFormat;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -66,11 +68,11 @@ public class UserService {
    @Transactional(readOnly = true)
    public List<PostResponse> getNewsFeed(Pageable pageable) {
       User principal = authService.getPrincipal();
-      return postRepository.getUserNewsFeed(principal.getId(),
-                  pageable.getPageSize(),
-                  pageable.getOffset())
+      return postRepository.getUserNewsFeed(
+            principal.getId(),
+            pageable.getPageSize(),
+            pageable.getOffset())
             .stream()
-            .filter(postService::privacyFilter)
             .map(postMapper::toDto)
             .collect(Collectors.toList());
    }
@@ -81,6 +83,7 @@ public class UserService {
       followRepository.deleteByUserAndPage(authService.getPrincipal(), user.getUserPage());
    }
 
+   @Transactional(readOnly = true)
    public Boolean isUserExisted(String username) {
       return userRepository.findByUsername(username).isPresent();
    }
