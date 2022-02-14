@@ -46,7 +46,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
          "                       AND c.user_id IN (f.usera_id, f.userb_id) " +
          "              )" +
          "         ) " +
-         "     )" +
+         "    )" +
 
          "ORDER BY c.created_at DESC " +
          "LIMIT :offset, :size")
@@ -81,7 +81,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
          "                       AND c.user_id IN (f.usera_id, f.userb_id) " +
          "              )" +
          "         ) " +
-         "     )" +
+         "    )" +
          "    AND c.user_id != :userId " +
          "ORDER BY c.created_at DESC " +
          "LIMIT :offset, :size")

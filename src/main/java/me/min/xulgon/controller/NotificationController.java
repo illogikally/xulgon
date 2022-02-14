@@ -1,7 +1,9 @@
 package me.min.xulgon.controller;
 
 import lombok.AllArgsConstructor;
+import me.min.xulgon.dto.CommentNotificationDto;
 import me.min.xulgon.dto.NotificationDto;
+import me.min.xulgon.model.Notification;
 import me.min.xulgon.service.NotificationService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -27,6 +29,4 @@ public class NotificationController {
       notificationService.read(id);
       return new ResponseEntity<>(HttpStatus.OK);
    }
-
-
 }

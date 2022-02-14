@@ -6,6 +6,7 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 import org.jetbrains.annotations.NotNull;
+import org.springframework.context.annotation.Lazy;
 
 import javax.persistence.*;
 import java.time.Instant;
@@ -36,11 +37,10 @@ public class Content {
    @ManyToOne(fetch = FetchType.LAZY)
    @NotNull
    private User user;
-   @OneToMany(mappedBy = "content", cascade = CascadeType.ALL)
+   @OneToMany(mappedBy = "content", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
    private List<Reaction> reactions;
-   @OneToMany(mappedBy = "parentContent", cascade = CascadeType.ALL)
+   @OneToMany(mappedBy = "parentContent", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
    private List<Comment> comments;
-   @OneToMany(mappedBy = "parentContent", cascade = CascadeType.ALL)
+   @OneToMany(mappedBy = "parentContent", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
    private List<Photo> photos;
-
 }

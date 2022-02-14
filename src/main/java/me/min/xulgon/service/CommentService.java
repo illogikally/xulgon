@@ -55,21 +55,47 @@ public class CommentService {
       }
 
       modifyParentsCommentCount(comment);
+      createCommentNotification(comment);
       return commentMapper.toDto(comment);
    }
 
-   private void createNotification(Comment comment) {
+   private void createCommentNotification(Comment comment) {
       User principal = authService.getPrincipal();
-      if (!comment.getParentContent().getUser().equals(principal)) {
-         ReplyNotification notification = ReplyNotification.builder()
-               .actor(principal)
+      Post post = comment.getPost();
+      if (!post.getUser().equals(principal)) {
+         Notification notification = Notification
+               .builder()
                .createdAt(Instant.now())
-               .recipient(comment.getParentContent().getUser())
-               .isRead(false)
                .type(NotificationType.COMMENT)
+               .isRead(false)
+               .page(comment.getPage())
+               .actor(principal)
+               .recipient(post.getUser())
+               .recipientContent(post)
+               .actorContent(comment)
                .build();
 
          notification = notificationRepository.save(notification);
+         simpMessagingTemplate.convertAndSendToUser(
+               comment.getParentContent().getUser().getUsername(),
+               "/queue/notification",
+               notificationMapper.toDto(notification));
+
+      }
+
+   }
+   private void createNotification(Comment comment) {
+      User principal = authService.getPrincipal();
+      if (!comment.getParentContent().getUser().equals(principal)) {
+//         ReplyNotification notification = ReplyNotification.builder()
+//               .actor(principal)
+//               .createdAt(Instant.now())
+//               .recipient(comment.getParentContent().getUser())
+//               .isRead(false)
+//               .type(NotificationType.COMMENT)
+//               .build();
+//
+//         notification = notificationRepository.save(notification);
 //         simpMessagingTemplate.convertAndSendToUser(
 //               comment.getParentContent().getUser().getUsername(),
 //               "/queue/notification",
@@ -110,6 +136,5 @@ public class CommentService {
             .filter(blockService::filter)
             .map(commentMapper::toDto)
             .collect(Collectors.toList());
-
    }
 }

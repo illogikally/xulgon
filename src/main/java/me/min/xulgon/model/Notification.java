@@ -13,9 +13,10 @@ import java.time.Instant;
 @NoArgsConstructor
 @SuperBuilder
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 public class Notification {
    @Id
-   @GeneratedValue(strategy = GenerationType.IDENTITY)
+   @GeneratedValue
    @EqualsAndHashCode.Include
    private Long id;
    private Instant createdAt;
@@ -28,4 +29,8 @@ public class Notification {
    private User actor;
    @ManyToOne
    private User recipient;
+   @ManyToOne
+   private Content recipientContent;
+   @ManyToOne
+   private Content actorContent;
 }

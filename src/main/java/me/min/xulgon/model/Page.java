@@ -15,7 +15,7 @@ import java.util.Optional;
 @Inheritance(strategy = InheritanceType.JOINED)
 public class Page {
    @Id
-   @GeneratedValue(strategy = GenerationType.IDENTITY)
+   @GeneratedValue
    private Long id;
    private String name;
    @Enumerated(value = EnumType.STRING)

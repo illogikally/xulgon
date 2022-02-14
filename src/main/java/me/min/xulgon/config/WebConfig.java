@@ -9,18 +9,20 @@ import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
+import java.text.MessageFormat;
+
 @Configuration
 @EnableWebMvc
 public class WebConfig implements WebMvcConfigurer {
 
-//   @Value("${resource.path}")
-//   private String resourcePath;
+   @Value("${resource.path}")
+   private String resourcePath;
 
    @Override
    public void addResourceHandlers(ResourceHandlerRegistry registry) {
+      String path = MessageFormat.format("file:/{0}/", resourcePath);
       registry.addResourceHandler("/contents/**")
-//                  .addResourceLocations("file:" + resourcePath);
-              .addResourceLocations("file:/C://Storage/");
+              .addResourceLocations(path);
 
 //      registry.addResourceHandler("/contents/**")
 //            .addResourceLocations("file:/usr/local/Storage/");

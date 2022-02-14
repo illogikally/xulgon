@@ -1,6 +1,7 @@
 package me.min.xulgon.service;
 
 import lombok.AllArgsConstructor;
+import me.min.xulgon.dto.CommentNotificationDto;
 import me.min.xulgon.dto.NotifCountDto;
 import me.min.xulgon.dto.NotificationDto;
 import me.min.xulgon.mapper.NotificationMapper;
@@ -29,12 +30,11 @@ public class NotificationService {
    }
 
    public List<NotificationDto> get() {
-      return List.of(NotificationDto.builder().build());
-//      return notifRepository
-//            .findAllByRecipientOrderByCreatedAtDesc(authService.getPrincipal())
-//            .stream()
-//            .map(notificationMapper::toDto)
-//            .collect(Collectors.toList());
+      return notifRepository
+            .findAllByRecipientOrderByCreatedAtDesc(authService.getPrincipal())
+            .stream()
+            .map(notificationMapper::toDto)
+            .collect(Collectors.toList());
    }
 
    public void read(Long id) {

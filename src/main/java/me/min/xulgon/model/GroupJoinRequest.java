@@ -15,7 +15,7 @@ import java.time.Instant;
 @Builder
 public class GroupJoinRequest {
    @Id
-   @GeneratedValue(strategy = GenerationType.IDENTITY)
+   @GeneratedValue
    private Long id;
    private Instant createdAt;
 

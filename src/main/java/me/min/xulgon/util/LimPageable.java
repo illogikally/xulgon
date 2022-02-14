@@ -7,8 +7,9 @@ import org.springframework.data.domain.Sort;
 public class LimPageable implements Pageable {
    private final Integer size;
    private final Integer offset;
+   private final Integer until;
 
-   public LimPageable(Integer size, Integer offset) {
+   public LimPageable(Integer size, Integer offset, Integer until) {
       offset = offset == null ? 0 : offset;
       size = size == null ? Integer.MAX_VALUE : size;
       if (offset < 0 ) {
@@ -21,19 +22,12 @@ public class LimPageable implements Pageable {
 
       this.size = size;
       this.offset = offset;
+      this.until = until;
    }
 
    @Override
    public int getPageNumber() {
       return offset / size;
-   }
-
-   @Override
-   public String toString() {
-      return "LimPageable{" +
-            "size=" + size +
-            ", offset=" + offset +
-            '}';
    }
 
    @Override
@@ -44,6 +38,10 @@ public class LimPageable implements Pageable {
    @Override
    public long getOffset() {
       return offset;
+   }
+
+   public Integer getUntil() {
+      return until;
    }
 
    @NotNull
