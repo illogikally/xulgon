@@ -4,11 +4,13 @@ import lombok.AllArgsConstructor;
 import me.min.xulgon.dto.CommentRequest;
 import me.min.xulgon.dto.CommentResponse;
 import me.min.xulgon.dto.PhotoViewResponse;
+import me.min.xulgon.dto.UserBasicDto;
 import me.min.xulgon.model.*;
 import me.min.xulgon.repository.ContentRepository;
 import me.min.xulgon.repository.PageRepository;
 import me.min.xulgon.repository.PostRepository;
 import me.min.xulgon.service.AuthenticationService;
+import org.springframework.aop.scope.ScopedObject;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -51,6 +53,7 @@ public class CommentMapper {
 
    public CommentResponse toDto(Comment comment) {
       if (comment == null) return null;
+
 
       return CommentResponse.builder()
             .id(comment.getId())

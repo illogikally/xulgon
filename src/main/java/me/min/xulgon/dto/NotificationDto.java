@@ -12,6 +12,7 @@ public class NotificationDto {
    private String createdAgo;
    private NotificationType type;
    private Long actorId;
+   private Integer actorCount;
    private String actorFullName;
    private String actorAvatarUrl;
    private Long actorContentId;

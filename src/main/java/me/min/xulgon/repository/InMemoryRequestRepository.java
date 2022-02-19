@@ -14,7 +14,6 @@ public class InMemoryRequestRepository implements AuthorizationRequestRepository
    @Override
    public OAuth2AuthorizationRequest loadAuthorizationRequest(HttpServletRequest request) {
       String state = request.getParameter("state");
-      System.out.println("called load" + state);
       return state == null ? null : removeAuthorizationRequest(request);
    }
 
@@ -23,7 +22,6 @@ public class InMemoryRequestRepository implements AuthorizationRequestRepository
                                         HttpServletRequest request,
                                         HttpServletResponse response) {
       String state = authorizationRequest.getState();
-      System.out.println("called save" + state);
       cache.put(state, authorizationRequest);
    }
 

@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import me.min.xulgon.dto.*;
 import me.min.xulgon.mapper.PhotoViewMapper;
 import me.min.xulgon.mapper.UserPageMapper;
+import me.min.xulgon.model.FriendshipStatus;
 import me.min.xulgon.model.Photo;
 import me.min.xulgon.model.UserPage;
 import me.min.xulgon.repository.PhotoRepository;
@@ -20,6 +21,7 @@ public class UserPageService {
    private final UserPageRepository userPageRepository;
    private final UserPageMapper userPageMapper;
    private final StorageService storageService;
+   private final FriendshipService friendshipService;
    private final PhotoViewMapper photoViewMapper;
    private final UserService userService;
 
@@ -92,6 +94,8 @@ public class UserPageService {
             .orElseThrow(() -> new RuntimeException("Profile not found"));
       return UserProfileHeaderDto.builder()
             .id(userPage.getId())
+            .friendshipStatus(friendshipService.getFriendshipStatus(userPage.getUser()))
+            .userId(userPage.getUser().getId())
             .avatar(photoViewMapper.toDto(userPage.getAvatar()))
             .profileCoverUrl((userPage.getCoverPhoto().orElseGet(Photo::new)).getUrl())
             .profileName(userPage.getName())

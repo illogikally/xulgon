@@ -16,21 +16,21 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
 @Transactional
-
 public class CommentService {
    private final CommentRepository commentRepository;
    private final NotificationMapper notificationMapper;
    private final ContentService contentService;
    private final SimpMessagingTemplate simpMessagingTemplate;
    private final NotificationRepository notificationRepository;
-   private final PostRepository postRepository;
-
+   private final NotificationSubjectRepository notificationSubjectRepository;
    private final AuthenticationService authService;
    private final ContentRepository contentRepository;
    private final CommentMapper commentMapper;
@@ -66,20 +66,41 @@ public class CommentService {
          Notification notification = Notification
                .builder()
                .createdAt(Instant.now())
-               .type(NotificationType.COMMENT)
-               .isRead(false)
-               .page(comment.getPage())
                .actor(principal)
-               .recipient(post.getUser())
-               .recipientContent(post)
                .actorContent(comment)
                .build();
 
          notification = notificationRepository.save(notification);
+         NotificationSubject subject =
+               notificationSubjectRepository.findBySubjectContentAndType(post, NotificationType.COMMENT)
+               .orElseGet(() ->
+                  NotificationSubject
+                        .builder()
+                        .type(NotificationType.COMMENT)
+                        .actorCount(0)
+                        .page(post.getPage())
+                        .subjectContent(post)
+                        .notifications(List.of())
+                        .recipient(post.getUser())
+                        .build()
+               );
+
+         subject.setLatestNotification(notification);
+         if (subject.getNotifications()
+               .stream()
+               .noneMatch(n -> n.getActor().equals(principal))
+         ) {
+            subject.setActorCount(subject.getActorCount() + 1);
+         }
+         subject.setLatestCreatedAt(notification.getCreatedAt());
+         subject = notificationSubjectRepository.save(subject);
+         subject.setIsRead(false);
+         notification.setSubject(subject);
+         notificationRepository.save(notification);
          simpMessagingTemplate.convertAndSendToUser(
                comment.getParentContent().getUser().getUsername(),
                "/queue/notification",
-               notificationMapper.toDto(notification));
+               notificationMapper.toDto(subject));
 
       }
 
@@ -105,20 +126,8 @@ public class CommentService {
 
    private void modifyParentsCommentCount(Comment comment) {
       Content parent = comment.getParentContent();
-      switch (parent.getType()) {
-         case POST:
-         case PHOTO:
-            parent.setCommentCount(parent.getCommentCount() + 1);
-            contentService.save(parent);
-            break;
-         case COMMENT:
-            parent.setCommentCount(parent.getCommentCount() + 1);
-            contentService.save(parent);
-            modifyParentsCommentCount((Comment) parent);
-            break;
-         default:
-            break;
-      }
+      parent.setCommentCount(parent.getCommentCount() + 1);
+      contentRepository.save(parent);
    }
 
    public void deleteComment(Long id) {

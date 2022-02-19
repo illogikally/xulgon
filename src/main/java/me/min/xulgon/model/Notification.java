@@ -11,26 +11,18 @@ import java.time.Instant;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@SuperBuilder
+@Builder
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 public class Notification {
    @Id
    @GeneratedValue
    @EqualsAndHashCode.Include
    private Long id;
    private Instant createdAt;
-   @Enumerated(value = EnumType.STRING)
-   private NotificationType type;
-   private Boolean isRead;
-   @ManyToOne
-   private Page page;
    @ManyToOne
    private User actor;
    @ManyToOne
-   private User recipient;
-   @ManyToOne
-   private Content recipientContent;
-   @ManyToOne
    private Content actorContent;
+   @ManyToOne
+   private NotificationSubject subject;
 }

@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class NotifCountDto {
+public class NotificationCountDto {
     private Integer unreadMessageCount;
     private Integer unreadNotifCount;
 }

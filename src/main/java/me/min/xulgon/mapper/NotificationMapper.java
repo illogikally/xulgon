@@ -10,42 +10,24 @@ import org.springframework.stereotype.Service;
 @AllArgsConstructor
 public class NotificationMapper {
 
-   public NotificationDto toDto(Notification notification) {
+   public NotificationDto toDto(NotificationSubject notification) {
+      Notification latest = notification.getLatestNotification();
       return NotificationDto
             .builder()
-            .actorContentBody(notification.getActorContent().getBody())
-            .actorAvatarUrl(notification.getActor().getUserPage().getAvatar().getUrl())
-            .actorFullName(notification.getActor().getFullName())
+            .actorContentBody(notification.getSubjectContent().getBody())
+            .actorAvatarUrl(latest.getActor().getUserPage().getAvatar().getUrl())
+            .actorFullName(latest.getActor().getFullName())
             .pageId(notification.getPage().getId())
             .pageType(notification.getPage().getType())
-            .actorContentId(notification.getActorContent().getId())
+            .actorContentId(latest.getActorContent().getId())
+            .actorCount(notification.getActorCount())
             .id(notification.getId())
-            .createdAgo(MappingUtil.getCreatedAgo(notification.getCreatedAt()))
-            .actorId(notification.getActor().getId())
-            .recipientContentId(notification.getRecipientContent().getId())
-            .recipientContentBody(notification.getRecipientContent().getBody())
+            .isRead(notification.getIsRead())
+            .createdAgo(MappingUtil.getCreatedAgo(notification.getLatestCreatedAt()))
+            .actorId(latest.getActor().getId())
+            .recipientContentId(notification.getSubjectContent().getId())
+            .recipientContentBody(notification.getSubjectContent().getBody())
             .type(notification.getType())
             .build();
    }
-//   public NotificationDto toDto(Notification notification) {
-//      return NotificationDto.builder()
-//            .id(notification.getId())
-//            .type(notification.getType())
-//            .createdAgo(MappingUtil.getCreatedAgo(notification.getCreatedAt()))
-//            .contentType(notification.getContent().getType())
-//            .contentBody(notification.getContent().getBody())
-//            .isRead(notification.getIsRead())
-//            .actorAvatar(notification.getActor().getUserPage().getAvatar().getUrl())
-//            .contentId(notification.getContent().getId())
-//            .pageName(notification.getPage().getName())
-//            .actorName(notification.getActor().getFullName())
-//            .postId(getPostId(notification))
-//            .build();
-//   }
-//
-//   private Long getPostId(Notification notif) {
-//      if (notif.getContent().getType().equals(ContentType.COMMENT))
-//         return ((Comment) notif.getContent()).getPost().getId();
-//      return notif.getContent().getId();
-//   }
 }

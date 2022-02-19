@@ -12,7 +12,6 @@ import javax.persistence.OneToOne;
 @ToString(callSuper = true)
 @AllArgsConstructor
 @NoArgsConstructor
-@SuperBuilder
 public class CommentNotification extends Notification {
    @OneToOne
    private Post post;
