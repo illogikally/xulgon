@@ -6,13 +6,12 @@ import me.min.xulgon.model.FriendshipStatus;
 
 @Data
 @Builder
-public class UserProfileHeaderDto {
+public class PageHeaderDto {
    private Long id;
-   private String profileName;
+   private String name;
    private FriendshipStatus friendshipStatus;
    private PhotoViewResponse avatar;
-   private String coverPhotoUrl;
+   private String coverPhoto;
    private Boolean blocked;
    private Long userId;
-   private String profileCoverUrl;
 }

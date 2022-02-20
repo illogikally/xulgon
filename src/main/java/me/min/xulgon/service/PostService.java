@@ -2,21 +2,20 @@ package me.min.xulgon.service;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import me.min.xulgon.dto.PageableResponse;
 import me.min.xulgon.dto.PhotoRequest;
 import me.min.xulgon.dto.PostRequest;
 import me.min.xulgon.dto.PostResponse;
 import me.min.xulgon.mapper.PostMapper;
 import me.min.xulgon.model.*;
 import me.min.xulgon.repository.*;
+import me.min.xulgon.util.LimPageable;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -35,34 +34,30 @@ public class PostService {
    private final BlockService blockService;
    private final PageRepository pageRepository;
 
-   public List<PostResponse> getPostsByPage(Long id, Pageable pageable) {
+   public PageableResponse<PostResponse> getPostsByPage(Long id, Pageable pageable) {
       Page page = pageRepository.findById(id)
             .orElseThrow(RuntimeException::new);
       return page.getType() == PageType.GROUP
-            ? getPostsByGroup(id) : getPostsByProfile(id, pageable);
-   }
-
-   public List<PostResponse> getPostsByPage(Long id) {
-      return getPostsByPage(id, Pageable.unpaged());
+            ? getPostsByGroup(id, pageable) : getPostsByProfile(id, pageable);
    }
 
    @Transactional(readOnly = true)
-   public List<PostResponse> getPostsByProfile(Long profileId, Pageable pageable) {
+   public PageableResponse<PostResponse> getPostsByProfile(Long profileId, Pageable pageable) {
       UserPage userPage = userPageRepository.findById(profileId)
             .orElseThrow(() -> new RuntimeException("Profile not found"));
 
-//      List<Post> posts = postRepository.findAllByPageOrderByCreatedAtDesc(userPage, pageable);
       List<Post> posts = postRepository.getProfilePosts(
             userPage.getId(),
             authService.getPrincipal().getId(),
-            pageable.getPageSize(),
+            pageable.getPageSize() + 1,
             pageable.getOffset()
       );
 
+      Boolean hasNext = posts.size() > pageable.getPageSize();
       Privacy privacy = getPrivacy(userPage.getUser());
-
-      return posts.stream()
-//            .filter(this::privacyFilter)
+      List<PostResponse> postResponses = posts
+            .stream()
+            .limit(pageable.getPageSize())
             .peek(post -> post.setPhotos(
                   post.getPhotos()
                         .stream()
@@ -70,32 +65,50 @@ public class PostService {
                         .collect(Collectors.toList())))
             .map(postMapper::toDto)
             .collect(Collectors.toList());
-   }
 
-   public List<PostResponse> getPostsByProfile(Long profileId) {
-      return getPostsByProfile(profileId, Pageable.unpaged());
+      return PageableResponse
+            .<PostResponse>builder()
+            .data(postResponses)
+            .hasNext(hasNext)
+            .size(pageable.getPageSize())
+            .offset(pageable.getOffset())
+            .build();
+
    }
 
    @Transactional(readOnly = true)
-   public List<PostResponse> getPostsByGroup(Long groupId, Pageable pageable) {
+   public PageableResponse<PostResponse> getPostsByGroup(Long groupId, Pageable pageable) {
       Group group = groupRepository.findById(groupId)
             .orElseThrow(RuntimeException::new);
 
       User principal = authService.getPrincipal();
 
-      if (!group.getIsPrivate() || group.getMembers().stream().
-            anyMatch(member -> member.getUser().getId().equals(principal.getId()))) {
-         return postRepository.findAllByPageOrderByCreatedAtDesc(group, pageable).stream()
+      boolean isMember = group.getMembers()
+            .stream()
+            .anyMatch(member -> member.getUser().getId().equals(principal.getId()));
+      if (!group.getIsPrivate() || isMember) {
+         int size = pageable.getPageSize();
+         pageable = new LimPageable(size + 1, pageable.getOffset());
+          var postResponses = postRepository.findAllByPageOrderByCreatedAtDesc(group, pageable)
+               .stream()
                .filter(blockService::filter)
                .map(postMapper::toDto)
                .collect(Collectors.toList());
+          boolean hasNext = postResponses.size() > size;
+          return PageableResponse
+                .<PostResponse>builder()
+                .size(size)
+                .hasNext(hasNext)
+                .offset(pageable.getOffset())
+                .data(postResponses.stream().limit(size).collect(Collectors.toList()))
+                .build();
       }
-      return new ArrayList<>();
+      return PageableResponse.empty();
    }
 
-   public List<PostResponse> getPostsByGroup(Long groupId) {
-      return getPostsByGroup(groupId, Pageable.unpaged());
-   }
+//   public List<PostResponse> getPostsByGroup(Long groupId) {
+//      return getPostsByGroup(groupId, Pageable.unpaged());
+//   }
 
 
    public PostResponse get(Long id) {

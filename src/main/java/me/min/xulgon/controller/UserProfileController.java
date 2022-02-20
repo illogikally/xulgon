@@ -25,10 +25,10 @@ public class UserProfileController {
    private final UserPageService userPageService;
    private final PhotoService photoService;
 
-   @GetMapping("/{id}/posts")
-   public ResponseEntity<List<PostResponse>> getPostsByPage(@PathVariable Long id, LimPageable pageable) {
-       return ResponseEntity.ok(postService.getPostsByProfile(id, pageable));
-   }
+//   @GetMapping("/{id}/posts")
+//   public ResponseEntity<List<PostResponse>> getPostsByPage(@PathVariable Long id, LimPageable pageable) {
+//       return ResponseEntity.ok(postService.getPostsByProfile(id, pageable));
+//   }
 
    @GetMapping("/{id}/friends")
    public ResponseEntity<List<UserDto>> getFriends(@PathVariable Long id) {
@@ -36,7 +36,7 @@ public class UserProfileController {
    }
 
    @GetMapping("/{id}/profile")
-   public ResponseEntity<UserProfileHeaderDto> getProfileHeader(@PathVariable Long id) {
+   public ResponseEntity<PageHeaderDto> getProfileHeader(@PathVariable Long id) {
       return ResponseEntity.ok(userPageService.getProfileHeader(id));
    }
 

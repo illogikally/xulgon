@@ -1,13 +1,17 @@
 package me.min.xulgon.service;
 
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
 import lombok.AllArgsConstructor;
 import me.min.xulgon.dto.CommentRequest;
 import me.min.xulgon.dto.CommentResponse;
+import me.min.xulgon.dto.PageableResponse;
 import me.min.xulgon.dto.PhotoRequest;
 import me.min.xulgon.mapper.CommentMapper;
 import me.min.xulgon.mapper.NotificationMapper;
 import me.min.xulgon.model.*;
 import me.min.xulgon.repository.*;
+import me.min.xulgon.util.LimPageable;
 import me.min.xulgon.util.Util;
 import org.springframework.data.domain.Pageable;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -135,15 +139,28 @@ public class CommentService {
    }
 
    @Transactional(readOnly = true)
-   public List<CommentResponse> getCommentsByContent(Long contentId,
-                                                     Pageable pageable) {
+   public PageableResponse<CommentResponse> getCommentsByContent(Long contentId,
+                                                                 Pageable pageable) {
       Content content = contentRepository.findById(contentId)
             .orElseThrow(() -> new RuntimeException("Content not found"));
-      return commentRepository.findAllByParentContent(content, pageable)
-//      return commentRepository.getContentComments(contentId, limit, offset)
+      var size = pageable.getPageSize();
+      pageable = new LimPageable(size + 1, pageable.getOffset());
+
+      var commentResponses =
+            commentRepository.findAllByParentContent(content, pageable)
             .stream()
             .filter(blockService::filter)
             .map(commentMapper::toDto)
             .collect(Collectors.toList());
+      Boolean hasNext = commentResponses.size() > size;
+      return PageableResponse
+            .<CommentResponse>builder()
+            .hasNext(hasNext)
+            .offset(pageable.getOffset())
+            .size(size)
+            .data(commentResponses.stream().limit(size).collect(Collectors.toList()))
+            .build();
+
+
    }
 }

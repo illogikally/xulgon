@@ -1,6 +1,7 @@
 package me.min.xulgon.controller;
 
 import lombok.AllArgsConstructor;
+import me.min.xulgon.dto.PageableResponse;
 import me.min.xulgon.dto.PhotoResponse;
 import me.min.xulgon.dto.PostResponse;
 import me.min.xulgon.service.PageService;
@@ -22,11 +23,10 @@ public class PageController {
 
    private final PostService postService;
    private final PhotoService photoService;
-   private final PageService pageService;
 
    @GetMapping("/{id}/posts")
-   public ResponseEntity<List<PostResponse>> getPosts(@PathVariable Long id,
-                                                      LimPageable pageable) {
+   public ResponseEntity<PageableResponse<PostResponse>> getPosts(@PathVariable Long id,
+                                                                        LimPageable pageable) {
       return ResponseEntity.ok(postService.getPostsByPage(id, pageable));
    }
 
@@ -34,5 +34,4 @@ public class PageController {
    public ResponseEntity<List<PhotoResponse>> getPhotos(@PathVariable Long id) {
       return ResponseEntity.ok(photoService.getPhotosByPage(id));
    }
-
 }

@@ -6,13 +6,13 @@ import org.springframework.data.domain.Sort;
 
 public class LimPageable implements Pageable {
    private final Integer size;
-   private final Integer offset;
-   private final Integer until;
+   private final Long offset;
 
-   public LimPageable(Integer size, Integer offset, Integer until) {
+   public LimPageable(Integer size, Long offset) {
       offset = offset == null ? 0 : offset;
-      size = size == null ? Integer.MAX_VALUE : size;
-      if (offset < 0 ) {
+      int veryBigNumber = Integer.MAX_VALUE - 1;
+      size = size == null ? veryBigNumber : size;
+      if (offset < 0) {
          throw new IllegalArgumentException("Offset index must not be less than zero!");
       }
 
@@ -22,12 +22,11 @@ public class LimPageable implements Pageable {
 
       this.size = size;
       this.offset = offset;
-      this.until = until;
    }
 
    @Override
    public int getPageNumber() {
-      return offset / size;
+      return (int) (offset / size);
    }
 
    @Override
@@ -38,10 +37,6 @@ public class LimPageable implements Pageable {
    @Override
    public long getOffset() {
       return offset;
-   }
-
-   public Integer getUntil() {
-      return until;
    }
 
    @NotNull
