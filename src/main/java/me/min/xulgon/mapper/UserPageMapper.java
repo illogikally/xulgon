@@ -1,6 +1,7 @@
 package me.min.xulgon.mapper;
 
 import lombok.AllArgsConstructor;
+import me.min.xulgon.dto.PhotoResponse;
 import me.min.xulgon.dto.PhotoViewResponse;
 import me.min.xulgon.dto.UserDto;
 import me.min.xulgon.dto.UserPageResponse;
@@ -36,33 +37,21 @@ public class UserPageMapper {
 
       return UserPageResponse.builder()
             .id(page.getId())
-            .fullName(page.getUser().getFullName())
             .userId(page.getUser().getId())
-            .avatar(photoMapper.toPhotoViewResponse(page.getAvatar()))
-            .coverPhotoUrl(photoMapper.getUrl(page.getCoverPhoto()))
             .workplace(page.getWorkplace())
             .friends(getFriends(page))
             .photos(getPhotos(page))
             .school(page.getSchool())
             .hometown(page.getHometown())
-            .friendshipStatus(friendshipService.getFriendshipStatus(page.getUser()))
-            .isBlocked(isBlocked(page))
-            .blocked(blockService.blocked(page.getUser()))
             .build();
 
    }
 
-   private List<PhotoViewResponse> getPhotos(UserPage userPage) {
+   private List<PhotoResponse> getPhotos(UserPage userPage) {
       return photoRepository.findAllByPageOrderByCreatedAtDesc(userPage, PageRequest.ofSize(9))
             .stream()
-            .map(photoMapper::toPhotoViewResponse)
+            .map(photoMapper::toPhotoResponse)
             .collect(Collectors.toList());
-//      return photoRepository.findAllByPage(userPage)
-//            .stream()
-//            .sorted((photo1, photo2) -> (int) -(photo1.getCreatedAt().toEpochMilli()- photo2.getCreatedAt().toEpochMilli()))
-//            .limit(9)
-//            .map(photoViewMapper::toDto)
-//            .collect(Collectors.toList());
    }
 
    private List<UserDto> getFriends(UserPage profile) {

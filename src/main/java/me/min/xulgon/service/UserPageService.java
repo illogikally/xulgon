@@ -24,6 +24,7 @@ import java.util.List;
 @Transactional
 public class UserPageService {
 
+   private final PrincipalService principalService;
    private final PhotoSetService photoSetService;
    private final UserPageRepository userPageRepository;
    private final UserPageMapper userPageMapper;
@@ -32,7 +33,7 @@ public class UserPageService {
    private final PhotoSetPhotoRepository photoSetPhotoRepository;
    private final PhotoMapper photoMapper;
    private final UserService userService;
-   private final Environment env;
+   private final Environment environment;
 
 
    private final PhotoRepository photoRepository;
@@ -50,68 +51,57 @@ public class UserPageService {
       return userService.getFriends(profile.getUser().getId());
    }
 
-   public void changeAvatar(Long profileId, Long photoId) {
-      UserPage userPage = userPageRepository.findById(profileId)
-            .orElseThrow(PageNotFoundException::new);
+   public void changeAvatar(Long photoId) {
+      User principal = principalService.getPrincipal();
+      UserPage page = principal.getUserPage();
 
       Photo photo = photoRepository.findById(photoId)
             .orElseThrow(ContentNotFoundException::new);
 
-      userPage.setAvatar(photo);
-      userPageRepository.save(userPage);
-   }
-
-   public PhotoViewResponse uploadAvatar(Long profileId,
-                                         PhotoRequest request,
-                                         MultipartFile multipartFile) {
-      UserPage page = userPageRepository.findById(profileId)
-            .orElseThrow(PageNotFoundException::new);
-      Photo photo = photoService.save(request, multipartFile);
-      int photoSetLastIndex =
-            photoSetService.getLastIndexAndSetHasNextTrue(page.getAvatarSet());
-      photoSetPhotoRepository.save(
-            PhotoSetPhoto.builder()
-                  .photoSet(page.getAvatarSet())
-                  .photoIndex(photoSetLastIndex + 1)
-                  .hasNext(false)
-                  .photo(photo)
-                  .createdAt(Instant.now())
-                  .build()
-      );
+      photoSetService.insertToPhotoSet(page.getPagePhotoSet(), photo);
+      photoSetService.insertUniqueToPhotoSet(page.getAvatarSet(), photo);
       page.setAvatar(photo);
       userPageRepository.save(page);
-      return photoMapper.toPhotoViewResponse(photo);
    }
 
-   public void changeCoverPhoto(Long profileId, Long photoId) {
-      UserPage page = userPageRepository.findById(profileId)
-            .orElseThrow(PageNotFoundException::new);
+   public PhotoResponse uploadAvatar(
+                                         PhotoRequest request,
+                                         MultipartFile multipartFile) {
+      User principal = principalService.getPrincipal();
+      UserPage page = principal.getUserPage();
+      Photo photo = photoService.save(request, multipartFile);
+
+      photoSetService.insertToPhotoSet(page.getPagePhotoSet(), photo);
+      photoSetService.insertUniqueToPhotoSet(page.getAvatarSet(), photo);
+      page.setAvatar(photo);
+      userPageRepository.save(page);
+      return photoMapper.toPhotoResponse(photo);
+   }
+
+   public void changeCoverPhoto(Long photoId) {
+      User principal = principalService.getPrincipal();
+      UserPage page = principal.getUserPage();
 
       Photo photo = photoRepository.findById(photoId)
             .orElseThrow(ContentNotFoundException::new);
+
+      photoSetService.insertUniqueToPhotoSet(page.getCoverPhotoSet(), photo);
+      photoSetService.insertToPhotoSet(page.getPagePhotoSet(), photo);
 
       page.setCoverPhoto(photo);
       userPageRepository.save(page);
    }
 
-   public PhotoResponse uploadCoverPhoto(Long pageId,
-                                         PhotoRequest request,
+   public PhotoResponse uploadCoverPhoto(PhotoRequest request,
                                          MultipartFile multipartFile) {
 
-      UserPage page = userPageRepository.findById(pageId)
-            .orElseThrow(PageNotFoundException::new);
+      User principal = principalService.getPrincipal();
+      UserPage page = principal.getUserPage();
       Photo photo = photoService.save(request, multipartFile);
-      int photoSetLastIndex =
-            photoSetService.getLastIndexAndSetHasNextTrue(page.getAvatarSet());
-      photoSetPhotoRepository.save(
-         PhotoSetPhoto.builder()
-               .photoSet(page.getCoverPhotoSet())
-               .photoIndex(photoSetLastIndex + 1)
-               .hasNext(false)
-               .photo(photo)
-               .createdAt(Instant.now())
-               .build()
-      );
+
+      photoSetService.insertUniqueToPhotoSet(page.getCoverPhotoSet(), photo);
+      photoSetService.insertToPhotoSet(page.getPagePhotoSet(), photo);
+
       page.setCoverPhoto(photo);
       userPageRepository.save(page);
       return photoMapper.toPhotoResponse(photo);
@@ -124,7 +114,7 @@ public class UserPageService {
       String coverPhotoUrl = "";
       if (coverPhoto != null) {
          coverPhotoUrl = Util.getThumbnailUrl(
-               env,
+               environment,
                coverPhoto.getThumbnailsMap().get(ThumbnailType.s900x900)
          );
       }
@@ -135,6 +125,7 @@ public class UserPageService {
             .userId(page.getUser().getId())
             .avatar(photoMapper.toPhotoResponse(page.getAvatar()))
             .coverPhotoUrl(coverPhotoUrl)
+            .avatarPhotoSetId(page.getAvatarSet().getId())
             .name(page.getName())
             .build();
    }

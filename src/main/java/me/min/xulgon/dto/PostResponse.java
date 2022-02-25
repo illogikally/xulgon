@@ -23,6 +23,7 @@ public class PostResponse {
    private UserDto user;
    private Privacy privacy;
    private String body;
+   private Integer photoCount;
    private Integer reactionCount;
    private Integer commentCount;
    private Integer shareCount;

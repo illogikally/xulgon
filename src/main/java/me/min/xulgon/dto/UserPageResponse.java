@@ -13,15 +13,9 @@ import java.util.List;
 public class UserPageResponse {
    private Long id;
    private Long userId;
-   private PhotoViewResponse avatar;
-   private String coverPhotoUrl;
-   private String fullName;
    private String workplace;
    private String school;
    private String hometown;
-   private FriendshipStatus friendshipStatus;
-   private List<PhotoViewResponse> photos;
+   private List<PhotoResponse> photos;
    private List<UserDto> friends;
-   private Boolean blocked;
-   private Boolean isBlocked;
 }

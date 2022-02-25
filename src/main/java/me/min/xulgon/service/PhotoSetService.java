@@ -13,6 +13,7 @@ import me.min.xulgon.repository.PhotoSetRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.util.Optional;
 
 @Service
@@ -44,6 +45,27 @@ public class PhotoSetService {
       PhotoSetPhoto photoSetPhoto =
             photoSetPhotoRepository.findByPhotoSetAndPhotoIndex(set, index);
       return photoMapper.toPhotoViewSetResponse(photoSetPhoto);
+   }
+
+   public void insertToPhotoSet(PhotoSet set, Photo photo) {
+      int photoSetLastIndex = getLastIndexAndSetHasNextTrue(set);
+      photoSetPhotoRepository.save(
+            PhotoSetPhoto.builder()
+                  .photoSet(set)
+                  .photoIndex(photoSetLastIndex + 1)
+                  .hasNext(false)
+                  .photo(photo)
+                  .createdAt(Instant.now())
+                  .build()
+      );
+   }
+
+   public void insertUniqueToPhotoSet(PhotoSet set, Photo photo) {
+      boolean isPresent = set.getPhotoSetPhoto().stream()
+            .anyMatch(psp -> psp.getPhoto().equals(photo));
+      if (!isPresent) {
+         insertToPhotoSet(set, photo);
+      }
    }
 
    /**

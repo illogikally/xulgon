@@ -64,6 +64,7 @@ public class PostMapper {
             .shareCount(0)
             .privacy(post.getPrivacy())
             .createdAt(toDate(post.getCreatedAt()))
+            .photoCount(post.getPhotos().size())
             .isReacted(isReacted(post))
             .sharedPost(this.toDto(post.getSharedPost()))
             .photos(getPhotoResponses(post.getPhotos()))

@@ -14,4 +14,5 @@ public class PageHeaderDto {
    private String coverPhotoUrl;
    private Boolean blocked;
    private Long userId;
+   private Long avatarPhotoSetId;
 }

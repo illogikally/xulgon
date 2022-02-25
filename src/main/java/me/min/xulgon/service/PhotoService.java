@@ -10,6 +10,7 @@ import me.min.xulgon.mapper.PhotoMapper;
 import me.min.xulgon.model.*;
 import me.min.xulgon.repository.*;
 import net.coobird.thumbnailator.Thumbnails;
+import net.coobird.thumbnailator.geometry.Positions;
 import org.springframework.core.env.Environment;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.util.Pair;
@@ -81,7 +82,9 @@ public class PhotoService {
 
       int width, height;
       try {
+         int minSize = Math.min(bufferedImage.getWidth(), bufferedImage.getHeight());
          bufferedImage = Thumbnails.of(bufferedImage)
+               .sourceRegion(Positions.CENTER, minSize, minSize)
                .size(size, size)
                .asBufferedImage();
          width = bufferedImage.getWidth();
