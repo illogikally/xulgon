@@ -5,10 +5,9 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
+import javax.persistence.*;
+import java.time.Instant;
+import java.util.List;
 
 @Entity
 @Data
@@ -17,6 +16,20 @@ import javax.persistence.Id;
 @Builder
 public class PhotoSet {
    @Id
-   @GeneratedValue
+   @GeneratedValue(strategy = GenerationType.IDENTITY)
    private Long id;
+   private Instant createdAt;
+   @Enumerated(value = EnumType.STRING)
+   private SetType type;
+   @ManyToOne
+   private Page page;
+   @OneToMany(fetch = FetchType.LAZY)
+   private List<PhotoSetPhoto> photoSetPhoto;
+
+   public static PhotoSet generate(SetType type) {
+      return PhotoSet.builder()
+            .type(type)
+            .createdAt(Instant.now())
+            .build();
+   }
 }

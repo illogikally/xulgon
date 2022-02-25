@@ -1,28 +1,25 @@
 package me.min.xulgon.service;
 
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
 import lombok.AllArgsConstructor;
 import me.min.xulgon.dto.CommentRequest;
 import me.min.xulgon.dto.CommentResponse;
-import me.min.xulgon.dto.PageableResponse;
+import me.min.xulgon.dto.OffsetResponse;
 import me.min.xulgon.dto.PhotoRequest;
+import me.min.xulgon.exception.ContentNotFoundException;
 import me.min.xulgon.mapper.CommentMapper;
 import me.min.xulgon.mapper.NotificationMapper;
 import me.min.xulgon.model.*;
 import me.min.xulgon.repository.*;
-import me.min.xulgon.util.LimPageable;
-import me.min.xulgon.util.Util;
+import me.min.xulgon.util.OffsetRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.naming.ContextNotEmptyException;
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
@@ -44,7 +41,7 @@ public class CommentService {
    public CommentResponse get(Long id) {
       return commentRepository.findById(id)
             .map(commentMapper::toDto)
-            .orElseThrow(RuntimeException::new);
+            .orElseThrow(ContentNotFoundException::new);
    }
 
    public CommentResponse save(CommentRequest commentRequest,
@@ -65,8 +62,8 @@ public class CommentService {
 
    private void createCommentNotification(Comment comment) {
       User principal = authService.getPrincipal();
-      Post post = comment.getPost();
-      if (!post.getUser().equals(principal)) {
+      Content rootContent = comment.getRootContent();
+      if (!rootContent.getUser().equals(principal)) {
          Notification notification = Notification
                .builder()
                .createdAt(Instant.now())
@@ -76,16 +73,17 @@ public class CommentService {
 
          notification = notificationRepository.save(notification);
          NotificationSubject subject =
-               notificationSubjectRepository.findBySubjectContentAndType(post, NotificationType.COMMENT)
+               notificationSubjectRepository.findBySubjectContentAndType(comment.getParentContent(), NotificationType.COMMENT)
                .orElseGet(() ->
                   NotificationSubject
                         .builder()
                         .type(NotificationType.COMMENT)
                         .actorCount(0)
-                        .page(post.getPage())
-                        .subjectContent(post)
+                        .rootContent(rootContent)
+                        .page(rootContent.getPage())
+                        .subjectContent(comment.getParentContent())
                         .notifications(List.of())
-                        .recipient(post.getUser())
+                        .recipient(rootContent.getUser())
                         .build()
                );
 
@@ -105,27 +103,8 @@ public class CommentService {
                comment.getParentContent().getUser().getUsername(),
                "/queue/notification",
                notificationMapper.toDto(subject));
-
       }
 
-   }
-   private void createNotification(Comment comment) {
-      User principal = authService.getPrincipal();
-      if (!comment.getParentContent().getUser().equals(principal)) {
-//         ReplyNotification notification = ReplyNotification.builder()
-//               .actor(principal)
-//               .createdAt(Instant.now())
-//               .recipient(comment.getParentContent().getUser())
-//               .isRead(false)
-//               .type(NotificationType.COMMENT)
-//               .build();
-//
-//         notification = notificationRepository.save(notification);
-//         simpMessagingTemplate.convertAndSendToUser(
-//               comment.getParentContent().getUser().getUsername(),
-//               "/queue/notification",
-//               notificationMapper.toDto(notification));
-      }
    }
 
    private void modifyParentsCommentCount(Comment comment) {
@@ -139,12 +118,12 @@ public class CommentService {
    }
 
    @Transactional(readOnly = true)
-   public PageableResponse<CommentResponse> getCommentsByContent(Long contentId,
-                                                                 Pageable pageable) {
+   public OffsetResponse<CommentResponse> getCommentsByContent(Long contentId,
+                                                               Pageable pageable) {
       Content content = contentRepository.findById(contentId)
-            .orElseThrow(() -> new RuntimeException("Content not found"));
+            .orElseThrow(ContentNotFoundException::new);
       var size = pageable.getPageSize();
-      pageable = new LimPageable(size + 1, pageable.getOffset());
+      pageable = new OffsetRequest(size + 1, pageable.getOffset());
 
       var commentResponses =
             commentRepository.findAllByParentContent(content, pageable)
@@ -153,14 +132,13 @@ public class CommentService {
             .map(commentMapper::toDto)
             .collect(Collectors.toList());
       Boolean hasNext = commentResponses.size() > size;
-      return PageableResponse
+
+      return OffsetResponse
             .<CommentResponse>builder()
             .hasNext(hasNext)
             .offset(pageable.getOffset())
             .size(size)
             .data(commentResponses.stream().limit(size).collect(Collectors.toList()))
             .build();
-
-
    }
 }

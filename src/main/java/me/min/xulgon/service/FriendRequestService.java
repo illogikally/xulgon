@@ -3,6 +3,7 @@ package me.min.xulgon.service;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import me.min.xulgon.dto.FriendRequestDto;
+import me.min.xulgon.exception.UserNotFoundException;
 import me.min.xulgon.mapper.FriendRequestMapper;
 import me.min.xulgon.model.FriendRequest;
 import me.min.xulgon.model.User;
@@ -30,7 +31,7 @@ public class FriendRequestService {
 
    public void save(Long requesteeId) {
       User requestee = userRepository.findById(requesteeId)
-            .orElseThrow(() -> new RuntimeException("User not found"));
+            .orElseThrow(UserNotFoundException::new);
       friendRequestRepository.save(FriendRequest.builder()
             .requester(authenticationService.getPrincipal())
             .requestee(requestee)
@@ -40,7 +41,7 @@ public class FriendRequestService {
 
    public void delete(Long userId) {
       User user = userRepository.findById(userId)
-            .orElseThrow(() -> new RuntimeException("User not found"));
+            .orElseThrow(UserNotFoundException::new);
 
       friendRequestRepository.deleteByUsers(
             authenticationService.getPrincipal(),
@@ -52,7 +53,7 @@ public class FriendRequestService {
    @Transactional(readOnly = true)
    public List<FriendRequestDto> getRequestsByRequestee(Long requesteeId) {
       User requestee = userRepository.findById(requesteeId)
-            .orElseThrow(() -> new RuntimeException("User not found"));
+            .orElseThrow(UserNotFoundException::new);
       return friendRequestRepository.findAllByRequestee(requestee)
             .stream()
             .map(friendRequestMapper::toDto)

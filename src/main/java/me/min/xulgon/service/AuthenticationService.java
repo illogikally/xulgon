@@ -2,11 +2,16 @@ package me.min.xulgon.service;
 
 import lombok.AllArgsConstructor;
 import me.min.xulgon.dto.*;
+import me.min.xulgon.exception.UserNotFoundException;
+import me.min.xulgon.mapper.PhotoMapper;
 import me.min.xulgon.model.*;
 import me.min.xulgon.repository.PhotoRepository;
+import me.min.xulgon.repository.PhotoSetRepository;
 import me.min.xulgon.repository.UserPageRepository;
 import me.min.xulgon.repository.UserRepository;
 import me.min.xulgon.security.JwtProvider;
+import me.min.xulgon.util.Util;
+import org.springframework.core.env.Environment;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.security.oauth2.core.user.OAuth2User;
@@ -14,7 +19,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
-import java.util.Optional;
 
 
 @Service
@@ -23,14 +27,16 @@ import java.util.Optional;
 public class AuthenticationService {
    private final JwtProvider jwtProvider;
    private final RefreshTokenService refreshTokenService;
-   private final PhotoRepository photoRepository;
    private final UserRepository userRepository;
+   private final PhotoSetRepository photoSetRepository;
    private final UserPageRepository userPageRepository;
+   private final Environment env;
+
 
 
    public AuthenticationResponse authenticationResponseMapper(User user,
-                                                               String token,
-                                                               String refreshToken) {
+                                                              String token,
+                                                              String refreshToken) {
       Long exp = Instant.now().plusMillis(jwtProvider.getJwtExpirationInMillis()).toEpochMilli();
       return AuthenticationResponse.builder()
             .token(token)
@@ -42,27 +48,25 @@ public class AuthenticationService {
             .expiresAt(exp)
             .username(user.getUsername())
             .userFullName(user.getFullName())
-            .avatarUrl(user.getUserPage().getAvatar().getUrl())
+            .avatarUrl(Util.getPhotoUrl(env, user.getUserPage().getAvatar()))
             .build();
    }
 
-
    public User saveUser(User user) {
       user = userRepository.save(user);
-      Photo avatar = Photo.builder()
-            .url("http://localhost:8080/contents/default-avatar.png")
-            .createdAt(Instant.now())
-            .user(user)
-            .sizeRatio(1F)
-            .type(ContentType.PHOTO)
-            .privacy(Privacy.PUBLIC)
-            .build();
 
-      avatar = photoRepository.save(avatar);
+      PhotoSet pagePhotoSet = PhotoSet.generate(SetType.PAGE);
+      PhotoSet pageAvatarSet = PhotoSet.generate(SetType.AVATAR);
+      PhotoSet pageCoverPhotoSet = PhotoSet.generate(SetType.COVER_PHOTO);
+      pagePhotoSet = photoSetRepository.save(pagePhotoSet);
+      pageAvatarSet = photoSetRepository.save(pageAvatarSet);
+      pageCoverPhotoSet = photoSetRepository.save(pageCoverPhotoSet);
       UserPage page = userPageRepository.save(UserPage.builder()
             .user(user)
-            .avatar(avatar)
             .type(PageType.PROFILE)
+            .pagePhotoSet(pagePhotoSet)
+            .avatarSet(pageAvatarSet)
+            .coverPhotoSet(pageCoverPhotoSet)
             .name(user.getFullName())
             .build());
 
@@ -118,14 +122,14 @@ public class AuthenticationService {
    public User getPrincipal(Object principal) {
       return userRepository
               .findByUsername(((org.springframework.security.core.userdetails.User) principal).getUsername())
-              .orElseThrow(() -> new RuntimeException("User not found"));
+              .orElseThrow(UserNotFoundException::new);
    }
 
    public AuthenticationResponse refreshToken(RefreshTokenDto refreshTokenDto) {
       refreshTokenService.validateRefreshToken(refreshTokenDto.getToken());
       String token = jwtProvider.generateTokenWithUserName(refreshTokenDto.getUsername());
       User user = userRepository.findByUsername(refreshTokenDto.getUsername())
-            .orElseThrow(RuntimeException::new);
+            .orElseThrow(UserNotFoundException::new);
       return authenticationResponseMapper(user, token, refreshTokenDto.getToken());
    }
 }

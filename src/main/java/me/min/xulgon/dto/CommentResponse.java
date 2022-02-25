@@ -17,7 +17,10 @@ public class CommentResponse {
    private String body;
    private UserDto user;
    private Boolean isReacted;
-   private Long postId;
+
+   private Long rootContentId;
+   private ContentType rootContentType;
+
    private PhotoViewResponse photo;
    private String createdAgo;
    private Integer reactionCount;

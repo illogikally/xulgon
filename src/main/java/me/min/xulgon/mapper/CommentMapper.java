@@ -4,13 +4,13 @@ import lombok.AllArgsConstructor;
 import me.min.xulgon.dto.CommentRequest;
 import me.min.xulgon.dto.CommentResponse;
 import me.min.xulgon.dto.PhotoViewResponse;
-import me.min.xulgon.dto.UserBasicDto;
+import me.min.xulgon.exception.ContentNotFoundException;
+import me.min.xulgon.exception.PageNotFoundException;
 import me.min.xulgon.model.*;
 import me.min.xulgon.repository.ContentRepository;
 import me.min.xulgon.repository.PageRepository;
 import me.min.xulgon.repository.PostRepository;
 import me.min.xulgon.service.AuthenticationService;
-import org.springframework.aop.scope.ScopedObject;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -24,8 +24,8 @@ public class CommentMapper {
    private final PostRepository postRepository;
    private final PageRepository pageRepository;
    private final UserMapper userMapper;
+   private final PhotoMapper photoMapper;
    private final ContentRepository contentRepository;
-   private final PhotoViewMapper photoViewMapper;
 
 
    public Comment map(CommentRequest commentRequest) {
@@ -38,7 +38,7 @@ public class CommentMapper {
             .reactionCount(0)
             .user(authenticationService.getPrincipal())
             .createdAt(Instant.now())
-            .post(getPost(commentRequest))
+            .rootContent(getRootContent(commentRequest))
             .page(getPage(commentRequest))
             .body(commentRequest.getBody())
             .comments(new LinkedList<>())
@@ -46,9 +46,9 @@ public class CommentMapper {
             .build();
    }
 
-   private Post getPost(CommentRequest commentRequest) {
-      return postRepository.findById(commentRequest.getPostId())
-            .orElseThrow(RuntimeException::new);
+   private Content getRootContent(CommentRequest commentRequest) {
+      return contentRepository.findById(commentRequest.getRootContentId())
+            .orElseThrow(ContentNotFoundException::new);
    }
 
    public CommentResponse toDto(Comment comment) {
@@ -60,10 +60,14 @@ public class CommentMapper {
             .parentType(comment.getParentContent().getType())
             .body(comment.getBody())
             .isReacted(isReacted(comment))
-            .postId(comment.getPost().getId())
+
+            .rootContentId(comment.getRootContent().getId())
+            .rootContentType(comment.getRootContent().getType())
+
+            .parentId(comment.getParentContent().getId())
+
             .user(userMapper.toDto(comment.getUser()))
             .photo(getPhoto(comment))
-            .parentId(comment.getParentContent().getId())
             .createdAgo(MappingUtil.getCreatedAgo(comment.getCreatedAt()))
             .reactionCount(comment.getReactionCount())
             .replyCount(comment.getCommentCount())
@@ -73,7 +77,7 @@ public class CommentMapper {
    private PhotoViewResponse getPhoto(Comment comment) {
       if (comment.getPhotos() == null) return null;
       if (comment.getPhotos().isEmpty()) return null;
-      return photoViewMapper.toDto(comment.getPhotos().get(0));
+      return photoMapper.toPhotoViewResponse(comment.getPhotos().get(0));
    }
 
    private String getUsername(Comment comment) {
@@ -82,12 +86,12 @@ public class CommentMapper {
 
    private Page getPage(CommentRequest commentRequest) {
       return pageRepository.findById(getParent(commentRequest).getPage().getId())
-            .orElseThrow(() -> new RuntimeException("Page not found"));
+            .orElseThrow(PageNotFoundException::new);
    }
 
    private Content getParent(CommentRequest commentRequest) {
       return contentRepository.findById(commentRequest.getParentId())
-            .orElseThrow(() -> new RuntimeException("Content not found"));
+            .orElseThrow(ContentNotFoundException::new);
    }
 
    boolean isReacted(Comment comment) {

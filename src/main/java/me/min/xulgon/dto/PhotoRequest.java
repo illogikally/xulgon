@@ -13,5 +13,4 @@ public class PhotoRequest {
    private Privacy privacy;
    private Long pageId;
    private Long parentId;
-   private Float sizeRatio;
 }

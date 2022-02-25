@@ -1,7 +1,7 @@
 package me.min.xulgon.controller;
 
 import lombok.AllArgsConstructor;
-import me.min.xulgon.dto.ConversationNotifDto;
+import me.min.xulgon.dto.ConversationNotificationDto;
 import me.min.xulgon.dto.MessageRequest;
 import me.min.xulgon.dto.MessageResponse;
 import me.min.xulgon.mapper.MessageMapper;
@@ -50,7 +50,7 @@ public class MessageController {
    }
 
    @GetMapping("/latest")
-   public ResponseEntity<List<ConversationNotifDto>> getLatest() {
+   public ResponseEntity<List<ConversationNotificationDto>> getLatest() {
       return ResponseEntity.ok(messageService.getLatest());
    }
 

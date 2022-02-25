@@ -2,15 +2,11 @@ package me.min.xulgon.controller;
 
 import lombok.AllArgsConstructor;
 import me.min.xulgon.dto.CommentResponse;
-import me.min.xulgon.dto.PageableResponse;
+import me.min.xulgon.dto.OffsetResponse;
 import me.min.xulgon.service.CommentService;
-import me.min.xulgon.util.LimPageable;
-import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpStatus;
+import me.min.xulgon.util.OffsetRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/contents")
@@ -19,8 +15,8 @@ public class ContentController {
    private final CommentService commentService;
 
    @GetMapping("/{contentId}/comments")
-   public ResponseEntity<PageableResponse<CommentResponse>> getCommentsByContent(@PathVariable Long contentId,
-                                                                                 LimPageable pageable) {
+   public ResponseEntity<OffsetResponse<CommentResponse>> getCommentsByContent(@PathVariable Long contentId,
+                                                                               OffsetRequest pageable) {
       return ResponseEntity.ok(commentService.getCommentsByContent(contentId, pageable));
    }
 }

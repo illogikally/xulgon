@@ -2,6 +2,8 @@ package me.min.xulgon.mapper;
 
 import lombok.AllArgsConstructor;
 import me.min.xulgon.dto.*;
+import me.min.xulgon.exception.ContentNotFoundException;
+import me.min.xulgon.exception.PageNotFoundException;
 import me.min.xulgon.model.*;
 import me.min.xulgon.repository.PageRepository;
 import me.min.xulgon.repository.PostRepository;
@@ -24,11 +26,9 @@ public class PostMapper {
    private final AuthenticationService authenticationService;
    private final PostRepository postRepository;
    private final PageRepository pageRepository;
-   private final CommentMapper commentMapper;
    private final UserMapper userMapper;
-   private final PhotoViewMapper photoViewMapper;
 
-   public Post map(PostRequest postRequest) {
+   public Post map(PostRequest postRequest, PhotoSet set) {
       if (postRequest == null) return null;
 
       return Post.builder()
@@ -38,6 +38,7 @@ public class PostMapper {
             .reactionCount(0)
             .body(postRequest.getBody())
             .comments(new LinkedList<>())
+            .photoSet(set)
             .reactions(new LinkedList<>())
             .photos(new LinkedList<>())
             .privacy(postRequest.getPrivacy())
@@ -45,9 +46,7 @@ public class PostMapper {
             .user(authenticationService.getPrincipal())
             .sharedPost(getSharedPost(postRequest.getSharedPostId()))
             .build();
-
    }
-
 
    public PostResponse toDto(Post post) {
       if (post == null) return null;
@@ -60,8 +59,8 @@ public class PostMapper {
             .reactionCount(post.getReactionCount())
             .commentCount(post.getCommentCount())
             .user(userMapper.toDto(post.getUser()))
-//            .comments(getFirstTwo(post))
             .body(post.getBody())
+            .photoSetId(post.getPhotoSet().getId())
             .shareCount(0)
             .privacy(post.getPrivacy())
             .createdAt(toDate(post.getCreatedAt()))
@@ -71,28 +70,10 @@ public class PostMapper {
             .build();
    }
 
-   private List<CommentResponse> getFirstTwo(Post post) {
-      return post.getComments().stream()
-            .limit(2)
-            .map(commentMapper::toDto)
-            .collect(Collectors.toList());
-   }
-
-   private Integer getCommentCount(Content content, Integer count) {
-      for (Comment comment: content.getComments()) {
-         count = getCommentCount(comment, count+1);
-      }
-      return count;
-   }
-
-   private String getUsername(Content content) {
-      return content.getUser().getFullName();
-   }
-
    private List<PhotoResponse> getPhotoResponses(List<Photo> photos) {
       return photos.stream()
             .limit(4)
-            .map(photoMapper::toDto)
+            .map(photoMapper::toPhotoResponse)
             .collect(Collectors.toList());
    }
 
@@ -111,12 +92,12 @@ public class PostMapper {
 
    private Page getPage(Long pageId) {
       return pageRepository.findById(pageId)
-            .orElseThrow(() -> new RuntimeException("Page not found"));
+            .orElseThrow(PageNotFoundException::new);
    }
 
    private Post getSharedPost(Long postId) {
       return postId == null ? null : postRepository.findById(postId)
-            .orElseThrow(() -> new RuntimeException("Post not found"));
+            .orElseThrow(ContentNotFoundException::new);
    }
 
 }

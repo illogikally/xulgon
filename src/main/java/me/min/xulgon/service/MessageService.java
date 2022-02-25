@@ -1,15 +1,13 @@
 package me.min.xulgon.service;
 
 import lombok.AllArgsConstructor;
-import me.min.xulgon.dto.ConversationNotifDto;
+import me.min.xulgon.dto.ConversationNotificationDto;
 import me.min.xulgon.dto.MessageRequest;
 import me.min.xulgon.dto.MessageResponse;
-import me.min.xulgon.dto.UserBasicDto;
 import me.min.xulgon.mapper.MessageMapper;
 import me.min.xulgon.mapper.UserMapper;
 import me.min.xulgon.model.Message;
 import me.min.xulgon.model.User;
-import me.min.xulgon.model.UserPage;
 import me.min.xulgon.repository.MessageRepository;
 import me.min.xulgon.repository.UserPageRepository;
 import me.min.xulgon.repository.UserRepository;
@@ -62,7 +60,7 @@ public class MessageService {
       return messageRepository.countUnread(this.authService.getPrincipal().getId());
    }
 
-   public List<ConversationNotifDto> getLatest() {
+   public List<ConversationNotificationDto> getLatest() {
       return messageRepository.getRecentConversations(authService.getPrincipal().getId())
             .stream()
             .map(this::conversationNotifMapper)
@@ -77,19 +75,14 @@ public class MessageService {
       messageRepository.save(message);
    }
 
-   private ConversationNotifDto conversationNotifMapper(Message message) {
+   private ConversationNotificationDto conversationNotifMapper(Message message) {
       User participant = message.getSender().equals(authService.getPrincipal())
             ? message.getReceiver() : message.getSender();
 
-      return ConversationNotifDto.builder()
+      return ConversationNotificationDto.builder()
             .latestMessage(messageMapper.toDto(message))
             .id(message.getConversation().getId())
-            .user(UserBasicDto.builder()
-                  .avatarUrl(participant.getUserPage().getAvatar().getUrl())
-                  .username(participant.getFullName())
-                  .profileId(participant.getUserPage().getId())
-                  .id(participant.getId())
-                  .build())
+            .user(userMapper.toBasicDto(participant))
             .build();
    }
 

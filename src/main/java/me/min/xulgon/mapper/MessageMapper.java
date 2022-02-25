@@ -4,8 +4,10 @@ import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import me.min.xulgon.dto.MessageRequest;
 import me.min.xulgon.dto.MessageResponse;
+import me.min.xulgon.exception.UserNotFoundException;
 import me.min.xulgon.model.Conversation;
 import me.min.xulgon.model.Message;
+import me.min.xulgon.model.Photo;
 import me.min.xulgon.model.User;
 import me.min.xulgon.repository.ConversationRepository;
 import me.min.xulgon.repository.UserRepository;
@@ -24,13 +26,15 @@ public class MessageMapper {
 
    private final ConversationRepository conversationRepository;
    private final UserRepository userRepository;
+   private final PhotoMapper photoMapper;
 
    @Transactional
    public MessageResponse toDto(Message message) {
+      Photo senderAvatar = message.getSender().getUserPage().getAvatar();
       return MessageResponse.builder()
             .username(getUsername(message))
             .id(message.getId())
-            .userAvatarUrl(message.getSender().getUserPage().getAvatar().getUrl())
+            .userAvatarUrl(photoMapper.getUrl(senderAvatar))
             .isRead(message.getIsRead())
             .conversationId(message.getConversation().getId())
             .createdAgo(MappingUtil.getCreatedAgo(message.getCreatedAt()))
@@ -60,7 +64,7 @@ public class MessageMapper {
 
    private User getSender(Principal principal) {
       return userRepository.findByUsername(principal.getName())
-            .orElseThrow(RuntimeException::new);
+            .orElseThrow(UserNotFoundException::new);
    }
 
    String getUsername(Message message) {
@@ -69,6 +73,6 @@ public class MessageMapper {
 
    User getReceiver(MessageRequest request) {
       return userRepository.findById(request.getReceiverId())
-            .orElseThrow(RuntimeException::new);
+            .orElseThrow(UserNotFoundException::new);
    }
 }

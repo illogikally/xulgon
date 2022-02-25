@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import me.min.xulgon.dto.FriendRequestDto;
 import me.min.xulgon.model.FriendRequest;
+import me.min.xulgon.model.Photo;
 import me.min.xulgon.model.User;
 import me.min.xulgon.repository.FriendshipRepository;
 import me.min.xulgon.service.AuthenticationService;
@@ -19,13 +20,15 @@ public class FriendRequestMapper {
 
    private final AuthenticationService authenticationService;
    private final FriendshipRepository friendshipRepository;
+   private final PhotoMapper photoMapper;
 
    public FriendRequestDto toDto(FriendRequest request) {
+      Photo avatar = request.getRequester().getUserPage().getAvatar();
       return FriendRequestDto.builder()
             .id(request.getId())
             .requesterProfileId(request.getRequester().getUserPage().getId())
             .requesterId(request.getRequester().getId())
-            .requesterAvatarUrl(request.getRequester().getUserPage().getAvatar().getUrl())
+            .requesterAvatarUrl(photoMapper.getUrl(avatar))
             .requesterName(getRequesterName(request))
             .createdAgo(MappingUtil.getCreatedAgo(request.getCreatedAt()))
             .commonFriendCount(getCommonFriendCount(request))

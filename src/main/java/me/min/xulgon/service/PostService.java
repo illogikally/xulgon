@@ -2,19 +2,21 @@ package me.min.xulgon.service;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import me.min.xulgon.dto.PageableResponse;
+import me.min.xulgon.dto.OffsetResponse;
 import me.min.xulgon.dto.PhotoRequest;
 import me.min.xulgon.dto.PostRequest;
 import me.min.xulgon.dto.PostResponse;
+import me.min.xulgon.exception.PageNotFoundException;
 import me.min.xulgon.mapper.PostMapper;
 import me.min.xulgon.model.*;
+import me.min.xulgon.model.PhotoSet;
 import me.min.xulgon.repository.*;
-import me.min.xulgon.util.LimPageable;
-import org.springframework.data.domain.Pageable;
+import me.min.xulgon.util.OffsetRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -31,10 +33,13 @@ public class PostService {
    private final FriendshipRepository friendshipRepository;
    private final PhotoService photoService;
    private final GroupRepository groupRepository;
+   private final PhotoSetPhotoRepository photoSetPhotoRepository;
    private final BlockService blockService;
+   private final PhotoSetService photoSetService;
    private final PageRepository pageRepository;
+   private final PhotoSetRepository photoSetRepository;
 
-   public PageableResponse<PostResponse> getPostsByPage(Long id, Pageable pageable) {
+   public OffsetResponse<PostResponse> getPostsByPage(Long id, OffsetRequest pageable) {
       Page page = pageRepository.findById(id)
             .orElseThrow(RuntimeException::new);
       return page.getType() == PageType.GROUP
@@ -42,9 +47,9 @@ public class PostService {
    }
 
    @Transactional(readOnly = true)
-   public PageableResponse<PostResponse> getPostsByProfile(Long profileId, Pageable pageable) {
+   public OffsetResponse<PostResponse> getPostsByProfile(Long profileId, OffsetRequest pageable) {
       UserPage userPage = userPageRepository.findById(profileId)
-            .orElseThrow(() -> new RuntimeException("Profile not found"));
+            .orElseThrow(PageNotFoundException::new);
 
       List<Post> posts = postRepository.getProfilePosts(
             userPage.getId(),
@@ -66,7 +71,7 @@ public class PostService {
             .map(postMapper::toDto)
             .collect(Collectors.toList());
 
-      return PageableResponse
+      return OffsetResponse
             .<PostResponse>builder()
             .data(postResponses)
             .hasNext(hasNext)
@@ -77,39 +82,37 @@ public class PostService {
    }
 
    @Transactional(readOnly = true)
-   public PageableResponse<PostResponse> getPostsByGroup(Long groupId, Pageable pageable) {
+   public OffsetResponse<PostResponse> getPostsByGroup(Long groupId, OffsetRequest pageable) {
       Group group = groupRepository.findById(groupId)
-            .orElseThrow(RuntimeException::new);
+            .orElseThrow(PageNotFoundException::new);
 
       User principal = authService.getPrincipal();
 
       boolean isMember = group.getMembers()
             .stream()
-            .anyMatch(member -> member.getUser().getId().equals(principal.getId()));
+            .anyMatch(member -> member.getUser().equals(principal));
+
       if (!group.getIsPrivate() || isMember) {
-         int size = pageable.getPageSize();
-         pageable = new LimPageable(size + 1, pageable.getOffset());
-          var postResponses = postRepository.findAllByPageOrderByCreatedAtDesc(group, pageable)
-               .stream()
-               .filter(blockService::filter)
-               .map(postMapper::toDto)
-               .collect(Collectors.toList());
-          boolean hasNext = postResponses.size() > size;
-          return PageableResponse
+          var posts
+                = postRepository.findAllByPageOrderByCreatedAtDesc(group, pageable.sizePlusOne());
+          boolean hasNext = posts.size() > pageable.getPageSize();
+          var postResponses = posts
+                .stream()
+                .limit(pageable.getPageSize())
+                .filter(blockService::filter)
+                .map(postMapper::toDto)
+                .collect(Collectors.toList());
+
+          return OffsetResponse
                 .<PostResponse>builder()
-                .size(size)
+                .size(postResponses.size())
                 .hasNext(hasNext)
                 .offset(pageable.getOffset())
-                .data(postResponses.stream().limit(size).collect(Collectors.toList()))
+                .data(postResponses)
                 .build();
       }
-      return PageableResponse.empty();
+      return OffsetResponse.empty();
    }
-
-//   public List<PostResponse> getPostsByGroup(Long groupId) {
-//      return getPostsByGroup(groupId, Pageable.unpaged());
-//   }
-
 
    public PostResponse get(Long id) {
       return postRepository.findById(id)
@@ -122,17 +125,48 @@ public class PostService {
    public PostResponse save(PostRequest postRequest,
                             List<MultipartFile> photos,
                             List<PhotoRequest> photoRequests) {
-      Post savedPost = postRepository.save(postMapper.map(postRequest));
-      photoRequests.forEach(photoRequest -> photoRequest.setParentId(savedPost.getId()));
+      Page page = pageRepository.findById(postRequest.getPageId())
+            .orElseThrow(PageNotFoundException::new);
 
+      PhotoSet photoSet = PhotoSet.generate(SetType.POST);
+      photoSet = photoSetRepository.save(photoSet);
+      int photosLength = Math.min(photos.size(), photoRequests.size());
+      Post savedPost = postRepository.save(postMapper.map(postRequest, photoSet));
       List<Photo> savedPhotos = new ArrayList<>();
-      for (int i = 0; i < Math.min(photos.size(), photoRequests.size()); ++i) {
-         savedPhotos.add(photoService.save(photoRequests.get(i), photos.get(i)));
+
+      if (photosLength > 0) {
+         photoRequests.forEach(request -> request.setParentId(savedPost.getId()));
+         Integer pageSetLastIndex =
+               photoSetService.getLastIndexAndSetHasNextTrue(page.getPagePhotoSet());
+         for (int i = 0; i < photosLength; ++i) {
+            Photo photo = photoService.save(photoRequests.get(i), photos.get(i));
+
+            PhotoSetPhoto postSet = PhotoSetPhoto.builder()
+                  .photoSet(photoSet)
+                  .photo(photo)
+                  .photoIndex(i + 1)
+                  .hasNext(i != photosLength - 1)
+                  .createdAt(Instant.now())
+                  .build();
+
+            PhotoSetPhoto pageSet = PhotoSetPhoto.builder()
+                  .photoSet(page.getPagePhotoSet())
+                  .photoIndex(i + 1 + pageSetLastIndex)
+                  .hasNext(i != photosLength - 1)
+                  .photo(photo)
+                  .createdAt(Instant.now())
+                  .build();
+
+            photoSetPhotoRepository.save(postSet);
+            photoSetPhotoRepository.save(pageSet);
+            savedPhotos.add(photo);
+         }
       }
 
       savedPost.setPhotos(savedPhotos);
       return postMapper.toDto(savedPost);
    }
+
 
    public boolean privacyFilter(Post post) {
       Privacy privacy = getPrivacy(post.getUser());

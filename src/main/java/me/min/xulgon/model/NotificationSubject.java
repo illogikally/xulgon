@@ -1,6 +1,5 @@
 package me.min.xulgon.model;
 
-import com.sun.mail.imap.protocol.INTERNALDATE;
 import lombok.*;
 
 import javax.persistence.*;
@@ -15,7 +14,7 @@ import java.util.List;
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class NotificationSubject {
    @Id
-   @GeneratedValue
+   @GeneratedValue(strategy = GenerationType.IDENTITY)
    @EqualsAndHashCode.Include
    private Long id;
    private Integer actorCount;
@@ -25,6 +24,8 @@ public class NotificationSubject {
    private NotificationType type;
    @ManyToOne
    private Notification latestNotification;
+   @ManyToOne
+   private Content rootContent;
    @ManyToOne
    private User recipient;
    @ManyToOne

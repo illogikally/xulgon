@@ -20,6 +20,8 @@ public abstract class GroupMapper {
    AuthenticationService authService;
    @Autowired
    PhotoRepository photoRepository;
+   @Autowired
+   PhotoMapper photoMapper;
 
    @Mapping(target = "id", ignore = true)
    @Mapping(target = "type", constant = "GROUP")
@@ -36,10 +38,8 @@ public abstract class GroupMapper {
    public abstract GroupResponse toDto(Group group);
 
    String getPhotoUrl(Group group) {
-      return (group.getCoverPhoto().orElse(new Photo())).getUrl();
-//      if (group.getCoverPhoto() == null) return null;
-//
-//      return group.getCoverPhoto().getUrl();
+      if (group.getCoverPhoto() == null) return null;
+      return photoMapper.getUrl(group.getCoverPhoto());
    }
 
    GroupRole getRole(Group group) {
@@ -58,7 +58,6 @@ public abstract class GroupMapper {
       Photo photo = Photo.builder()
             .user(principal)
             .createdAt(Instant.now())
-            .url("http://localhost:8080/contents/default-group-cover.png")
             .privacy(Privacy.PUBLIC)
             .commentCount(0)
             .reactionCount(0)

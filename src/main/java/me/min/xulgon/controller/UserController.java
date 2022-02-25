@@ -9,9 +9,8 @@ import me.min.xulgon.dto.UserDto;
 import me.min.xulgon.repository.FriendshipRepository;
 import me.min.xulgon.repository.UserRepository;
 import me.min.xulgon.service.*;
-import me.min.xulgon.util.LimPageable;
+import me.min.xulgon.util.OffsetRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.repository.query.Param;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -64,7 +63,7 @@ public class UserController {
    }
 
    @GetMapping("/news-feed")
-   public ResponseEntity<List<PostResponse>> getNewsFeed(LimPageable pageable) {
+   public ResponseEntity<List<PostResponse>> getNewsFeed(OffsetRequest pageable) {
       System.out.println(pageable.toString());
       return ResponseEntity.ok(userService.getNewsFeed(pageable));
    }

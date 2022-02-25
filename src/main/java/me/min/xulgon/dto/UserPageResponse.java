@@ -10,7 +10,7 @@ import java.util.List;
 @Data
 @AllArgsConstructor
 @Builder
-public class UserProfileResponse {
+public class UserPageResponse {
    private Long id;
    private Long userId;
    private PhotoViewResponse avatar;

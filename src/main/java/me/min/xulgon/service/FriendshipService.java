@@ -1,6 +1,7 @@
 package me.min.xulgon.service;
 
 import lombok.AllArgsConstructor;
+import me.min.xulgon.exception.UserNotFoundException;
 import me.min.xulgon.model.*;
 import me.min.xulgon.repository.FollowRepository;
 import me.min.xulgon.repository.FriendRequestRepository;
@@ -28,7 +29,7 @@ public class FriendshipService {
 
    public void createFriendship(Long requesterId) {
       User requester = userRepository.findById(requesterId)
-            .orElseThrow(() -> new RuntimeException("User not found"));
+            .orElseThrow(UserNotFoundException::new);
       FriendRequest request = friendRequestRepository.findByRequesterAndRequestee(
             requester, authenticationService.getPrincipal()
       )
@@ -63,7 +64,7 @@ public class FriendshipService {
    public void delete(Long userId) {
       User principal = authenticationService.getPrincipal();
       User user = userRepository.findById(userId)
-            .orElseThrow(() -> new RuntimeException("User not found"));
+            .orElseThrow(UserNotFoundException::new);
       friendshipRepository.deleteByUsers(user, principal);
       followRepository.deleteByUserAndPage(user, principal.getUserPage());
       followRepository.deleteByUserAndPage(principal, user.getUserPage());

@@ -20,7 +20,6 @@ public class RefreshTokenService {
       RefreshToken refreshToken = new RefreshToken();
       refreshToken.setToken(UUID.randomUUID().toString());
       refreshToken.setCreatedAt(Instant.now());
-
       return refreshTokenRepository.save(refreshToken);
    }
 

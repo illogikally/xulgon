@@ -1,28 +1,26 @@
 package me.min.xulgon.util;
 
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
+import me.min.xulgon.model.Photo;
+import me.min.xulgon.model.PhotoThumbnail;
+import org.springframework.core.env.Environment;
 
-import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collector;
 
 public class Util {
    private Util() {}
 
-   public static Pageable limToPage(int limit, int offset) {
-      final int page = offset / limit;
-      return PageRequest.of(page, limit);
+   public static String getPhotoUrl(Environment env, Photo photo) {
+      if (photo == null) return null;
+      String baseUrl = env.getProperty("resource.url");
+      return baseUrl + "/" + photo.getName();
    }
 
-   public static String PRIVACY_FILTER =
-//        "        c.user_id = {0} \n" +
-        "        EXISTS \n" +
-        "        ( \n" +
-        "            SELECT * \n" +
-        "            FROM friendship f \n" +
-        "            WHERE \n" +
-        "                1 IN (f.usera_id, f.userb_id) \n" +
-        "                AND c.user_id IN (f.usera_id, f.userb_id) \n" +
-        "        ) \n";
-//        "        OR p.privacy = ''PUBLIC'' \n";
+   public static String getThumbnailUrl(Environment env, PhotoThumbnail photo) {
+      if (photo == null) return null;
+      String baseUrl = env.getProperty("resource.url");
+      return baseUrl + "/" + photo.getName();
+   }
 }

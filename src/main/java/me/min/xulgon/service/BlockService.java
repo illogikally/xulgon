@@ -1,6 +1,8 @@
 package me.min.xulgon.service;
 
 import lombok.AllArgsConstructor;
+import me.min.xulgon.exception.PageNotFoundException;
+import me.min.xulgon.exception.UserNotFoundException;
 import me.min.xulgon.model.Block;
 import me.min.xulgon.model.Content;
 import me.min.xulgon.model.User;
@@ -54,7 +56,7 @@ public class BlockService {
    @Transactional(readOnly = true)
    public Boolean isBlocked(Long profileId) {
       UserPage profile = userPageRepository.findById(profileId)
-            .orElseThrow(RuntimeException::new);
+            .orElseThrow(PageNotFoundException::new);
 
       return blockRepository.findByBlockerAndBlockee(profile.getUser(), authService.getPrincipal())
             .isPresent();
@@ -62,7 +64,7 @@ public class BlockService {
 
    public void block(Long blockeeId) {
       User blockee = userRepository.findById(blockeeId)
-            .orElseThrow(RuntimeException::new);
+            .orElseThrow(UserNotFoundException::new);
       Block block = Block.builder()
             .blocker(authService.getPrincipal())
             .blockee(blockee)
@@ -76,7 +78,7 @@ public class BlockService {
 
    public void unblock(Long blockeeId) {
       User blockee = userRepository.findById(blockeeId)
-            .orElseThrow(RuntimeException::new);
+            .orElseThrow(UserNotFoundException::new);
 
       blockRepository.deleteByBlockerAndBlockee(authService.getPrincipal(), blockee);
 

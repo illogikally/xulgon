@@ -14,7 +14,7 @@ import javax.persistence.*;
 @Builder
 public class Reaction {
    @Id
-   @GeneratedValue
+   @GeneratedValue(strategy = GenerationType.IDENTITY)
    private Long id;
    @Enumerated(value = EnumType.STRING)
    private ReactionType type;

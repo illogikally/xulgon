@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import me.min.xulgon.model.PageType;
 import me.min.xulgon.model.Privacy;
 
 @Data
@@ -19,8 +20,13 @@ public class PhotoViewResponse {
    private String url;
    private Privacy privacy;
    private Boolean isReacted;
-   private Float sizeRatio;
+   private String pageName;
+   private PageType pageType;
+   private String pageId;
    private Integer reactionCount;
    private Integer commentCount;
    private Integer shareCount;
+
+   private Boolean hasNext;
+   private Integer index;
 }

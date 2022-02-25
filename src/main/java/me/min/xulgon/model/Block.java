@@ -17,7 +17,7 @@ import java.time.Instant;
 @Builder
 public class Block {
    @Id
-   @GeneratedValue
+   @GeneratedValue(strategy = GenerationType.IDENTITY)
    private Long id;
    @ManyToOne
    @NotNull

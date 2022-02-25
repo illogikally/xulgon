@@ -2,34 +2,44 @@ package me.min.xulgon.service;
 
 import lombok.AllArgsConstructor;
 import me.min.xulgon.dto.*;
-import me.min.xulgon.mapper.PhotoViewMapper;
+import me.min.xulgon.exception.PageNotFoundException;
+import me.min.xulgon.exception.ContentNotFoundException;
+import me.min.xulgon.mapper.PhotoMapper;
 import me.min.xulgon.mapper.UserPageMapper;
-import me.min.xulgon.model.Photo;
-import me.min.xulgon.model.UserPage;
+import me.min.xulgon.model.*;
 import me.min.xulgon.repository.PhotoRepository;
+import me.min.xulgon.repository.PhotoSetPhotoRepository;
 import me.min.xulgon.repository.UserPageRepository;
+import me.min.xulgon.util.Util;
+import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.Instant;
 import java.util.List;
 
 @Service
 @AllArgsConstructor
+@Transactional
 public class UserPageService {
 
+   private final PhotoSetService photoSetService;
    private final UserPageRepository userPageRepository;
    private final UserPageMapper userPageMapper;
-   private final StorageService storageService;
    private final FriendshipService friendshipService;
-   private final PhotoViewMapper photoViewMapper;
+   private final PhotoService photoService;
+   private final PhotoSetPhotoRepository photoSetPhotoRepository;
+   private final PhotoMapper photoMapper;
    private final UserService userService;
+   private final Environment env;
 
 
    private final PhotoRepository photoRepository;
 
-   public UserProfileResponse getUserProfile(Long id) {
+   public UserPageResponse getUserProfile(Long id) {
       UserPage userPage = userPageRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Profile not found"));
+            .orElseThrow(PageNotFoundException::new);
 
       return userPageMapper.toDto(userPage);
    }
@@ -40,12 +50,12 @@ public class UserPageService {
       return userService.getFriends(profile.getUser().getId());
    }
 
-   public void updateAvatar(Long profileId, Long photoId) {
+   public void changeAvatar(Long profileId, Long photoId) {
       UserPage userPage = userPageRepository.findById(profileId)
-            .orElseThrow(() -> new RuntimeException("Profile not found"));
+            .orElseThrow(PageNotFoundException::new);
 
       Photo photo = photoRepository.findById(photoId)
-            .orElseThrow(() -> new RuntimeException("Photo not found"));
+            .orElseThrow(ContentNotFoundException::new);
 
       userPage.setAvatar(photo);
       userPageRepository.save(userPage);
@@ -54,66 +64,78 @@ public class UserPageService {
    public PhotoViewResponse uploadAvatar(Long profileId,
                                          PhotoRequest request,
                                          MultipartFile multipartFile) {
-      UserPage profile = userPageRepository.findById(profileId)
-            .orElseThrow(() -> new RuntimeException("User Profile not found"));
-      String name = storageService.store(multipartFile);
-      request.setPageId(profileId);
-      Photo photo = photoRepository.save(photoViewMapper.map(request, name));
-      profile.setAvatar(photo);
-      userPageRepository.save(profile);
-      return photoViewMapper.toDto(photo);
+      UserPage page = userPageRepository.findById(profileId)
+            .orElseThrow(PageNotFoundException::new);
+      Photo photo = photoService.save(request, multipartFile);
+      int photoSetLastIndex =
+            photoSetService.getLastIndexAndSetHasNextTrue(page.getAvatarSet());
+      photoSetPhotoRepository.save(
+            PhotoSetPhoto.builder()
+                  .photoSet(page.getAvatarSet())
+                  .photoIndex(photoSetLastIndex + 1)
+                  .hasNext(false)
+                  .photo(photo)
+                  .createdAt(Instant.now())
+                  .build()
+      );
+      page.setAvatar(photo);
+      userPageRepository.save(page);
+      return photoMapper.toPhotoViewResponse(photo);
    }
 
-   public void updateCover(Long profileId, Long photoId) {
-      UserPage userPage = userPageRepository.findById(profileId)
-            .orElseThrow(() -> new RuntimeException("Profile not found"));
+   public void changeCoverPhoto(Long profileId, Long photoId) {
+      UserPage page = userPageRepository.findById(profileId)
+            .orElseThrow(PageNotFoundException::new);
 
       Photo photo = photoRepository.findById(photoId)
-            .orElseThrow(() -> new RuntimeException("Photo not found"));
+            .orElseThrow(ContentNotFoundException::new);
 
-      userPage.setCoverPhoto(photo);
-      userPageRepository.save(userPage);
+      page.setCoverPhoto(photo);
+      userPageRepository.save(page);
    }
 
-   public PhotoViewResponse uploadCover(Long profileId,
-                                        PhotoRequest request,
-                                        MultipartFile multipartFile) {
-      UserPage profile = userPageRepository.findById(profileId)
-            .orElseThrow(() -> new RuntimeException("User Profile not found"));
-      String name = storageService.store(multipartFile);
-      request.setPageId(profileId);
-      Photo photo = photoRepository.save(photoViewMapper.map(request, name));
-      profile.setCoverPhoto(photo);
-      userPageRepository.save(profile);
-      return photoViewMapper.toDto(photo);
+   public PhotoResponse uploadCoverPhoto(Long pageId,
+                                         PhotoRequest request,
+                                         MultipartFile multipartFile) {
+
+      UserPage page = userPageRepository.findById(pageId)
+            .orElseThrow(PageNotFoundException::new);
+      Photo photo = photoService.save(request, multipartFile);
+      int photoSetLastIndex =
+            photoSetService.getLastIndexAndSetHasNextTrue(page.getAvatarSet());
+      photoSetPhotoRepository.save(
+         PhotoSetPhoto.builder()
+               .photoSet(page.getCoverPhotoSet())
+               .photoIndex(photoSetLastIndex + 1)
+               .hasNext(false)
+               .photo(photo)
+               .createdAt(Instant.now())
+               .build()
+      );
+      page.setCoverPhoto(photo);
+      userPageRepository.save(page);
+      return photoMapper.toPhotoResponse(photo);
    }
 
-   public PageHeaderDto getProfileHeader(Long id) {
-      var userPage = userPageRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Profile not found"));
+   public PageHeaderDto getPageHeader(Long id) {
+      var page = userPageRepository.findById(id)
+            .orElseThrow(PageNotFoundException::new);
+      var coverPhoto = page.getCoverPhoto();
+      String coverPhotoUrl = "";
+      if (coverPhoto != null) {
+         coverPhotoUrl = Util.getThumbnailUrl(
+               env,
+               coverPhoto.getThumbnailsMap().get(ThumbnailType.s900x900)
+         );
+      }
+
       return PageHeaderDto.builder()
-            .id(userPage.getId())
-            .friendshipStatus(friendshipService.getFriendshipStatus(userPage.getUser()))
-            .userId(userPage.getUser().getId())
-            .avatar(photoViewMapper.toDto(userPage.getAvatar()))
-            .coverPhoto((userPage.getCoverPhoto().orElseGet(Photo::new)).getUrl())
-            .name(userPage.getName())
+            .id(page.getId())
+            .friendshipStatus(friendshipService.getFriendshipStatus(page.getUser()))
+            .userId(page.getUser().getId())
+            .avatar(photoMapper.toPhotoResponse(page.getAvatar()))
+            .coverPhotoUrl(coverPhotoUrl)
+            .name(page.getName())
             .build();
    }
-
-//   public void updateProfile(Long id,
-//                             MultipartFile multipartFile,
-//                             UserProfileRequest request) {
-//      UserProfile userProfile = userProfileRepository.findById(id)
-//            .orElseThrow(() -> new RuntimeException("Profile not found"));
-//
-//      if (request.getAvatarId() != null) {
-//         Photo avatar = photoRepository.findById(request.getAvatarId())
-//               .orElseThrow(() -> new RuntimeException("Photo not found"));
-//         userProfile.setAvatar(avatar);
-//      }
-//
-//   }
-
-
 }

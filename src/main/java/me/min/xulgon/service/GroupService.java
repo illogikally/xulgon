@@ -2,8 +2,10 @@ package me.min.xulgon.service;
 
 import lombok.AllArgsConstructor;
 import me.min.xulgon.dto.*;
+import me.min.xulgon.exception.PageNotFoundException;
 import me.min.xulgon.mapper.GroupMapper;
 import me.min.xulgon.mapper.MappingUtil;
+import me.min.xulgon.mapper.PhotoMapper;
 import me.min.xulgon.mapper.UserMapper;
 import me.min.xulgon.model.*;
 import me.min.xulgon.repository.*;
@@ -25,6 +27,7 @@ public class GroupService {
    private final GroupRepository groupRepository;
    private final AuthenticationService authService;
    private final GroupMemberRepository groupMemberRepository;
+   private final PhotoMapper photoMapper;
    private final UserMapper userMapper;
    private final GroupJoinRequestRepository groupJoinRequestRepository;
 
@@ -55,7 +58,7 @@ public class GroupService {
             .stream()
             .map(member -> GroupMemberDto.builder()
                   .user(userMapper.toDto(member.getUser()))
-                  .avatarUrl(member.getUser().getUserPage().getAvatar().getUrl())
+                  .avatarUrl(photoMapper.getUrl(member.getUser().getUserPage().getAvatar()))
                   .name(member.getUser().getFullName())
                   .role(member.getRole())
                   .build()
@@ -65,7 +68,7 @@ public class GroupService {
 
    public GroupResponse get(Long id) {
       Group group = groupRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Group not found"));
+            .orElseThrow(PageNotFoundException::new);
       return groupMapper.toDto(group);
    }
 

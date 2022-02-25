@@ -15,7 +15,7 @@ import java.time.Instant;
 @NoArgsConstructor
 public class GroupMember {
    @Id
-   @GeneratedValue
+   @GeneratedValue(strategy = GenerationType.IDENTITY)
    private Long id;
    private Instant createdAt;
    @Enumerated(EnumType.STRING)

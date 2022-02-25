@@ -15,7 +15,7 @@ import java.time.Instant;
 @NoArgsConstructor
 public class FriendRequest {
    @Id
-   @GeneratedValue
+   @GeneratedValue(strategy = GenerationType.IDENTITY)
    private Long id;
    private Instant createdAt;
 

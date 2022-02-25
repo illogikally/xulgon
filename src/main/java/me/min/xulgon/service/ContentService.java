@@ -1,6 +1,7 @@
 package me.min.xulgon.service;
 
 import lombok.AllArgsConstructor;
+import me.min.xulgon.exception.ContentNotFoundException;
 import me.min.xulgon.model.Comment;
 import me.min.xulgon.model.Content;
 import me.min.xulgon.model.Photo;
@@ -20,17 +21,15 @@ public class ContentService {
 
    public void deleteContent(Long id) {
       Content content = contentRepository.findById(id)
-            .orElseThrow(RuntimeException::new);
+            .orElseThrow(ContentNotFoundException::new);
       deleteContent(content);
    }
    public void deleteContent(Content content) {
 
       content.getComments()
-//            .map(Content::getId)
             .forEach(this::deleteContent);
 
       content.getPhotos()
-//            .map(Content::getId)
             .forEach(this::deleteContent);
 
       reactionRepository.deleteAllByContent(content);

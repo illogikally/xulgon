@@ -1,6 +1,7 @@
 package me.min.xulgon.service;
 
 import lombok.AllArgsConstructor;
+import me.min.xulgon.exception.PageNotFoundException;
 import me.min.xulgon.model.Page;
 import me.min.xulgon.repository.FollowRepository;
 import me.min.xulgon.repository.PageRepository;
@@ -19,7 +20,7 @@ public class FollowService {
 
    public void deleteByPage(Long pageId) {
       Page page = pageRepository.findById(pageId)
-            .orElseThrow(RuntimeException::new);
+            .orElseThrow(PageNotFoundException::new);
 
       followRepository.deleteByUserAndPage(authService.getPrincipal(), page);
    }

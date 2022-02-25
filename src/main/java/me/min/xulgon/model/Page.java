@@ -15,7 +15,7 @@ import java.util.Optional;
 @Inheritance(strategy = InheritanceType.JOINED)
 public class Page {
    @Id
-   @GeneratedValue
+   @GeneratedValue(strategy = GenerationType.IDENTITY)
    private Long id;
    private String name;
    @Enumerated(value = EnumType.STRING)
@@ -23,8 +23,10 @@ public class Page {
    @OneToOne
    @Nullable
    private Photo coverPhoto;
-
-   public Optional<Photo> getCoverPhoto() {
-      return Optional.ofNullable(coverPhoto);
-   }
+   @OneToOne
+   private PhotoSet pagePhotoSet;
+   @OneToOne
+   private PhotoSet avatarSet;
+   @OneToOne
+   private PhotoSet coverPhotoSet;
 }

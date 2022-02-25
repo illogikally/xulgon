@@ -18,5 +18,5 @@ public class Comment extends Content {
    @ManyToOne
    private Content parentContent;
    @ManyToOne
-   private Post post;
+   private Content rootContent;
 }

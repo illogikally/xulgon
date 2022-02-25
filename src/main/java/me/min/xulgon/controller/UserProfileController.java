@@ -6,7 +6,6 @@ import me.min.xulgon.service.BlockService;
 import me.min.xulgon.service.PhotoService;
 import me.min.xulgon.service.PostService;
 import me.min.xulgon.service.UserPageService;
-import me.min.xulgon.util.LimPageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -37,7 +36,7 @@ public class UserProfileController {
 
    @GetMapping("/{id}/profile")
    public ResponseEntity<PageHeaderDto> getProfileHeader(@PathVariable Long id) {
-      return ResponseEntity.ok(userPageService.getProfileHeader(id));
+      return ResponseEntity.ok(userPageService.getPageHeader(id));
    }
 
    @GetMapping("/{id}/is-blocked")
@@ -46,14 +45,14 @@ public class UserProfileController {
    }
 
    @GetMapping("/{id}")
-   public ResponseEntity<UserProfileResponse> getUserProfile(@PathVariable Long id) {
+   public ResponseEntity<UserPageResponse> getUserProfile(@PathVariable Long id) {
       return ResponseEntity.ok(userPageService.getUserProfile(id));
    }
 
    @PutMapping("/{id}/update-avatar")
    public ResponseEntity<Void> updateAvatar(@PathVariable Long id,
                                             @RequestBody Long photoId) {
-      userPageService.updateAvatar(id, photoId);
+      userPageService.changeAvatar(id, photoId);
       return new ResponseEntity<>(HttpStatus.OK);
    }
 
@@ -67,15 +66,15 @@ public class UserProfileController {
    @PutMapping("/{id}/update-cover")
    public ResponseEntity<Void> updateCover(@PathVariable Long id,
                                             @RequestBody Long photoId) {
-      userPageService.updateCover(id, photoId);
+      userPageService.changeCoverPhoto(id, photoId);
       return new ResponseEntity<>(HttpStatus.OK);
    }
 
    @PutMapping("/{id}/upload-cover")
-   public ResponseEntity<PhotoViewResponse> uploadCover(@PathVariable Long id,
+   public ResponseEntity<PhotoResponse> uploadCover(@PathVariable Long id,
                                                         @RequestPart("photoRequest") PhotoRequest request,
                                                         @RequestPart("photo") MultipartFile photo) {
-      return ResponseEntity.ok(userPageService.uploadCover(id, request, photo));
+      return ResponseEntity.ok(userPageService.uploadCoverPhoto(id, request, photo));
    }
 
 

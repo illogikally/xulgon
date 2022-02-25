@@ -5,7 +5,7 @@ import lombok.Data;
 
 @Data
 @Builder
-public class ConversationNotifDto {
+public class ConversationNotificationDto {
     private Long id;
     private MessageResponse latestMessage;
     private UserBasicDto user;

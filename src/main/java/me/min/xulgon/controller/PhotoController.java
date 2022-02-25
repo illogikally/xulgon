@@ -18,6 +18,7 @@ public class PhotoController {
       return photoService.get(id);
    }
 
+
    @DeleteMapping("{id}")
    public ResponseEntity<Void> delete(@PathVariable Long id) {
       photoService.delete(id);

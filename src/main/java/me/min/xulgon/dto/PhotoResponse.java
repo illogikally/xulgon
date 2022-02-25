@@ -4,6 +4,9 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import me.min.xulgon.model.ThumbnailType;
+
+import java.util.Map;
 
 @Data
 @AllArgsConstructor
@@ -11,6 +14,5 @@ import lombok.NoArgsConstructor;
 @Builder
 public class PhotoResponse {
    private Long id;
-   private String url;
-   private Float sizeRatio;
+   private Map<ThumbnailType, ThumbnailDto> thumbnails;
 }

@@ -4,24 +4,29 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 
-public class LimPageable implements Pageable {
+public class OffsetRequest implements Pageable {
    private final Integer size;
    private final Long offset;
 
-   public LimPageable(Integer size, Long offset) {
+   public OffsetRequest(Integer size, Long offset) {
       offset = offset == null ? 0 : offset;
-      int veryBigNumber = Integer.MAX_VALUE - 1;
-      size = size == null ? veryBigNumber : size;
+      final int VERY_BIG_NUMBER = Integer.MAX_VALUE - 1;
+      size = size == null ? VERY_BIG_NUMBER : size;
+
       if (offset < 0) {
-         throw new IllegalArgumentException("Offset index must not be less than zero!");
+         throw new IllegalArgumentException("Offset must not less than 0");
       }
 
-      if (size < 1) {
-         throw new IllegalArgumentException("Limit must not be less than one!");
+      if (size < 0L) {
+         throw new IllegalArgumentException("Limit must not less than 0");
       }
 
       this.size = size;
       this.offset = offset;
+   }
+
+   public OffsetRequest sizePlusOne() {
+      return new OffsetRequest(this.size + 1, this.offset);
    }
 
    @Override
@@ -45,28 +50,33 @@ public class LimPageable implements Pageable {
       return Sort.unsorted();
    }
 
+   @NotNull
    @Override
    public Pageable next() {
-      return null;
+      return new OffsetRequest(size, offset + size);
    }
 
+   @NotNull
    @Override
    public Pageable previousOrFirst() {
-      return null;
+      final long offset = this.offset < size ? 0 : this.offset - size;
+      return new OffsetRequest(size, offset);
    }
 
+   @NotNull
    @Override
    public Pageable first() {
-      return null;
+      return new OffsetRequest(size, 0L);
    }
 
+   @NotNull
    @Override
    public Pageable withPage(int pageNumber) {
-      return null;
+      return new OffsetRequest(size, (long) pageNumber * size);
    }
 
    @Override
    public boolean hasPrevious() {
-      return false;
+      return offset > size;
    }
 }

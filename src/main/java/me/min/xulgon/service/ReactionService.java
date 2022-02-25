@@ -3,6 +3,7 @@ package me.min.xulgon.service;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import me.min.xulgon.dto.ReactionDto;
+import me.min.xulgon.exception.ContentNotFoundException;
 import me.min.xulgon.mapper.NotificationMapper;
 import me.min.xulgon.model.Content;
 import me.min.xulgon.model.Notification;
@@ -34,7 +35,7 @@ public class ReactionService {
    @Transactional
    public void react(ReactionDto reactionDto) {
       Content content = contentRepository.findById(reactionDto.getContentId())
-            .orElseThrow(() -> new RuntimeException("Content not found"));
+            .orElseThrow(ContentNotFoundException::new);
 
       Optional<Reaction> reactionOptional = reactionRepository.findTopByContentAndUserOrderByIdDesc(
             content, authService.getPrincipal()

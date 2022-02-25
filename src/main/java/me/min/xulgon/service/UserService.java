@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import me.min.xulgon.dto.GroupResponse;
 import me.min.xulgon.dto.PostResponse;
 import me.min.xulgon.dto.UserDto;
+import me.min.xulgon.exception.UserNotFoundException;
 import me.min.xulgon.mapper.GroupMapper;
 import me.min.xulgon.mapper.PostMapper;
 import me.min.xulgon.mapper.UserMapper;
@@ -38,7 +39,7 @@ public class UserService {
    @Transactional(readOnly = true)
    public List<UserDto> getFriends(Long userId) {
       User user = userRepository.findById(userId)
-            .orElseThrow(() -> new RuntimeException("User not found"));
+            .orElseThrow(UserNotFoundException::new);
       return friendshipService.getFriends(user).stream()
             .map(userMapper::toDto)
             .collect(Collectors.toList());
@@ -79,7 +80,7 @@ public class UserService {
 
    public void unfollow(Long id) {
       User user = userRepository.findById(id)
-            .orElseThrow(RuntimeException::new);
+            .orElseThrow(UserNotFoundException::new);
       followRepository.deleteByUserAndPage(authService.getPrincipal(), user.getUserPage());
    }
 

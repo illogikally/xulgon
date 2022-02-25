@@ -18,7 +18,7 @@ import java.time.Instant;
 @Builder
 public class RefreshToken {
    @Id
-   @GeneratedValue
+   @GeneratedValue(strategy = GenerationType.IDENTITY)
    private Long id;
    private String token;
    private Instant createdAt;

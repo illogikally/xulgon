@@ -13,7 +13,7 @@ import java.time.Instant;
 @NoArgsConstructor
 public class ContentEditHistory {
    @Id
-   @GeneratedValue
+   @GeneratedValue(strategy = GenerationType.IDENTITY)
    @EqualsAndHashCode.Include
    private Long id;
    private Instant createdAt;

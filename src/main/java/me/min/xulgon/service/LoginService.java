@@ -26,7 +26,6 @@ public class LoginService {
     private final RefreshTokenService refreshTokenService;
     private final PasswordEncoder passwordEncoder;
 
-
     public void register(RegisterDto registerDto) {
         User user = User.builder()
                 .id(null)

@@ -14,7 +14,7 @@ import javax.persistence.*;
 @Builder
 public class Conversation {
    @Id
-   @GeneratedValue
+   @GeneratedValue(strategy = GenerationType.IDENTITY)
    private Long id;
 
 }

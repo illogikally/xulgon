@@ -15,7 +15,7 @@ import java.time.Instant;
 @Builder
 public class Friendship {
    @Id
-   @GeneratedValue
+   @GeneratedValue(strategy = GenerationType.IDENTITY)
    private Long id;
    private Instant createdAt;
    @ManyToOne
