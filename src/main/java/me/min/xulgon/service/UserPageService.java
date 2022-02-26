@@ -58,7 +58,7 @@ public class UserPageService {
       Photo photo = photoRepository.findById(photoId)
             .orElseThrow(ContentNotFoundException::new);
 
-      photoSetService.insertToPhotoSet(page.getPagePhotoSet(), photo);
+      photoSetService.insertUniqueToPhotoSet(page.getPagePhotoSet(), photo);
       photoSetService.insertUniqueToPhotoSet(page.getAvatarSet(), photo);
       page.setAvatar(photo);
       userPageRepository.save(page);
@@ -71,7 +71,7 @@ public class UserPageService {
       UserPage page = principal.getUserPage();
       Photo photo = photoService.save(request, multipartFile);
 
-      photoSetService.insertToPhotoSet(page.getPagePhotoSet(), photo);
+      photoSetService.insertUniqueToPhotoSet(page.getPagePhotoSet(), photo);
       photoSetService.insertUniqueToPhotoSet(page.getAvatarSet(), photo);
       page.setAvatar(photo);
       userPageRepository.save(page);
@@ -86,7 +86,7 @@ public class UserPageService {
             .orElseThrow(ContentNotFoundException::new);
 
       photoSetService.insertUniqueToPhotoSet(page.getCoverPhotoSet(), photo);
-      photoSetService.insertToPhotoSet(page.getPagePhotoSet(), photo);
+      photoSetService.insertUniqueToPhotoSet(page.getPagePhotoSet(), photo);
 
       page.setCoverPhoto(photo);
       userPageRepository.save(page);
@@ -100,7 +100,7 @@ public class UserPageService {
       Photo photo = photoService.save(request, multipartFile);
 
       photoSetService.insertUniqueToPhotoSet(page.getCoverPhotoSet(), photo);
-      photoSetService.insertToPhotoSet(page.getPagePhotoSet(), photo);
+      photoSetService.insertUniqueToPhotoSet(page.getPagePhotoSet(), photo);
 
       page.setCoverPhoto(photo);
       userPageRepository.save(page);

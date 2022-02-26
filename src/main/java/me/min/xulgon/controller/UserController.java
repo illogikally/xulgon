@@ -98,9 +98,9 @@ public class UserController {
 
    @GetMapping("/existed")
    public ResponseEntity<Boolean> existed(@RequestParam("username") String username) {
-      log.error(username);
       var ok = userService.isUserExisted(username);
-      log.error(ok.toString());
+      System.out.println(username);
+      System.out.println(ok.toString());
       return ResponseEntity.ok(ok);
    }
 }

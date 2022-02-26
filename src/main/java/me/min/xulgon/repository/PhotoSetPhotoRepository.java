@@ -9,8 +9,16 @@ import java.util.List;
 import java.util.Optional;
 
 public interface PhotoSetPhotoRepository extends JpaRepository<PhotoSetPhoto, Long> {
-   Optional<PhotoSetPhoto> findTopByPhotoSetOrderByPhotoIndexDesc(PhotoSet set);
    Optional<PhotoSetPhoto> findByPhotoSetAndPhoto(PhotoSet set, Photo photo);
-   PhotoSetPhoto findByPhotoSetAndPhotoIndex(PhotoSet set, Integer index);
-   List<PhotoSetPhoto> findAllByPhotoSetOrderByPhotoIndex(PhotoSet set);
+   List<PhotoSetPhoto> findAllByPhotoSetOrderById(PhotoSet set);
+   Optional<PhotoSetPhoto> findTopByPhotoSetAndIdGreaterThanOrderById(PhotoSet set, Long id);
+   Optional<PhotoSetPhoto> findTopByPhotoSetAndIdLessThanOrderByIdDesc(PhotoSet set, Long id);
+
+   default Optional<PhotoSetPhoto> findItemAfterThisPhotoInSet(PhotoSet set, Long id) {
+      return findTopByPhotoSetAndIdGreaterThanOrderById(set, id);
+   }
+
+   default Optional<PhotoSetPhoto> findItemBeforeThisInSet(PhotoSet set, Long id) {
+      return findTopByPhotoSetAndIdLessThanOrderByIdDesc(set, id);
+   }
 }

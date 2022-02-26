@@ -128,37 +128,33 @@ public class PostService {
       Page page = pageRepository.findById(postRequest.getPageId())
             .orElseThrow(PageNotFoundException::new);
 
-      PhotoSet photoSet = PhotoSet.generate(SetType.POST);
-      photoSet = photoSetRepository.save(photoSet);
-      int photosLength = Math.min(photos.size(), photoRequests.size());
-      Post savedPost = postRepository.save(postMapper.map(postRequest, photoSet));
+      PhotoSet postPhotoSet = PhotoSet.generate(SetType.POST);
+      postPhotoSet = photoSetRepository.save(postPhotoSet);
+      Post savedPost = postRepository.save(postMapper.map(postRequest, postPhotoSet));
       List<Photo> savedPhotos = new ArrayList<>();
-
+      int photosLength = Math.min(photos.size(), photoRequests.size());
       if (photosLength > 0) {
          photoRequests.forEach(request -> request.setParentId(savedPost.getId()));
-         Integer pageSetLastIndex =
-               photoSetService.getLastIndexAndSetHasNextTrue(page.getPagePhotoSet());
          for (int i = 0; i < photosLength; ++i) {
             Photo photo = photoService.save(photoRequests.get(i), photos.get(i));
 
-            PhotoSetPhoto postSet = PhotoSetPhoto.builder()
-                  .photoSet(photoSet)
-                  .photo(photo)
-                  .photoIndex(i + 1)
-                  .hasNext(i != photosLength - 1)
-                  .createdAt(Instant.now())
-                  .build();
+            photoSetService.insertUniqueToPhotoSet(postPhotoSet, photo);
+//            PhotoSetPhoto postSet = PhotoSetPhoto.builder()
+//                  .photoSet(postPhotoSet)
+//                  .photo(photo)
+//                  .hasNext(i != photosLength - 1)
+//                  .hasPrevious(i != 0);
+//                  .createdAt(Instant.now())
+//                  .build();
 
-            PhotoSetPhoto pageSet = PhotoSetPhoto.builder()
-                  .photoSet(page.getPagePhotoSet())
-                  .photoIndex(i + 1 + pageSetLastIndex)
-                  .hasNext(i != photosLength - 1)
-                  .photo(photo)
-                  .createdAt(Instant.now())
-                  .build();
-
-            photoSetPhotoRepository.save(postSet);
-            photoSetPhotoRepository.save(pageSet);
+            photoSetService.insertUniqueToPhotoSet(page.getPagePhotoSet(), photo);
+//            PhotoSetPhoto pageSet = PhotoSetPhoto.builder()
+//                  .photoSet(page.getPagePhotoSet())
+//                  .hasNext(i != photosLength - 1)
+//                  .hasPrevious(i != 0);
+//                  .photo(photo)
+//                  .createdAt(Instant.now())
+//                  .build();
             savedPhotos.add(photo);
          }
       }

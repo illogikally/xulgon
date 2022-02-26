@@ -16,17 +16,25 @@ public class PhotoSetController {
 
    private final PhotoSetService photoSetService;
 
-   @GetMapping("/{setId}/photos/by-id/{photoId}")
-   public ResponseEntity<PhotoViewResponse> getItemById(@PathVariable Long setId,
-                                                       @PathVariable Long photoId) {
 
-      return ResponseEntity.ok(photoSetService.getItemById(setId, photoId));
+   @GetMapping("/{setId}/photos/{photoId}")
+   public ResponseEntity<PhotoViewResponse> getItemById(@PathVariable Long setId,
+                                                        @PathVariable Long photoId) {
+
+      return ResponseEntity.ok(photoSetService.getItem(setId, photoId));
    }
 
-   @GetMapping("/{setId}/photos/by-index/{index}")
-   public ResponseEntity<PhotoViewResponse> getItemByIndex(@PathVariable Long setId,
-                                                           @PathVariable Integer index) {
+   @GetMapping("/{setId}/photos/before/{photoId}")
+   public ResponseEntity<PhotoViewResponse> getItemBefore(@PathVariable Long setId,
+                                                          @PathVariable Long photoId) {
 
-      return ResponseEntity.ok(photoSetService.getItemByIndex(setId, index));
+      return ResponseEntity.ok(photoSetService.getItemBefore(setId, photoId));
+   }
+
+   @GetMapping("/{setId}/photos/after/{photoId}")
+   public ResponseEntity<PhotoViewResponse> getItemAfter(@PathVariable Long setId,
+                                                         @PathVariable Long photoId) {
+
+      return ResponseEntity.ok(photoSetService.getItemAfter(setId, photoId));
    }
 }

@@ -6,6 +6,7 @@ import me.min.xulgon.dto.AuthenticationResponse;
 import me.min.xulgon.dto.RegisterDto;
 import me.min.xulgon.model.Provider;
 import me.min.xulgon.model.User;
+import me.min.xulgon.repository.UserRepository;
 import me.min.xulgon.security.JwtProvider;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -15,6 +16,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.util.Optional;
 
 @Service
 @AllArgsConstructor
@@ -25,8 +27,14 @@ public class LoginService {
     private final AuthenticationService authService;
     private final RefreshTokenService refreshTokenService;
     private final PasswordEncoder passwordEncoder;
+    private final UserRepository userRepository;
 
     public void register(RegisterDto registerDto) {
+        Optional<User> existed = userRepository.findByUsername(registerDto.getUsername());
+        if (existed.isPresent()) {
+            throw new RuntimeException("Username existed!");
+        }
+
         User user = User.builder()
                 .id(null)
                 .username(registerDto.getUsername())

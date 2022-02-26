@@ -15,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.Optional;
+import java.util.function.BiFunction;
 
 @Service
 @AllArgsConstructor
@@ -25,9 +26,10 @@ public class PhotoSetService {
    private final PhotoRepository photoRepository;
    private final PhotoSetPhotoRepository photoSetPhotoRepository;
    private final PhotoMapper photoMapper;
+   private final ContentService contentService;
 
    @Transactional(readOnly = true)
-   public PhotoViewResponse getItemById(Long setId, Long photoId) {
+   public PhotoViewResponse getItem(Long setId, Long photoId) {
       PhotoSet set = photoSetRepository.findById(setId)
             .orElseThrow(RuntimeException::new);
       Photo photo = photoRepository.findById(photoId)
@@ -35,57 +37,71 @@ public class PhotoSetService {
       PhotoSetPhoto photoSetPhoto =
             photoSetPhotoRepository.findByPhotoSetAndPhoto(set, photo)
                   .orElse(null);
+      if (!contentService.privacyFilter(photo)) {
+         return null;
+      }
       return photoMapper.toPhotoViewSetResponse(photoSetPhoto);
    }
 
    @Transactional(readOnly = true)
-   public PhotoViewResponse getItemByIndex(Long setId, Integer index) {
-      PhotoSet set = photoSetRepository.findById(setId)
-            .orElseThrow(RuntimeException::new);
-      PhotoSetPhoto photoSetPhoto =
-            photoSetPhotoRepository.findByPhotoSetAndPhotoIndex(set, index);
-      return photoMapper.toPhotoViewSetResponse(photoSetPhoto);
+   public PhotoViewResponse getItemBefore(Long setId, Long photoId) {
+      return getItemAdjacent(
+            photoSetPhotoRepository::findItemBeforeThisInSet,
+            setId,
+            photoId
+      );
    }
 
-   public void insertToPhotoSet(PhotoSet set, Photo photo) {
-      int photoSetLastIndex = getLastIndexAndSetHasNextTrue(set);
+   @Transactional(readOnly = true)
+   public PhotoViewResponse getItemAfter(Long setId, Long photoId) {
+      return getItemAdjacent(
+            photoSetPhotoRepository::findItemAfterThisPhotoInSet,
+            setId,
+            photoId
+      );
+   }
+
+   private PhotoViewResponse getItemAdjacent(BiFunction<PhotoSet, Long, Optional<PhotoSetPhoto>> get,
+                                             Long setId,
+                                             Long photoId) {
+      PhotoSet set = photoSetRepository.findById(setId)
+            .orElseThrow(RuntimeException::new);
+      Photo photo = photoRepository.findById(photoId)
+            .orElseThrow(ContentNotFoundException::new);
+      var photoSetPhoto = photoSetPhotoRepository.findByPhotoSetAndPhoto(set, photo)
+            .orElseThrow(RuntimeException::new);
+      var photoSetPhotoAdj = get.apply(set, photoSetPhoto.getId())
+            .orElseThrow(RuntimeException::new);
+      if (!contentService.privacyFilter(photoSetPhotoAdj.getPhoto())) {
+         return null;
+      }
+      return photoMapper.toPhotoViewSetResponse(photoSetPhotoAdj);
+   }
+
+   /**
+    * Insert a new record to PhotoSet_Photo table. If there is duplicate, delete then
+    * proceed to insert.
+    * @param set the photo set to insert photo into.
+    * @param photo the photo to insert.
+    */
+   public void insertUniqueToPhotoSet(PhotoSet set, Photo photo) {
+      PhotoSetPhoto photoSetPhoto = photoSetPhotoRepository.findByPhotoSetAndPhoto(set, photo)
+            .orElseThrow(RuntimeException::new);
+      boolean hasPrevious
+            = photoSetPhotoRepository.findItemBeforeThisInSet(set, photoSetPhoto.getId()).isPresent();
+      var optional = set.getPhotoSetPhoto()
+            .stream()
+            .filter(item -> item.getPhoto().equals(photo))
+            .findAny();
+      optional.ifPresent(photoSetPhotoRepository::delete);
       photoSetPhotoRepository.save(
             PhotoSetPhoto.builder()
                   .photoSet(set)
-                  .photoIndex(photoSetLastIndex + 1)
+                  .hasPrevious(hasPrevious)
                   .hasNext(false)
                   .photo(photo)
                   .createdAt(Instant.now())
                   .build()
       );
-   }
-
-   public void insertUniqueToPhotoSet(PhotoSet set, Photo photo) {
-      boolean isPresent = set.getPhotoSetPhoto().stream()
-            .anyMatch(psp -> psp.getPhoto().equals(photo));
-      if (!isPresent) {
-         insertToPhotoSet(set, photo);
-      }
-   }
-
-   /**
-    * Returns the last index of the photo set and mark its last item's hasNext to true.
-    * If the set is empty, returns 0.
-    * @param photoSet
-    * The photo set to get last index of.
-    *
-    * @return last index of the photo set.
-    */
-   public Integer getLastIndexAndSetHasNextTrue(PhotoSet photoSet) {
-      int lastIndex = 0;
-      Optional<PhotoSetPhoto> photoSetPhotoOptional =
-            photoSetPhotoRepository.findTopByPhotoSetOrderByPhotoIndexDesc(photoSet);
-      if (photoSetPhotoOptional.isPresent()) {
-         lastIndex = photoSetPhotoOptional.get().getPhotoIndex();
-         var lastPhotoSetPhoto = photoSetPhotoOptional.get();
-         lastPhotoSetPhoto.setHasNext(true);
-         photoSetPhotoRepository.save(lastPhotoSetPhoto);
-      }
-      return lastIndex;
    }
 }

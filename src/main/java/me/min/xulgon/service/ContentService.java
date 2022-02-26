@@ -2,10 +2,8 @@ package me.min.xulgon.service;
 
 import lombok.AllArgsConstructor;
 import me.min.xulgon.exception.ContentNotFoundException;
-import me.min.xulgon.model.Comment;
-import me.min.xulgon.model.Content;
-import me.min.xulgon.model.Photo;
-import me.min.xulgon.model.Post;
+import me.min.xulgon.exception.PageNotFoundException;
+import me.min.xulgon.model.*;
 import me.min.xulgon.repository.*;
 import org.springframework.stereotype.Service;
 
@@ -18,6 +16,9 @@ public class ContentService {
    private final PostRepository postRepository;
    private final CommentRepository commentRepository;
    private final PhotoRepository photoRepository;
+   private final PrincipalService principalService;
+   private final GroupRepository groupRepository;
+   private final FriendshipRepository friendshipRepository;
 
    public void deleteContent(Long id) {
       Content content = contentRepository.findById(id)
@@ -52,4 +53,27 @@ public class ContentService {
       }
    }
 
+
+   public boolean privacyFilter(Photo photo) {
+      Privacy privacy = getPrivacy(photo);
+      return photo.getPrivacy().ordinal() <= privacy.ordinal();
+   }
+
+   private Privacy getPrivacy(Content content) {
+      User principal = principalService.getPrincipal();
+      User contentOwner = content.getUser();
+      Page page = content.getPage();
+      if (page.getType().equals(PageType.GROUP)) {
+         Group group = groupRepository.findById(page.getId())
+               .orElseThrow(PageNotFoundException::new);
+         boolean isMember = group.getMembers()
+               .stream()
+               .anyMatch(member -> member.getUser().equals(principal));
+         return isMember ? Privacy.GROUP : Privacy.PUBLIC;
+      }
+
+      return principal.equals(contentOwner) ? Privacy.ME
+            : friendshipRepository.findByUsers(principal, contentOwner).isPresent()
+            ? Privacy.FRIEND : Privacy.PUBLIC;
+   }
 }

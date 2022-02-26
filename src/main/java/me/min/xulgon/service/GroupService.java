@@ -136,4 +136,5 @@ public class GroupService {
       groupMemberRepository.deleteByUserAndGroup(user, group);
       followRepository.deleteByUserAndPage(user, group);
    }
+   
 }

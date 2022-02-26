@@ -36,15 +36,13 @@ import java.util.stream.Collectors;
 public class PhotoService {
 
    private final PhotoMapper photoMapper;
+   private final ContentService contentService;
    private final PhotoRepository photoRepository;
    private final StorageService storageService;
    private final PageRepository pageRepository;
-   private final PostRepository postRepository;
    private final PhotoSetPhotoRepository photoSetPhotoRepository;
    private final PhotoThumbnailRepository thumbnailRepository;
    private final Environment environment;
-   private final PrincipalService principalService;
-   private final FriendshipRepository friendshipRepository;
 
 
    public Photo save(PhotoRequest photoRequest, MultipartFile multipartFile) {
@@ -123,24 +121,12 @@ public class PhotoService {
       Page page = pageRepository.findById(id)
             .orElseThrow(PageNotFoundException::new);
 
-      return photoSetPhotoRepository.findAllByPhotoSetOrderByPhotoIndex(page.getPagePhotoSet())
+      return photoSetPhotoRepository.findAllByPhotoSetOrderById(page.getPagePhotoSet())
             .stream()
             .map(PhotoSetPhoto::getPhoto)
-            .filter(this::privacyFilter)
+            .filter(contentService::privacyFilter)
             .map(photoMapper::toPhotoResponse)
             .collect(Collectors.toList());
-   }
-
-   public boolean privacyFilter(Photo photo) {
-      Privacy privacy = getPrivacy(photo.getUser());
-      return photo.getPrivacy().ordinal() <= privacy.ordinal();
-   }
-
-   private Privacy getPrivacy(User user) {
-      User me = principalService.getPrincipal();
-      return me.equals(user) ? Privacy.ME
-            : friendshipRepository.findByUsers(me, user).isPresent()
-            ? Privacy.FRIEND : Privacy.PUBLIC;
    }
 
    public void delete(Long id) {

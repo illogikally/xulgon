@@ -28,5 +28,5 @@ public class PhotoViewResponse {
    private Integer shareCount;
 
    private Boolean hasNext;
-   private Integer index;
+   private Boolean hasPrevious;
 }

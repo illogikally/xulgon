@@ -10,6 +10,7 @@ import me.min.xulgon.exception.PageNotFoundException;
 import me.min.xulgon.model.*;
 import me.min.xulgon.repository.ContentRepository;
 import me.min.xulgon.repository.PageRepository;
+import me.min.xulgon.service.ContentService;
 import me.min.xulgon.service.PrincipalService;
 import org.springframework.core.env.Environment;
 import org.springframework.data.util.Pair;
@@ -34,6 +35,7 @@ public class PhotoMapper {
    private final UserMapper userMapper;
    private final ThumbnailMapper thumbnailMapper;
    private final Environment environment;
+   private final ContentService contentService;
 
    public Photo map(PhotoRequest photoRequest, Pair<Integer, Integer> widthHeight, String name) {
       if (photoRequest == null || name == null) return null;
@@ -98,7 +100,7 @@ public class PhotoMapper {
 
       PhotoViewResponse response = toPhotoViewResponse(photo);
       response.setHasNext(photoSetPhoto.getHasNext());
-      response.setIndex(photoSetPhoto.getPhotoIndex());
+      response.setHasPrevious(photoSetPhoto.getHasPrevious());
       return response;
    }
 
