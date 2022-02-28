@@ -8,7 +8,6 @@ import me.min.xulgon.mapper.PhotoMapper;
 import me.min.xulgon.mapper.UserPageMapper;
 import me.min.xulgon.model.*;
 import me.min.xulgon.repository.PhotoRepository;
-import me.min.xulgon.repository.PhotoSetPhotoRepository;
 import me.min.xulgon.repository.UserPageRepository;
 import me.min.xulgon.util.Util;
 import org.springframework.core.env.Environment;
@@ -16,7 +15,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.time.Instant;
 import java.util.List;
 
 @Service
@@ -25,12 +23,11 @@ import java.util.List;
 public class UserPageService {
 
    private final PrincipalService principalService;
-   private final PhotoSetService photoSetService;
+   private final PhotoSetPhotoService photoSetPhotoService;
    private final UserPageRepository userPageRepository;
    private final UserPageMapper userPageMapper;
    private final FriendshipService friendshipService;
    private final PhotoService photoService;
-   private final PhotoSetPhotoRepository photoSetPhotoRepository;
    private final PhotoMapper photoMapper;
    private final UserService userService;
    private final Environment environment;
@@ -58,21 +55,21 @@ public class UserPageService {
       Photo photo = photoRepository.findById(photoId)
             .orElseThrow(ContentNotFoundException::new);
 
-      photoSetService.insertUniqueToPhotoSet(page.getPagePhotoSet(), photo);
-      photoSetService.insertUniqueToPhotoSet(page.getAvatarSet(), photo);
+      photo.setPrivacy(Privacy.PUBLIC);
+      photoRepository.save(photo);
+      photoSetPhotoService.bulkInsertUnique(page.getAvatarSet(), List.of(photo));
       page.setAvatar(photo);
       userPageRepository.save(page);
    }
 
-   public PhotoResponse uploadAvatar(
-                                         PhotoRequest request,
-                                         MultipartFile multipartFile) {
+   public PhotoResponse uploadAvatar(PhotoRequest request,
+                                     MultipartFile multipartFile) {
       User principal = principalService.getPrincipal();
       UserPage page = principal.getUserPage();
       Photo photo = photoService.save(request, multipartFile);
 
-      photoSetService.insertUniqueToPhotoSet(page.getPagePhotoSet(), photo);
-      photoSetService.insertUniqueToPhotoSet(page.getAvatarSet(), photo);
+      photoSetPhotoService.bulkInsertUnique(page.getPagePhotoSet(), List.of(photo));
+      photoSetPhotoService.bulkInsertUnique(page.getAvatarSet(), List.of(photo));
       page.setAvatar(photo);
       userPageRepository.save(page);
       return photoMapper.toPhotoResponse(photo);
@@ -85,8 +82,9 @@ public class UserPageService {
       Photo photo = photoRepository.findById(photoId)
             .orElseThrow(ContentNotFoundException::new);
 
-      photoSetService.insertUniqueToPhotoSet(page.getCoverPhotoSet(), photo);
-      photoSetService.insertUniqueToPhotoSet(page.getPagePhotoSet(), photo);
+      photo.setPrivacy(Privacy.PUBLIC);
+      photoRepository.save(photo);
+      photoSetPhotoService.bulkInsertUnique(page.getCoverPhotoSet(), List.of(photo));
 
       page.setCoverPhoto(photo);
       userPageRepository.save(page);
@@ -99,8 +97,8 @@ public class UserPageService {
       UserPage page = principal.getUserPage();
       Photo photo = photoService.save(request, multipartFile);
 
-      photoSetService.insertUniqueToPhotoSet(page.getCoverPhotoSet(), photo);
-      photoSetService.insertUniqueToPhotoSet(page.getPagePhotoSet(), photo);
+      photoSetPhotoService.bulkInsertUnique(page.getCoverPhotoSet(), List.of(photo));
+      photoSetPhotoService.bulkInsertUnique(page.getPagePhotoSet(), List.of(photo));
 
       page.setCoverPhoto(photo);
       userPageRepository.save(page);

@@ -2,7 +2,7 @@ package me.min.xulgon.controller;
 
 import lombok.AllArgsConstructor;
 import me.min.xulgon.dto.PhotoViewResponse;
-import me.min.xulgon.service.PhotoSetService;
+import me.min.xulgon.service.PhotoSetPhotoService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -14,27 +14,27 @@ import org.springframework.web.bind.annotation.RestController;
 @AllArgsConstructor
 public class PhotoSetController {
 
-   private final PhotoSetService photoSetService;
+   private final PhotoSetPhotoService photoSetPhotoService;
 
 
    @GetMapping("/{setId}/photos/{photoId}")
-   public ResponseEntity<PhotoViewResponse> getItemById(@PathVariable Long setId,
-                                                        @PathVariable Long photoId) {
+   public ResponseEntity<PhotoViewResponse> get(@PathVariable Long setId,
+                                                @PathVariable Long photoId) {
 
-      return ResponseEntity.ok(photoSetService.getItem(setId, photoId));
+      return ResponseEntity.ok(photoSetPhotoService.get(setId, photoId));
    }
 
    @GetMapping("/{setId}/photos/before/{photoId}")
-   public ResponseEntity<PhotoViewResponse> getItemBefore(@PathVariable Long setId,
-                                                          @PathVariable Long photoId) {
+   public ResponseEntity<PhotoViewResponse> getBefore(@PathVariable Long setId,
+                                                      @PathVariable Long photoId) {
 
-      return ResponseEntity.ok(photoSetService.getItemBefore(setId, photoId));
+      return ResponseEntity.ok(photoSetPhotoService.getBefore(setId, photoId));
    }
 
    @GetMapping("/{setId}/photos/after/{photoId}")
-   public ResponseEntity<PhotoViewResponse> getItemAfter(@PathVariable Long setId,
-                                                         @PathVariable Long photoId) {
+   public ResponseEntity<PhotoViewResponse> getAfter(@PathVariable Long setId,
+                                                     @PathVariable Long photoId) {
 
-      return ResponseEntity.ok(photoSetService.getItemAfter(setId, photoId));
+      return ResponseEntity.ok(photoSetPhotoService.getAfter(setId, photoId));
    }
 }

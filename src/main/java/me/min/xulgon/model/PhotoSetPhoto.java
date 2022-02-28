@@ -18,8 +18,6 @@ public class PhotoSetPhoto {
    @GeneratedValue(strategy = GenerationType.IDENTITY)
    private Long id;
    private Instant createdAt;
-   private Boolean hasNext;
-   private Boolean hasPrevious;
    @ManyToOne
    private PhotoSet photoSet;
    @ManyToOne

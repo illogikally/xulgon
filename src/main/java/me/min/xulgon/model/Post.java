@@ -15,10 +15,10 @@ import javax.persistence.*;
 @SuperBuilder
 @NoArgsConstructor
 public class Post extends Content {
-   @Enumerated(value = EnumType.STRING)
-   private Privacy privacy;
    @ManyToOne
    private Post sharedPost;
    @OneToOne
    private PhotoSet photoSet;
+   @Enumerated(value = EnumType.STRING)
+   private Privacy privacy;
 }

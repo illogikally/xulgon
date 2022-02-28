@@ -12,7 +12,6 @@ import me.min.xulgon.repository.*;
 import net.coobird.thumbnailator.Thumbnails;
 import net.coobird.thumbnailator.geometry.Positions;
 import org.springframework.core.env.Environment;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,7 +24,6 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.text.MessageFormat;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -121,7 +119,7 @@ public class PhotoService {
       Page page = pageRepository.findById(id)
             .orElseThrow(PageNotFoundException::new);
 
-      return photoSetPhotoRepository.findAllByPhotoSetOrderById(page.getPagePhotoSet())
+      return photoSetPhotoRepository.findAllByPhotoSetOrderByIdDesc(page.getPagePhotoSet())
             .stream()
             .map(PhotoSetPhoto::getPhoto)
             .filter(contentService::privacyFilter)

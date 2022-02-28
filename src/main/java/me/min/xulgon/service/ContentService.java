@@ -25,8 +25,8 @@ public class ContentService {
             .orElseThrow(ContentNotFoundException::new);
       deleteContent(content);
    }
-   public void deleteContent(Content content) {
 
+   public void deleteContent(Content content) {
       content.getComments()
             .forEach(this::deleteContent);
 
@@ -54,9 +54,16 @@ public class ContentService {
    }
 
 
-   public boolean privacyFilter(Photo photo) {
-      Privacy privacy = getPrivacy(photo);
-      return photo.getPrivacy().ordinal() <= privacy.ordinal();
+   public boolean privacyFilter(Content content) {
+      Privacy privacy = getPrivacy(content);
+      switch (content.getType()) {
+         case POST:
+            return ((Post) content).getPrivacy().ordinal() <= privacy.ordinal();
+         case PHOTO:
+            return ((Photo) content).getPrivacy().ordinal() <= privacy.ordinal();
+         default:
+            return true;
+      }
    }
 
    private Privacy getPrivacy(Content content) {

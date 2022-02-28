@@ -10,6 +10,7 @@ import me.min.xulgon.repository.BlockRepository;
 import me.min.xulgon.repository.PhotoRepository;
 import me.min.xulgon.service.AuthenticationService;
 import me.min.xulgon.service.BlockService;
+import me.min.xulgon.service.ContentService;
 import me.min.xulgon.service.FriendshipService;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -31,6 +32,7 @@ public class UserPageMapper {
    private final PhotoMapper photoMapper;
    private final PhotoRepository photoRepository;
    private final BlockService blockService;
+   private ContentService contentService;
 
    public UserPageResponse toDto(UserPage page) {
       if (page == null) return null;
@@ -44,12 +46,12 @@ public class UserPageMapper {
             .school(page.getSchool())
             .hometown(page.getHometown())
             .build();
-
    }
 
    private List<PhotoResponse> getPhotos(UserPage userPage) {
       return photoRepository.findAllByPageOrderByCreatedAtDesc(userPage, PageRequest.ofSize(9))
             .stream()
+            .filter(contentService::privacyFilter)
             .map(photoMapper::toPhotoResponse)
             .collect(Collectors.toList());
    }

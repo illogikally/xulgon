@@ -24,7 +24,7 @@ public class PhotoSet {
    @ManyToOne
    private Page page;
    @OneToMany(fetch = FetchType.LAZY)
-   private List<PhotoSetPhoto> photoSetPhoto;
+   private List<PhotoSetPhoto> photoSetPhotos;
 
    public static PhotoSet generate(SetType type) {
       return PhotoSet.builder()

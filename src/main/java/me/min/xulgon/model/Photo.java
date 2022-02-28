@@ -9,18 +9,18 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-@EqualsAndHashCode(callSuper = true)
 @Entity
 @Data
 @SuperBuilder
 @AllArgsConstructor
 @NoArgsConstructor
+@EqualsAndHashCode(callSuper = true)
 public class Photo extends Content {
    @ManyToOne
    private Content parentContent;
+   private String name;
    @Enumerated(value = EnumType.STRING)
    private Privacy privacy;
-   private String name;
    private Integer width;
    private Integer height;
    @OneToMany(mappedBy = "originalPhoto")

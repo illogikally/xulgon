@@ -27,11 +27,9 @@ public class UserService {
    private final GroupMapper groupMapper;
 
    private final FollowRepository followRepository;
-   private final PostService postService;
    private final PostMapper postMapper;
    private final PostRepository postRepository;
    private final GroupMemberRepository groupMemberRepository;
-   private final GroupRepository groupRepository;
    private final AuthenticationService authService;
    private final FriendshipService friendshipService;
    private final UserMapper userMapper;

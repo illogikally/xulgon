@@ -13,7 +13,6 @@ import org.springframework.transaction.annotation.Transactional;
 public class PageService {
 
    private final PageRepository pageRepository;
-   private final PostService postService;
 
    @Transactional(readOnly = true)
    public Long getPhotoSetId(Long pageId) {

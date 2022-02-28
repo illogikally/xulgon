@@ -25,7 +25,7 @@ public class SearchService {
    private final UserMapper userMapper;
    private final PostRepository postRepository;
    private final PostMapper postMapper;
-   private final PostService postService;
+   private ContentService contentService;
 
 
    public List<UserDto> searchByUsername(String name) {
@@ -38,8 +38,7 @@ public class SearchService {
    public List<PostResponse> searchByPost(String postBody) {
       return postRepository.findAllByBodyContainsOrderByCreatedAtDesc(postBody)
             .stream()
-            .filter(postService::privacyFilter)
-            .filter(postService::groupFilter)
+            .filter(contentService::privacyFilter)
             .map(postMapper::toDto)
             .collect(Collectors.toList());
    }
