@@ -5,6 +5,7 @@ import lombok.experimental.SuperBuilder;
 import org.springframework.lang.Nullable;
 
 import javax.persistence.*;
+import java.util.List;
 import java.util.Optional;
 
 @Entity
@@ -29,4 +30,6 @@ public class Page {
    private PhotoSet avatarSet;
    @OneToOne
    private PhotoSet coverPhotoSet;
+   @OneToMany(mappedBy = "page", fetch = FetchType.LAZY)
+   private List<Follow> follows;
 }

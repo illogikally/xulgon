@@ -19,6 +19,7 @@ public class GroupResponse {
    private String name;
    private Boolean isHidden;
    private Boolean isPrivate;
+   private Boolean isFollow;
    private Integer memberCount;
    private String about;
 }

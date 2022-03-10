@@ -1,6 +1,5 @@
 package me.min.xulgon.service;
 
-import kotlin.Triple;
 import lombok.AllArgsConstructor;
 import me.min.xulgon.dto.PhotoViewResponse;
 import me.min.xulgon.exception.ContentNotFoundException;
@@ -40,7 +39,7 @@ public class PhotoSetPhotoService {
       PhotoSetPhoto photoSetPhoto = photoSetPhotoRepository.findByPhotoSetAndPhoto(set, photo)
             .orElseThrow(RuntimeException::new);
 
-      if (!contentService.privacyFilter(photo)) {
+      if (!contentService.isPrivacyAdequate(photo)) {
          return null;
       }
 
@@ -68,16 +67,16 @@ public class PhotoSetPhotoService {
             .orElseThrow(RuntimeException::new);
       Photo photo = photoRepository.findById(photoId)
             .orElseThrow(ContentNotFoundException::new);
-      PhotoSetPhoto photoSetPhoto = photoSetPhotoRepository.findByPhotoSetAndPhoto(set, photo)
+      PhotoSetPhoto item = photoSetPhotoRepository.findByPhotoSetAndPhoto(set, photo)
             .orElseThrow(RuntimeException::new);
 
-      Optional<PhotoSetPhoto> optional = getAdjacent(find, set, photoSetPhoto.getId());
+      Optional<PhotoSetPhoto> adjacentOptional = getAdjacent(find, set, item.getId());
 
-      if (optional.isPresent()) {
-         Long photoSetPhotoId = optional.get().getId();
-         boolean hasNext = hasNext(set, photoSetPhotoId);
-         boolean hasPrevious = hasPrevious(set, photoSetPhotoId);
-         return photoMapper.toPhotoViewSetResponse(optional.get(), hasNext, hasPrevious);
+      if (adjacentOptional.isPresent()) {
+         PhotoSetPhoto adjacentItem = adjacentOptional.get();
+         boolean hasNext = hasNext(set, adjacentItem.getId());
+         boolean hasPrevious = hasPrevious(set, adjacentItem.getId());
+         return photoMapper.toPhotoViewSetResponse(adjacentOptional.get(), hasNext, hasPrevious);
       }
       return null;
    }
@@ -100,7 +99,7 @@ public class PhotoSetPhotoService {
          if (optional.isPresent()) {
             photoSetPhotoId = optional.get().getId();
          }
-      } while (optional.isPresent() && !contentService.privacyFilter(optional.get().getPhoto()));
+      } while (optional.isPresent() && !contentService.isPrivacyAdequate(optional.get().getPhoto()));
 
       return optional;
    }

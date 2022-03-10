@@ -2,17 +2,13 @@ package me.min.xulgon.mapper;
 
 import lombok.AllArgsConstructor;
 import me.min.xulgon.dto.PhotoResponse;
-import me.min.xulgon.dto.PhotoViewResponse;
 import me.min.xulgon.dto.UserDto;
 import me.min.xulgon.dto.UserPageResponse;
 import me.min.xulgon.model.*;
 import me.min.xulgon.repository.BlockRepository;
-import me.min.xulgon.repository.PhotoRepository;
 import me.min.xulgon.service.AuthenticationService;
-import me.min.xulgon.service.BlockService;
 import me.min.xulgon.service.ContentService;
 import me.min.xulgon.service.FriendshipService;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.util.AbstractMap;
@@ -30,8 +26,6 @@ public class UserPageMapper {
    private final FriendshipService friendshipService;
    private final UserMapper userMapper;
    private final PhotoMapper photoMapper;
-   private final PhotoRepository photoRepository;
-   private final BlockService blockService;
    private ContentService contentService;
 
    public UserPageResponse toDto(UserPage page) {
@@ -49,10 +43,13 @@ public class UserPageMapper {
    }
 
    private List<PhotoResponse> getPhotos(UserPage userPage) {
-      return photoRepository.findAllByPageOrderByCreatedAtDesc(userPage, PageRequest.ofSize(9))
+      return userPage.getPagePhotoSet()
+            .getPhotoSetPhotos()
             .stream()
-            .filter(contentService::privacyFilter)
+            .map(PhotoSetPhoto::getPhoto)
+            .filter(contentService::isPrivacyAdequate)
             .map(photoMapper::toPhotoResponse)
+            .limit(9)
             .collect(Collectors.toList());
    }
 

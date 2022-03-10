@@ -38,10 +38,9 @@ public class GroupJoinRequestService {
       followRepository.save(Follow.builder()
             .page(request.getGroup())
             .createdAt(Instant.now())
-            .user(request.getUser())
+            .follower(request.getUser())
             .build());
    }
-
 
    public void deleteRequest(Long id) {
       groupJoinRequestRepository.deleteById(id);

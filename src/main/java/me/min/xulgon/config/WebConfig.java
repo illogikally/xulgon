@@ -24,9 +24,6 @@ public class WebConfig implements WebMvcConfigurer {
       registry.addResourceHandler("/contents/**")
               .addResourceLocations(path);
 
-//      registry.addResourceHandler("/contents/**")
-//            .addResourceLocations("file:/usr/local/Storage/");
-
       registry.addResourceHandler("/swagger-ui.html")
             .addResourceLocations("classpath:/META-INF/resources/");
 

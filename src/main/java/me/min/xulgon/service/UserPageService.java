@@ -29,6 +29,8 @@ public class UserPageService {
    private final FriendshipService friendshipService;
    private final PhotoService photoService;
    private final PhotoMapper photoMapper;
+   private final BlockService blockService;
+   private final FollowService followService;
    private final UserService userService;
    private final Environment environment;
 
@@ -122,7 +124,10 @@ public class UserPageService {
             .friendshipStatus(friendshipService.getFriendshipStatus(page.getUser()))
             .userId(page.getUser().getId())
             .avatar(photoMapper.toPhotoResponse(page.getAvatar()))
-            .coverPhotoUrl(coverPhotoUrl)
+            .isBlocked(blockService.isBlocked(page.getId()))
+            .isFollow(followService.isFollow(page))
+            .blocked(blockService.blocked(page.getUser()))
+            .coverPhoto(photoMapper.toPhotoResponse(page.getCoverPhoto()))
             .avatarPhotoSetId(page.getAvatarSet().getId())
             .name(page.getName())
             .build();

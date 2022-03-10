@@ -13,21 +13,16 @@ public class NotificationDto {
    private String createdAgo;
    private NotificationType type;
    private Boolean isRead;
-
-   private Long actorId;
    private Integer actorCount;
-   private String actorFullName;
-   private String actorAvatarUrl;
-   private Long actorContentId;
-   private String actorContentBody;
 
-   private Long recipientContentId;
-   private String recipientContentBody;
-   private ContentType recipientContentType;
+   private UserBasicDto actor;
 
-   private Long rootContentId;
-   private ContentType rootContentType;
+   private NotificationContentDto targetContent;
+   private NotificationContentDto actorContent;
+   private NotificationContentDto targetContentParent;
+   private NotificationContentDto rootContent;
 
    private Long pageId;
    private PageType pageType;
+   private String pageName;
 }

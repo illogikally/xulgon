@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -23,6 +24,7 @@ public class BlockService {
    private final BlockRepository blockRepository;
    private final AuthenticationService authService;
    private final UserPageRepository userPageRepository;
+   private final FollowRepository followRepository;
    private final FriendRequestRepository friendRequestRepository;
    private final UserRepository userRepository;
    private final FriendshipRepository friendshipRepository;
@@ -73,6 +75,8 @@ public class BlockService {
 
       friendshipRepository.deleteByUsers(authService.getPrincipal(), blockee);
       friendRequestRepository.deleteByUsers(authService.getPrincipal(), blockee);
+      followRepository.deleteByFollowerAndPage(authService.getPrincipal(), blockee.getUserPage());
+      followRepository.deleteByFollowerAndPage(blockee, authService.getPrincipal().getUserPage());
       blockRepository.save(block);
    }
 
@@ -83,4 +87,12 @@ public class BlockService {
       blockRepository.deleteByBlockerAndBlockee(authService.getPrincipal(), blockee);
 
    }
+
+   public Boolean isBlockingEachOther(User userA, User userB) {
+      boolean isABlockingB = blockRepository.findByBlockerAndBlockee(userA, userB)
+            .isPresent();
+      if (isABlockingB) return true;
+      return blockRepository.findByBlockerAndBlockee(userB, userA).isPresent();
+   }
+
 }

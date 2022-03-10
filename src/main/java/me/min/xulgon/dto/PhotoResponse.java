@@ -14,5 +14,6 @@ import java.util.Map;
 @Builder
 public class PhotoResponse {
    private Long id;
+   private String url;
    private Map<ThumbnailType, ThumbnailDto> thumbnails;
 }

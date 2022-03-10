@@ -15,6 +15,7 @@ import org.springframework.core.env.Environment;
 import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.imageio.ImageIO;
@@ -41,6 +42,9 @@ public class PhotoService {
    private final PhotoSetPhotoRepository photoSetPhotoRepository;
    private final PhotoThumbnailRepository thumbnailRepository;
    private final Environment environment;
+   private PhotoSetRepository photoSetRepository;
+   private PhotoSetPhotoService photoSetPhotoService;
+   private FollowService followService;
 
 
    public Photo save(PhotoRequest photoRequest, MultipartFile multipartFile) {
@@ -53,38 +57,39 @@ public class PhotoService {
          throw new RuntimeException();
       }
 
-      Photo persistedPhoto = photoRepository.save(
-            photoMapper.map(
-                  photoRequest,
-                  Pair.of(bufferedImage.getWidth(), bufferedImage.getHeight()),
-                  storageService.store(bufferedImage)
-            )
+      PhotoSet photoSet = photoSetRepository.save(PhotoSet.generate(SetType.PHOTO));
+      Photo photo = photoMapper.map(
+            photoRequest,
+            Pair.of(bufferedImage.getWidth(), bufferedImage.getHeight()),
+            storageService.store(bufferedImage),
+            photoSet
       );
+      photoSetPhotoService.bulkInsertUnique(photoSet, List.of(photo));
+      Photo savedPhoto = photoRepository.save(photo);
       var thumbnails = Arrays.stream(ThumbnailType.values())
-            .map(type -> createThumbnail(persistedPhoto, type, bufferedImage))
+            .map(type -> generateThumbnails(savedPhoto, type, bufferedImage))
             .collect(Collectors.toList());
-      persistedPhoto.setThumbnails(thumbnails);
-      return persistedPhoto;
+      savedPhoto.setThumbnails(thumbnails);
+      followService.followContent(savedPhoto.getId());
+      return savedPhoto;
    }
 
-   private PhotoThumbnail createThumbnail(Photo photo,
-                                          ThumbnailType thumbnailType,
-                                          BufferedImage bufferedImage) {
+   private PhotoThumbnail generateThumbnails(Photo photo,
+                                             ThumbnailType thumbnailType,
+                                             BufferedImage bufferedImage) {
       String resourcePath = environment.getProperty("resource.path");
+      Assert.notNull(resourcePath, "Resource path is null");
       String type = thumbnailType.toString();
       int size = thumbnailType.getSize();
       String fileName = MessageFormat.format("{0}.{1}.jpg", UUID.randomUUID(), type);
-      assert resourcePath != null;
 
-      int width, height;
+      int minDimension = Math.min(bufferedImage.getWidth(), bufferedImage.getHeight());
       try {
-         int minSize = Math.min(bufferedImage.getWidth(), bufferedImage.getHeight());
          bufferedImage = Thumbnails.of(bufferedImage)
-               .sourceRegion(Positions.CENTER, minSize, minSize)
+               .sourceRegion(Positions.CENTER, minDimension, minDimension)
                .size(size, size)
                .asBufferedImage();
-         width = bufferedImage.getWidth();
-         height = bufferedImage.getHeight();
+
          File outputFile = new File(Path.of(resourcePath, fileName).toString());
          Thumbnails.of(bufferedImage)
                .scale(1)
@@ -98,8 +103,8 @@ public class PhotoService {
 
       PhotoThumbnail thumbnail = PhotoThumbnail.builder()
             .originalPhoto(photo)
-            .width(width)
-            .height(height)
+            .width(size)
+            .height(size)
             .type(thumbnailType)
             .name(fileName)
             .build();
@@ -122,7 +127,7 @@ public class PhotoService {
       return photoSetPhotoRepository.findAllByPhotoSetOrderByIdDesc(page.getPagePhotoSet())
             .stream()
             .map(PhotoSetPhoto::getPhoto)
-            .filter(contentService::privacyFilter)
+            .filter(contentService::isPrivacyAdequate)
             .map(photoMapper::toPhotoResponse)
             .collect(Collectors.toList());
    }
@@ -130,9 +135,6 @@ public class PhotoService {
    public void delete(Long id) {
       Photo photo = photoRepository.findById(id)
             .orElseThrow(ContentNotFoundException::new);
-      String name = photo.getName();
-      photoRepository.delete(photo);
-      storageService.delete(name);
+      contentService.deletePhoto(photo);
    }
-
 }

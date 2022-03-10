@@ -1,18 +1,17 @@
 package me.min.xulgon.service;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.extern.slf4j.Slf4j;
-import me.min.xulgon.dto.OffsetResponse;
-import me.min.xulgon.dto.PhotoRequest;
-import me.min.xulgon.dto.PostRequest;
-import me.min.xulgon.dto.PostResponse;
+import me.min.xulgon.dto.*;
+import me.min.xulgon.exception.ContentNotFoundException;
 import me.min.xulgon.exception.PageNotFoundException;
 import me.min.xulgon.mapper.PostMapper;
+import me.min.xulgon.mapper.UserMapper;
 import me.min.xulgon.model.*;
 import me.min.xulgon.model.PhotoSet;
 import me.min.xulgon.repository.*;
 import me.min.xulgon.util.OffsetRequest;
-import org.springframework.boot.autoconfigure.kafka.KafkaProperties;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -26,6 +25,7 @@ import java.util.stream.Collectors;
 @Slf4j
 public class PostService {
 
+   private final NotificationService notificationService;
    private final PostRepository postRepository;
    private final PostMapper postMapper;
    private final AuthenticationService authService;
@@ -34,9 +34,12 @@ public class PostService {
    private final GroupRepository groupRepository;
    private final BlockService blockService;
    private final ContentService contentService;
+   private final UserMapper userMapper;
    private final PageRepository pageRepository;
+   private final FollowService followService;
    private final PhotoSetRepository photoSetRepository;
    private PhotoSetPhotoService photoSetPhotoService;
+   private ContentRepository contentRepository;
 
    public OffsetResponse<PostResponse> getPostsByPage(Long id, OffsetRequest pageable) {
       Page page = pageRepository.findById(id)
@@ -63,7 +66,7 @@ public class PostService {
             .peek(post -> post.setPhotos(
                   post.getPhotos()
                         .stream()
-                        .filter(contentService::privacyFilter)
+                        .filter(contentService::isPrivacyAdequate)
                         .collect(Collectors.toList())))
             .map(postMapper::toDto)
             .collect(Collectors.toList());
@@ -114,7 +117,8 @@ public class PostService {
 
    public PostResponse get(Long id) {
       return postRepository.findById(id)
-            .filter(contentService::privacyFilter)
+            .filter(contentService::isPrivacyAdequate)
+            .filter(blockService::filter)
             .map(postMapper::toDto)
             .orElse(null);
    }
@@ -124,6 +128,13 @@ public class PostService {
                             List<PhotoRequest> photoRequests) {
       Page page = pageRepository.findById(postRequest.getPageId())
             .orElseThrow(PageNotFoundException::new);
+
+      if (postRequest.getSharedContentId() != null) {
+         Content sharedContent = contentRepository.findById(postRequest.getSharedContentId())
+               .orElseThrow(ContentNotFoundException::new);
+         sharedContent.setShareCount(sharedContent.getShareCount() + 1);
+         contentRepository.save(sharedContent);
+      }
 
       PhotoSet postPhotoSet = PhotoSet.generate(SetType.POST);
       postPhotoSet = photoSetRepository.save(postPhotoSet);
@@ -136,9 +147,39 @@ public class PostService {
          savedPhotos.add(photo);
       }
 
+      followService.followContent(savedPost.getId());
       savedPost.setPhotos(savedPhotos);
       photoSetPhotoService.bulkInsertUnique(postPhotoSet, savedPhotos);
       photoSetPhotoService.bulkInsertUnique(page.getPagePhotoSet(), savedPhotos);
+      sendNewPostNotification(savedPost);
       return postMapper.toDto(savedPost);
+   }
+
+   private void sendNewPostNotification(Post post) {
+      post.getPage().getFollows()
+            .stream()
+            .map(Follow::getFollower)
+            .filter(user -> contentService.isPrivacyAdequate(post, user))
+            .forEach(recipient ->
+               notificationService.createNotification(
+                     post.getUser(),
+                     post,
+                     post,
+                     post,
+                     post.getPage(),
+                     recipient,
+                     NotificationType.NEW_POST
+               )
+            );
+   }
+
+   public List<UserBasicDto> getCommenters(Long id) {
+      Post post = postRepository.findById(id)
+            .orElseThrow(ContentNotFoundException::new);
+      return post.getAllComments().stream()
+            .map(Comment::getUser)
+            .distinct()
+            .map(userMapper::toBasicDto)
+            .collect(Collectors.toList());
    }
 }

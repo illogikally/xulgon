@@ -3,6 +3,7 @@ package me.min.xulgon.mapper;
 import lombok.AllArgsConstructor;
 import me.min.xulgon.dto.CommentRequest;
 import me.min.xulgon.dto.CommentResponse;
+import me.min.xulgon.dto.PhotoResponse;
 import me.min.xulgon.dto.PhotoViewResponse;
 import me.min.xulgon.exception.ContentNotFoundException;
 import me.min.xulgon.exception.PageNotFoundException;
@@ -15,13 +16,13 @@ import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.util.LinkedList;
+import java.util.List;
 
 @Service
 @AllArgsConstructor
 public class CommentMapper {
 
    private final AuthenticationService authenticationService;
-   private final PostRepository postRepository;
    private final PageRepository pageRepository;
    private final UserMapper userMapper;
    private final PhotoMapper photoMapper;
@@ -41,8 +42,8 @@ public class CommentMapper {
             .rootContent(getRootContent(commentRequest))
             .page(getPage(commentRequest))
             .body(commentRequest.getBody())
-            .comments(new LinkedList<>())
-            .reactions(new LinkedList<>())
+            .children(List.of())
+            .reactions(List.of())
             .build();
    }
 
@@ -74,14 +75,10 @@ public class CommentMapper {
             .build();
    }
 
-   private PhotoViewResponse getPhoto(Comment comment) {
+   private PhotoResponse getPhoto(Comment comment) {
       if (comment.getPhotos() == null) return null;
       if (comment.getPhotos().isEmpty()) return null;
-      return photoMapper.toPhotoViewResponse(comment.getPhotos().get(0));
-   }
-
-   private String getUsername(Comment comment) {
-      return comment.getUser().getFullName();
+      return photoMapper.toPhotoResponse(comment.getPhotos().get(0));
    }
 
    private Page getPage(CommentRequest commentRequest) {

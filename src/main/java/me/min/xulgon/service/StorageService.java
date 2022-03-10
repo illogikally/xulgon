@@ -1,32 +1,33 @@
 package me.min.xulgon.service;
 
 import lombok.AllArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import me.min.xulgon.model.Content;
+import me.min.xulgon.model.Photo;
+import me.min.xulgon.model.PhotoThumbnail;
+import me.min.xulgon.repository.CommentRepository;
+import me.min.xulgon.repository.ContentRepository;
+import me.min.xulgon.repository.PhotoRepository;
 import net.coobird.thumbnailator.Thumbnails;
-import org.mapstruct.ap.shaded.freemarker.template.utility.StringUtil;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
-import org.springframework.web.multipart.MultipartFile;
+import org.springframework.util.Assert;
 
-import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.io.OutputStream;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.UUID;
 
 @Service
-@Slf4j
+@AllArgsConstructor
 public class StorageService {
 
-   @Value("${resource.path}")
-   private String DIR_PATH;
+   private Environment environment;
 
    public String store(BufferedImage bufferedImage) {
+      String DIR_PATH = environment.getProperty("resource.path");
+      Assert.notNull(DIR_PATH, "Image storage (resource.path) path is null.");
       String name = UUID.randomUUID().toString();
       String extension = "jpg";
       String fileName = name + "." + extension;
@@ -42,9 +43,15 @@ public class StorageService {
    }
 
    public void delete(String name) {
+      String DIR_PATH = environment.getProperty("resource.path");
+      Assert.notNull(DIR_PATH, "Image storage (resource.path) path is null.");
       File file = new File(Paths.get(DIR_PATH, name).toString());
+      System.out.println(file);
+      System.out.println(file.exists());
+      System.out.println("######################");
       if (!file.delete()) {
          throw new RuntimeException("Can't delete file");
       }
    }
+
 }

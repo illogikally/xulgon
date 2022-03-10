@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
 import javax.persistence.*;
+import java.util.List;
 
 @EqualsAndHashCode(callSuper = true)
 @Entity
@@ -16,9 +17,8 @@ import javax.persistence.*;
 @NoArgsConstructor
 public class Post extends Content {
    @ManyToOne
-   private Post sharedPost;
-   @OneToOne
-   private PhotoSet photoSet;
-   @Enumerated(value = EnumType.STRING)
-   private Privacy privacy;
+   private Content share;
+   private Boolean hasShare;
+   @OneToMany(mappedBy = "rootContent", fetch = FetchType.LAZY)
+   private List<Comment> allComments;
 }

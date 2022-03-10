@@ -10,6 +10,7 @@ import me.min.xulgon.model.User;
 import me.min.xulgon.repository.FriendRequestRepository;
 import me.min.xulgon.repository.FriendshipRepository;
 import me.min.xulgon.repository.UserRepository;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,8 +24,8 @@ import java.util.stream.Collectors;
 @Slf4j
 public class FriendRequestService {
 
+   private final SimpMessagingTemplate simpMessagingTemplate;
    private final FriendRequestRepository friendRequestRepository;
-   private final FriendshipRepository friendshipRepository;
    private final AuthenticationService authenticationService;
    private final UserRepository userRepository;
    private final FriendRequestMapper friendRequestMapper;
@@ -32,11 +33,20 @@ public class FriendRequestService {
    public void save(Long requesteeId) {
       User requestee = userRepository.findById(requesteeId)
             .orElseThrow(UserNotFoundException::new);
-      friendRequestRepository.save(FriendRequest.builder()
-            .requester(authenticationService.getPrincipal())
-            .requestee(requestee)
-            .createdAt(Instant.now())
-            .build());
+      var request = friendRequestRepository.save(
+            FriendRequest.builder()
+                  .requester(authenticationService.getPrincipal())
+                  .requestee(requestee)
+                  .createdAt(Instant.now())
+                  .build()
+      );
+
+      System.out.println("okla");
+      simpMessagingTemplate.convertAndSendToUser(
+            requestee.getUsername(),
+            "/queue/friend-request",
+            friendRequestMapper.toDto(request)
+      );
    }
 
    public void delete(Long userId) {

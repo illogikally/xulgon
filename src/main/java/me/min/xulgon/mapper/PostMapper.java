@@ -5,15 +5,14 @@ import me.min.xulgon.dto.*;
 import me.min.xulgon.exception.ContentNotFoundException;
 import me.min.xulgon.exception.PageNotFoundException;
 import me.min.xulgon.model.*;
-import me.min.xulgon.repository.PageRepository;
-import me.min.xulgon.repository.PostRepository;
+import me.min.xulgon.repository.*;
 import me.min.xulgon.service.AuthenticationService;
+import me.min.xulgon.service.ContentService;
+import me.min.xulgon.service.FollowService;
+import org.springframework.data.jpa.repository.support.SimpleJpaRepository;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
-import java.time.format.DateTimeFormatter;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -27,24 +26,32 @@ public class PostMapper {
    private final PostRepository postRepository;
    private final PageRepository pageRepository;
    private final UserMapper userMapper;
+   private ContentMapper contentMapper;
+   private FollowRepository followRepository;
+   private FollowService followService;
+   private ContentService contentService;
+   private ContentRepository contentRepository;
 
    public Post map(PostRequest postRequest, PhotoSet set) {
       if (postRequest == null) return null;
 
+      boolean hasShare = postRequest.getSharedContentId() != null;
       return Post.builder()
             .type(ContentType.POST)
             .createdAt(Instant.now())
             .commentCount(0)
             .reactionCount(0)
+            .shareCount(0)
             .body(postRequest.getBody())
-            .comments(new LinkedList<>())
+            .children(List.of())
             .photoSet(set)
-            .reactions(new LinkedList<>())
-            .photos(new LinkedList<>())
+            .reactions(List.of())
+            .photos(List.of())
+            .hasShare(hasShare)
+            .share(getShare(postRequest))
             .privacy(postRequest.getPrivacy())
             .page(getPage(postRequest.getPageId()))
             .user(authenticationService.getPrincipal())
-            .sharedPost(getSharedPost(postRequest.getSharedPostId()))
             .build();
    }
 
@@ -53,22 +60,37 @@ public class PostMapper {
 
       return PostResponse.builder()
             .id(post.getId())
+            .type(post.getType())
+            .hasShare(post.getHasShare())
             .pageName(post.getPage().getName())
             .pageId(post.getPage().getId())
             .pageType(post.getPage().getType())
             .reactionCount(post.getReactionCount())
             .commentCount(post.getCommentCount())
             .user(userMapper.toDto(post.getUser()))
-            .body(post.getBody())
+            .text(post.getBody())
+            .isFollowPage(followService.isFollow(post.getPage()))
+            .isFollow(isFollow(post))
             .photoSetId(post.getPhotoSet().getId())
-            .shareCount(0)
+            .shareCount(post.getShareCount())
             .privacy(post.getPrivacy())
-            .createdAt(toDate(post.getCreatedAt()))
+            .sharedContent(contentMapper.toDto(contentService.privacyFilter(post.getShare())))
+            .createdAt(MappingUtil.getCreatedAt(post.getCreatedAt()))
             .photoCount(post.getPhotos().size())
             .isReacted(isReacted(post))
-            .sharedPost(this.toDto(post.getSharedPost()))
             .photos(getPhotoResponses(post.getPhotos()))
             .build();
+   }
+
+   private Boolean isFollow(Content content) {
+      User principal = authenticationService.getPrincipal();
+      return followRepository.findByFollowerAndContent(principal, content).isPresent();
+   }
+
+   private Content getShare(PostRequest postRequest) {
+      if (postRequest.getSharedContentId() == null) return null;
+     return contentRepository.findById(postRequest.getSharedContentId())
+            .orElseThrow(ContentNotFoundException::new);
    }
 
    private List<PhotoResponse> getPhotoResponses(List<Photo> photos) {
@@ -78,10 +100,6 @@ public class PostMapper {
             .collect(Collectors.toList());
    }
 
-   private String toDate(Instant instant) {
-      LocalDateTime date = LocalDateTime.ofInstant(instant, ZoneOffset.ofHours(7));
-      return DateTimeFormatter.ofPattern("d 'tháng' M 'lúc' HH:mm").format(date);
-   }
 
    private boolean isReacted(Content content) {
       User user = authenticationService.getPrincipal();
@@ -95,10 +113,4 @@ public class PostMapper {
       return pageRepository.findById(pageId)
             .orElseThrow(PageNotFoundException::new);
    }
-
-   private Post getSharedPost(Long postId) {
-      return postId == null ? null : postRepository.findById(postId)
-            .orElseThrow(ContentNotFoundException::new);
-   }
-
 }

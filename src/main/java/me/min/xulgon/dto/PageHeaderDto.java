@@ -11,8 +11,10 @@ public class PageHeaderDto {
    private String name;
    private FriendshipStatus friendshipStatus;
    private PhotoResponse avatar;
-   private String coverPhotoUrl;
+   private PhotoResponse coverPhoto;
    private Boolean blocked;
+   private Boolean isFollow;
+   private Boolean isBlocked;
    private Long userId;
    private Long avatarPhotoSetId;
 }

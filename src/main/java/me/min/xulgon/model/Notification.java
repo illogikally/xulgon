@@ -25,4 +25,12 @@ public class Notification {
    private Content actorContent;
    @ManyToOne
    private NotificationSubject subject;
+
+   public static Notification generate(Content actorContent) {
+      return Notification.builder()
+            .createdAt(Instant.now())
+            .actor(actorContent.getUser())
+            .actorContent(actorContent)
+            .build();
+   }
 }

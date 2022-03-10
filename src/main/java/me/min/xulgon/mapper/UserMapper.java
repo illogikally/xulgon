@@ -42,7 +42,7 @@ public class UserMapper {
 
 
    private Boolean isFollow(User user) {
-      return followRepository.findByUserAndPage(authService.getPrincipal(), user.getUserPage())
+      return followRepository.findByFollowerAndPage(authService.getPrincipal(), user.getUserPage())
             .isPresent();
    }
 

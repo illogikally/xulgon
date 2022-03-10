@@ -16,15 +16,20 @@ import java.util.stream.Collectors;
 @NoArgsConstructor
 @EqualsAndHashCode(callSuper = true)
 public class Photo extends Content {
-   @ManyToOne
-   private Content parentContent;
    private String name;
-   @Enumerated(value = EnumType.STRING)
-   private Privacy privacy;
    private Integer width;
    private Integer height;
-   @OneToMany(mappedBy = "originalPhoto")
+   @OneToMany(
+         mappedBy = "originalPhoto",
+         cascade = CascadeType.REMOVE
+   )
    private List<PhotoThumbnail> thumbnails;
+   @OneToMany(
+         mappedBy = "photo",
+         cascade = CascadeType.REMOVE,
+         orphanRemoval = true
+   )
+   private List<PhotoSetPhoto> photoSetPhotos;
 
    @Transient
    private Map<ThumbnailType, PhotoThumbnail> thumbnailsMap;

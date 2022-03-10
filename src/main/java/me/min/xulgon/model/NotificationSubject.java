@@ -20,6 +20,7 @@ public class NotificationSubject {
    private Integer actorCount;
    private Instant latestCreatedAt;
    private Boolean isRead;
+   private Boolean isDisabled;
    @Enumerated(value = EnumType.STRING)
    private NotificationType type;
    @ManyToOne
@@ -34,5 +35,4 @@ public class NotificationSubject {
    private Content subjectContent;
    @OneToMany(mappedBy = "subject", fetch = FetchType.LAZY)
    private List<Notification> notifications;
-
 }

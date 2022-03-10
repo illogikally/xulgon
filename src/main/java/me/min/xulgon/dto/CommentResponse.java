@@ -21,7 +21,7 @@ public class CommentResponse {
    private Long rootContentId;
    private ContentType rootContentType;
 
-   private PhotoViewResponse photo;
+   private PhotoResponse photo;
    private String createdAgo;
    private Integer reactionCount;
    private Integer replyCount;

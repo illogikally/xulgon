@@ -3,13 +3,13 @@ package me.min.xulgon.mapper;
 import me.min.xulgon.dto.GroupRequest;
 import me.min.xulgon.dto.GroupResponse;
 import me.min.xulgon.model.*;
+import me.min.xulgon.repository.FollowRepository;
 import me.min.xulgon.repository.PhotoRepository;
 import me.min.xulgon.service.AuthenticationService;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import java.time.Instant;
 import java.util.ArrayList;
 
 @Mapper(componentModel = "spring",
@@ -22,11 +22,12 @@ public abstract class GroupMapper {
    PhotoRepository photoRepository;
    @Autowired
    PhotoMapper photoMapper;
+   @Autowired
+   FollowRepository followRepository;
 
    @Mapping(target = "id", ignore = true)
    @Mapping(target = "type", constant = "GROUP")
    @Mapping(target = "members", expression = "java(new ArrayList<>())")
-   @Mapping(target = "coverPhoto", expression = "java(getCoverPhoto(groupRequest))")
    public abstract Group map(GroupRequest groupRequest);
 
 
@@ -35,6 +36,7 @@ public abstract class GroupMapper {
    @Mapping(target = "isMember"     , expression = "java(isMember(group))")
    @Mapping(target = "isRequestSent", expression = "java(isRequestSent(group))")
    @Mapping(target = "role"         , expression = "java(getRole(group))")
+   @Mapping(target = "isFollow"     , expression = "java(isFollow(group))")
    public abstract GroupResponse toDto(Group group);
 
    String getPhotoUrl(Group group) {
@@ -42,29 +44,19 @@ public abstract class GroupMapper {
       return photoMapper.getUrl(group.getCoverPhoto());
    }
 
+   Boolean isFollow(Group group) {
+      User principal = authService.getPrincipal();
+      return followRepository.findByFollowerAndPage(principal, group).isPresent();
+   }
+
    GroupRole getRole(Group group) {
       return group.getMembers()
             .stream()
-            .filter(member ->
-                  member.getUser().getId().equals(authService.getPrincipal().getId()))
+            .filter(member -> member.getUser().equals(authService.getPrincipal()))
             .map(GroupMember::getRole)
             .findAny()
             .orElse(null);
 
-   }
-
-   Photo getCoverPhoto(GroupRequest groupRequest) {
-      User principal = authService.getPrincipal();
-      Photo photo = Photo.builder()
-            .user(principal)
-            .createdAt(Instant.now())
-            .privacy(Privacy.PUBLIC)
-            .commentCount(0)
-            .reactionCount(0)
-            .build();
-
-      photo = photoRepository.save(photo);
-      return photo;
    }
 
    Boolean isRequestSent(Group group) {
@@ -79,7 +71,6 @@ public abstract class GroupMapper {
       return group.getMembers()
             .stream()
             .anyMatch(member -> member.getUser().getId().equals(user.getId()));
-
    }
 
 }

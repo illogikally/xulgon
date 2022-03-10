@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import me.min.xulgon.dto.PhotoRequest;
 import me.min.xulgon.dto.PostRequest;
 import me.min.xulgon.dto.PostResponse;
+import me.min.xulgon.dto.UserBasicDto;
 import me.min.xulgon.service.ContentService;
 import me.min.xulgon.service.PostService;
 import org.springframework.http.HttpStatus;
@@ -41,5 +42,10 @@ public class PostController {
    @GetMapping("/{id}")
    public ResponseEntity<PostResponse> get(@PathVariable Long id) {
       return ResponseEntity.ok(postService.get(id));
+   }
+
+   @GetMapping("/{id}/commenters")
+   public ResponseEntity<List<UserBasicDto>> getCommenters(@PathVariable Long id) {
+      return ResponseEntity.ok(postService.getCommenters(id));
    }
 }

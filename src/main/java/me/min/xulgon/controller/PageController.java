@@ -9,10 +9,7 @@ import me.min.xulgon.service.PhotoService;
 import me.min.xulgon.service.PostService;
 import me.min.xulgon.util.OffsetRequest;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -34,6 +31,18 @@ public class PageController {
    @GetMapping("/{id}/photos")
    public ResponseEntity<List<PhotoResponse>> getPhotos(@PathVariable Long id) {
       return ResponseEntity.ok(photoService.getPhotosByPage(id));
+   }
+
+   @PostMapping("/{id}/follow")
+   public ResponseEntity<Void> follow(@PathVariable Long id) {
+      pageService.follow(id);
+      return ResponseEntity.ok().build();
+   }
+
+   @DeleteMapping("/{id}/unfollow")
+   public ResponseEntity<Void> unfollow(@PathVariable Long id) {
+      pageService.unfollow(id);
+      return ResponseEntity.ok().build();
    }
 
    @GetMapping("/{id}/photo-set-id")

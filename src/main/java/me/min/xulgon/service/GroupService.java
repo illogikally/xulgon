@@ -9,7 +9,7 @@ import me.min.xulgon.mapper.PhotoMapper;
 import me.min.xulgon.mapper.UserMapper;
 import me.min.xulgon.model.*;
 import me.min.xulgon.repository.*;
-import org.springframework.http.ResponseEntity;
+import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -30,9 +30,17 @@ public class GroupService {
    private final PhotoMapper photoMapper;
    private final UserMapper userMapper;
    private final GroupJoinRequestRepository groupJoinRequestRepository;
+   private final PhotoSetRepository photoSetRepository;
+   private NotificationService notificationService;
 
    public Long create(GroupRequest groupRequest) {
       Group group = groupMapper.map(groupRequest);
+      PhotoSet pageSet = PhotoSet.generate(SetType.PAGE);
+      PhotoSet coverSet = PhotoSet.generate(SetType.COVER_PHOTO);
+      pageSet = photoSetRepository.save(pageSet);
+      coverSet = photoSetRepository.save(coverSet);
+      group.setPagePhotoSet(pageSet);
+      group.setCoverPhotoSet(coverSet);
       group = groupRepository.save(group);
       GroupMember member = GroupMember.builder()
             .group(group)
@@ -43,7 +51,7 @@ public class GroupService {
 
       groupMemberRepository.save(member);
       followRepository.save(Follow.builder()
-            .user(authService.getPrincipal())
+            .follower(authService.getPrincipal())
             .page(group)
             .createdAt(Instant.now())
             .build());
@@ -66,6 +74,15 @@ public class GroupService {
             .collect(Collectors.toList());
    }
 
+   public GroupRole getRole(Long id) {
+      User principal = authService.getPrincipal();
+      Group group = groupRepository.findById(id)
+            .orElseThrow(PageNotFoundException::new);
+      return groupMemberRepository.findByUserAndGroup(principal, group)
+            .map(GroupMember::getRole)
+            .orElse(null);
+   }
+
    public GroupResponse get(Long id) {
       Group group = groupRepository.findById(id)
             .orElseThrow(PageNotFoundException::new);
@@ -73,16 +90,30 @@ public class GroupService {
    }
 
    public void createJoinRequest(Long groupId) {
-      User user = authService.getPrincipal();
+      User principal = authService.getPrincipal();
       Group group = groupRepository.findById(groupId)
             .orElseThrow(RuntimeException::new);
 
       groupJoinRequestRepository.save(GroupJoinRequest
             .builder()
             .createdAt(Instant.now())
-            .user(user)
+            .user(principal)
             .group(group)
             .build());
+      group.getMembers().stream()
+            .filter(member -> member.getRole().equals(GroupRole.ADMIN))
+            .map(GroupMember::getUser)
+            .forEach(admin -> {
+               notificationService.createNotification(
+                     principal,
+                     null,
+                     null,
+                     null,
+                     group,
+                     admin,
+                     NotificationType.GROUP_JOIN_REQUEST
+               );
+            });
    }
 
    public void deleteJoinRequest(Long groupId) {
@@ -93,10 +124,9 @@ public class GroupService {
    }
 
    public void promote(Long groupId, Long userId) {
-      Group group = groupRepository.findById(groupId)
-            .orElseThrow(RuntimeException::new);
-      User user = userRepository.findById(userId)
-            .orElseThrow(RuntimeException::new);
+      Pair<User, Group> userGroupPair = findUserGroupAndAuthorizeAdmin(userId, groupId);
+      User user = userGroupPair.getFirst();
+      Group group = userGroupPair.getSecond();
 
       groupMemberRepository.findByUserAndGroup(user, group)
             .stream()
@@ -106,13 +136,12 @@ public class GroupService {
    }
 
    public void kick(Long groupId, Long userId) {
-      Group group = groupRepository.findById(groupId)
-            .orElseThrow(RuntimeException::new);
-      User user = userRepository.findById(userId)
-            .orElseThrow(RuntimeException::new);
+      Pair<User, Group> userGroupPair = findUserGroupAndAuthorizeAdmin(userId, groupId);
+      User user = userGroupPair.getFirst();
+      Group group = userGroupPair.getSecond();
 
       groupMemberRepository.deleteByUserAndGroup(user, group);
-      followRepository.deleteByUserAndPage(user, group);
+      followRepository.deleteByFollowerAndPage(user, group);
 
    }
 
@@ -134,7 +163,30 @@ public class GroupService {
             .orElseThrow(RuntimeException::new);
       User user = authService.getPrincipal();
       groupMemberRepository.deleteByUserAndGroup(user, group);
-      followRepository.deleteByUserAndPage(user, group);
+      followRepository.deleteByFollowerAndPage(user, group);
    }
-   
+
+   public void demote(Long id, Long userId) {
+      Pair<User, Group> userGroupPair = findUserGroupAndAuthorizeAdmin(userId, id);
+      User user = userGroupPair.getFirst();
+      Group group = userGroupPair.getSecond();
+
+      groupMemberRepository.findByUserAndGroup(user, group)
+            .stream()
+            .peek(member -> member.setRole(GroupRole.MEMBER))
+            .findAny()
+            .ifPresent(groupMemberRepository::save);
+   }
+
+   private Pair<User, Group> findUserGroupAndAuthorizeAdmin(Long userId, Long groupId) {
+      Group group = groupRepository.findById(groupId)
+            .orElseThrow(RuntimeException::new);
+      User user = userRepository.findById(userId)
+            .orElseThrow(RuntimeException::new);
+
+      groupMemberRepository.findByUserAndGroup(authService.getPrincipal(), group)
+            .filter(member -> member.getRole().equals(GroupRole.ADMIN))
+            .orElseThrow(() -> new RuntimeException(""));
+      return Pair.of(user, group);
+   }
 }

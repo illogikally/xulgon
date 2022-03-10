@@ -12,12 +12,4 @@ import java.util.List;
 @Repository
 public interface CommentRepository extends JpaRepository<Comment, Long> {
    List<Comment> findAllByParentContent(Content parent, Pageable pageable);
-
-   @Query(nativeQuery = true,
-         value = "select * from comment c inner join content co on c.id = co.id " +
-               "where c.parent_content_id = :parentId " +
-               "order by co.created_at limit :limit offset :offset"
-   )
-   List<Comment> getContentComments(Long parentId, Long limit, Long offset);
-
 }

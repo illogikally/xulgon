@@ -19,7 +19,7 @@ public class Follow {
    private Long id;
    private Instant createdAt;
    @ManyToOne
-   private User user;
+   private User follower;
    @ManyToOne
    private Page page;
    @ManyToOne

@@ -1,16 +1,13 @@
 package me.min.xulgon.model;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.jetbrains.annotations.NotNull;
-import org.springframework.context.annotation.Lazy;
 
 import javax.persistence.*;
 import java.time.Instant;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Entity
 @Data
@@ -31,16 +28,45 @@ public class Content {
    private Instant createdAt;
    private Integer commentCount;
    private Integer reactionCount;
-
+   private Integer shareCount;
+   @Enumerated(value = EnumType.STRING)
+   private Privacy privacy;
+   @OneToOne(cascade = CascadeType.REMOVE)
+   private PhotoSet photoSet;
+   @ManyToOne(fetch = FetchType.LAZY)
+   private Content parentContent;
    @ManyToOne(fetch = FetchType.LAZY)
    private Page page;
    @ManyToOne(fetch = FetchType.LAZY)
    @NotNull
    private User user;
-   @OneToMany(mappedBy = "content", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+   @OneToMany(mappedBy = "content", cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)
    private List<Reaction> reactions;
-   @OneToMany(mappedBy = "parentContent", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-   private List<Comment> comments;
-   @OneToMany(mappedBy = "parentContent", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+   @OneToMany(mappedBy = "parentContent", fetch = FetchType.LAZY)
+   private List<Content> children;
+   @OneToMany(mappedBy = "share", fetch = FetchType.LAZY)
+   private List<Post> shares;
+   @OneToMany(mappedBy = "content", fetch = FetchType.LAZY, cascade = {CascadeType.REMOVE})
+   private List<Follow> follows;
+
+   @Transient
    private List<Photo> photos;
+
+   public List<Photo> getPhotos() {
+      if (photos == null) {
+         return photoSet.getPhotoSetPhotos()
+               .stream()
+               .map(PhotoSetPhoto::getPhoto)
+               .collect(Collectors.toList());
+      }
+      return photos;
+   }
+
+   public boolean isType(ContentType type) {
+      return this.type.equals(type);
+   }
+
+   public boolean isNotType(ContentType type) {
+      return !isType(type);
+   }
 }

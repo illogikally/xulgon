@@ -23,7 +23,7 @@ public class PhotoSet {
    private SetType type;
    @ManyToOne
    private Page page;
-   @OneToMany(fetch = FetchType.LAZY)
+   @OneToMany(fetch = FetchType.LAZY, mappedBy = "photoSet")
    private List<PhotoSetPhoto> photoSetPhotos;
 
    public static PhotoSet generate(SetType type) {

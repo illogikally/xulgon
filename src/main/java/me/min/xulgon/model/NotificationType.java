@@ -4,6 +4,5 @@ public enum NotificationType {
    REACTION,
    COMMENT,
    NEW_POST,
-   COMMENT_MENTION,
-   REPLY
+   GROUP_JOIN_REQUEST,
 }

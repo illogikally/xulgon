@@ -38,7 +38,7 @@ public class SearchService {
    public List<PostResponse> searchByPost(String postBody) {
       return postRepository.findAllByBodyContainsOrderByCreatedAtDesc(postBody)
             .stream()
-            .filter(contentService::privacyFilter)
+            .filter(contentService::isPrivacyAdequate)
             .map(postMapper::toDto)
             .collect(Collectors.toList());
    }

@@ -1,5 +1,6 @@
 package me.min.xulgon.repository;
 
+import me.min.xulgon.model.Content;
 import me.min.xulgon.model.Follow;
 import me.min.xulgon.model.Page;
 import me.min.xulgon.model.User;
@@ -14,6 +15,10 @@ import java.util.Optional;
 public interface FollowRepository extends JpaRepository<Follow, Long> {
    @Transactional
    @Modifying
-   void deleteByUserAndPage(User user, Page page);
-   Optional<Follow> findByUserAndPage(User user, Page page);
+   void deleteByFollowerAndPage(User follower, Page page);
+   @Transactional
+   @Modifying
+   void deleteByFollowerAndContent(User user, Content content);
+   Optional<Follow> findByFollowerAndPage(User user, Page page);
+   Optional<Follow> findByFollowerAndContent(User follower, Content content);
 }

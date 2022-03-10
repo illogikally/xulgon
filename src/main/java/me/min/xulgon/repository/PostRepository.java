@@ -18,7 +18,8 @@ public interface PostRepository extends JpaRepository<Post, Long> {
    @Query(nativeQuery = true,
    value =
          "select * from post p inner join content c on p.id = c.id " +
-         "where page_id in (select group_id from group_member where user_id = :userId) " +
+         "where page_id in (select page_id from follow where follower_id = :userId) " +
+         "and c.user_id not in (select b.blockee_id from block b where b.blocker_id = :userId) " +
          "order by c.created_at desc limit :offset, :size")
    List<Post> getUserGroupFeed(Long userId, long size, long offset);
 
@@ -33,10 +34,10 @@ public interface PostRepository extends JpaRepository<Post, Long> {
          /* Privacy filter */
          "    (" +
          "         c.user_id = :userId " +
-         "         OR p.privacy = 'PUBLIC' " +
+         "         OR c.privacy = 'PUBLIC' " +
          "         OR " +
          "         ( " +
-         "              p.privacy = 'FRIEND' " +
+         "              c.privacy = 'FRIEND' " +
          "              AND EXISTS " +
          "              (" +
          "                   SELECT * " +
@@ -62,16 +63,16 @@ public interface PostRepository extends JpaRepository<Post, Long> {
          "    (" +
          "        SELECT page_id " +
          "        FROM follow f " +
-         "        WHERE f.user_id = :userId " +
+         "        WHERE f.follower_id = :userId " +
          "    ) " +
          "    AND " +
          /* Privacy filter */
          "    (" +
          "         c.user_id = :userId " +
-         "         OR p.privacy = 'PUBLIC' " +
+         "         OR c.privacy = 'PUBLIC' " +
          "         OR " +
          "         ( " +
-         "              p.privacy = 'FRIEND' " +
+         "              c.privacy = 'FRIEND' " +
          "              AND EXISTS " +
          "              (" +
          "                   SELECT * " +

@@ -16,7 +16,6 @@ public class PhotoSetController {
 
    private final PhotoSetPhotoService photoSetPhotoService;
 
-
    @GetMapping("/{setId}/photos/{photoId}")
    public ResponseEntity<PhotoViewResponse> get(@PathVariable Long setId,
                                                 @PathVariable Long photoId) {

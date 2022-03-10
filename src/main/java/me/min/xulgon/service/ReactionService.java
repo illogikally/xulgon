@@ -3,13 +3,13 @@ package me.min.xulgon.service;
 import lombok.AllArgsConstructor;
 import me.min.xulgon.dto.ReactionDto;
 import me.min.xulgon.exception.ContentNotFoundException;
-import me.min.xulgon.model.Content;
-import me.min.xulgon.model.Reaction;
+import me.min.xulgon.model.*;
 import me.min.xulgon.repository.ContentRepository;
+import me.min.xulgon.repository.NotificationRepository;
+import me.min.xulgon.repository.NotificationSubjectRepository;
 import me.min.xulgon.repository.ReactionRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import java.util.Optional;
 
 @Service
@@ -20,8 +20,8 @@ public class ReactionService {
    private final ContentService contentService;
    private final ContentRepository contentRepository;
    private final AuthenticationService authService;
+   private NotificationService notificationService;
 
-   @Transactional
    public void react(ReactionDto reactionDto) {
       Content content = contentRepository.findById(reactionDto.getContentId())
             .orElseThrow(ContentNotFoundException::new);
@@ -39,8 +39,26 @@ public class ReactionService {
          return;
       }
 
-      reactionRepository.save(mapToReaction(reactionDto, content));
+      Reaction reaction = reactionRepository.save(mapToReaction(reactionDto, content));
       modifyContentReactionCount(1, content);
+      createReactNotification(reaction);
+   }
+
+   private void createReactNotification(Reaction reaction) {
+      Content content = reaction.getContent();
+      Content rootContent = content.getType().equals(ContentType.COMMENT)
+            ? ((Comment) content).getRootContent()
+            : content;
+
+      notificationService.createNotification(
+            reaction.getUser(),
+            content,
+            rootContent,
+            content,
+            content.getPage(),
+            content.getUser(),
+            NotificationType.REACTION
+      );
    }
 
    private void modifyContentReactionCount(Integer amount, Content content) {

@@ -3,6 +3,7 @@ package me.min.xulgon.controller;
 import lombok.AllArgsConstructor;
 import me.min.xulgon.dto.*;
 import me.min.xulgon.model.GroupMember;
+import me.min.xulgon.model.GroupRole;
 import me.min.xulgon.repository.GroupRepository;
 import me.min.xulgon.service.GroupService;
 import org.springframework.http.HttpStatus;
@@ -18,7 +19,6 @@ import java.util.stream.Collectors;
 public class GroupController {
 
    private final GroupService groupService;
-   private final GroupRepository groupRepository;
 
    @PostMapping
    public ResponseEntity<Long> create(@RequestBody GroupRequest request) {
@@ -36,6 +36,10 @@ public class GroupController {
       return new ResponseEntity<>(HttpStatus.CREATED);
    }
 
+   @GetMapping("{id}/role")
+   public ResponseEntity<GroupRole> getRole(@PathVariable Long id) {
+      return ResponseEntity.ok(groupService.getRole(id));
+   }
 
    @DeleteMapping("/{id}/join-requests")
    public ResponseEntity<Void> deleteJoinRequest(@PathVariable Long id) {
@@ -65,13 +69,16 @@ public class GroupController {
       return new ResponseEntity<>(HttpStatus.OK);
    }
 
+   @PutMapping("/{id}/demote/{userId}")
+   public ResponseEntity<Void> demote(@PathVariable Long id, @PathVariable Long userId) {
+      groupService.demote(id, userId);
+      return new ResponseEntity<>(HttpStatus.OK);
+   }
+
    @DeleteMapping("/{id}/kick/{userId}")
    public ResponseEntity<Void> kick(@PathVariable Long id, @PathVariable Long userId) {
       groupService.kick(id, userId);
       return new ResponseEntity<>(HttpStatus.OK);
    }
-
-
-
 }
 

@@ -11,6 +11,6 @@ import me.min.xulgon.model.Privacy;
 public class PostRequest {
    private String body;
    private Privacy privacy;
-   private Long sharedPostId;
+   private Long sharedContentId;
    private Long pageId;
 }

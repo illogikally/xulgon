@@ -12,6 +12,8 @@ import java.util.Optional;
 
 @Repository
 public interface NotificationSubjectRepository extends JpaRepository<NotificationSubject, Long> {
-   Optional<NotificationSubject> findBySubjectContentAndType(Content content, NotificationType type);
+   Optional<NotificationSubject> findByRecipientAndSubjectContentAndType(User recipient,
+                                                                         Content content,
+                                                                         NotificationType type);
    List<NotificationSubject> findAllByRecipientOrderByLatestCreatedAtDesc(User recipient);
 }

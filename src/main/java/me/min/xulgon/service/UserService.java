@@ -1,21 +1,18 @@
 package me.min.xulgon.service;
 
 import lombok.AllArgsConstructor;
-import me.min.xulgon.dto.GroupResponse;
-import me.min.xulgon.dto.PostResponse;
-import me.min.xulgon.dto.UserDto;
+import me.min.xulgon.dto.*;
 import me.min.xulgon.exception.UserNotFoundException;
 import me.min.xulgon.mapper.GroupMapper;
 import me.min.xulgon.mapper.PostMapper;
 import me.min.xulgon.mapper.UserMapper;
 import me.min.xulgon.model.*;
 import me.min.xulgon.repository.*;
-import me.min.xulgon.util.Util;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.text.MessageFormat;
+import java.time.Instant;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -33,6 +30,7 @@ public class UserService {
    private final AuthenticationService authService;
    private final FriendshipService friendshipService;
    private final UserMapper userMapper;
+   private BlockService blockService;
 
    @Transactional(readOnly = true)
    public List<UserDto> getFriends(Long userId) {
@@ -44,14 +42,28 @@ public class UserService {
    }
 
    @Transactional(readOnly = true)
-   public List<PostResponse> getGroupFeed(Pageable pageable) {
+   public OffsetResponse<PostResponse> getGroupFeed(Pageable pageable) {
       User principal =  authService.getPrincipal();
-      return postRepository.getUserGroupFeed(principal.getId(),
-            pageable.getPageSize(),
-            pageable.getOffset())
+      var posts = postRepository.getUserGroupFeed(
+               principal.getId(),
+               pageable.getPageSize() + 1,
+               pageable.getOffset()
+      );
+      boolean hasNext = posts.size() > pageable.getOffset();
+      var postResponses = posts
             .stream()
+            .limit(pageable.getPageSize())
+            .filter(blockService::filter)
             .map(postMapper::toDto)
             .collect(Collectors.toList());
+
+      return OffsetResponse
+            .<PostResponse>builder()
+            .hasNext(hasNext)
+            .offset(pageable.getOffset())
+            .data(postResponses)
+            .size(postResponses.size())
+            .build();
    }
 
    @Transactional(readOnly = true)
@@ -68,22 +80,26 @@ public class UserService {
    public List<PostResponse> getNewsFeed(Pageable pageable) {
       User principal = authService.getPrincipal();
       return postRepository.getUserNewsFeed(
-            principal.getId(),
-            pageable.getPageSize(),
-            pageable.getOffset())
+               principal.getId(),
+               pageable.getPageSize(),
+               pageable.getOffset())
             .stream()
             .map(postMapper::toDto)
             .collect(Collectors.toList());
    }
 
-   public void unfollow(Long id) {
+   public List<UserBasicDto> getBasicFriends(Long id) {
       User user = userRepository.findById(id)
             .orElseThrow(UserNotFoundException::new);
-      followRepository.deleteByUserAndPage(authService.getPrincipal(), user.getUserPage());
+      return friendshipService.getFriends(user)
+            .stream()
+            .map(userMapper::toBasicDto)
+            .collect(Collectors.toList());
    }
 
    @Transactional(readOnly = true)
    public Boolean isUserExisted(String username) {
       return userRepository.findByUsername(username).isPresent();
    }
+
 }

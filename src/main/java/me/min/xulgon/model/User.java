@@ -1,9 +1,12 @@
 package me.min.xulgon.model;
 
 import lombok.*;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 
 import javax.persistence.*;
 import java.time.Instant;
+import java.util.Collection;
 
 @Entity
 @Data

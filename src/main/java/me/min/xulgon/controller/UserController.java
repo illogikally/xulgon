@@ -2,10 +2,7 @@ package me.min.xulgon.controller;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import me.min.xulgon.dto.FriendRequestDto;
-import me.min.xulgon.dto.GroupResponse;
-import me.min.xulgon.dto.PostResponse;
-import me.min.xulgon.dto.UserDto;
+import me.min.xulgon.dto.*;
 import me.min.xulgon.repository.FriendshipRepository;
 import me.min.xulgon.repository.UserRepository;
 import me.min.xulgon.service.*;
@@ -24,8 +21,6 @@ import java.util.List;
 public class UserController {
 
    private final FriendRequestService friendRequestService;
-   private final FriendshipRepository friendshipRepository;
-   private final UserRepository userRepository;
    private final BlockService blockService;
    private final FriendshipService friendshipService;
    private final UserService userService;
@@ -86,21 +81,17 @@ public class UserController {
    }
 
    @GetMapping("/group-feed")
-   public ResponseEntity<List<PostResponse>> getGroupFeed(Pageable pageable) {
+   public ResponseEntity<OffsetResponse<PostResponse>> getGroupFeed(OffsetRequest pageable) {
       return ResponseEntity.ok(userService.getGroupFeed(pageable));
-   }
-
-   @DeleteMapping("/{id}/unfollow")
-   public ResponseEntity<Void> unfollow(@PathVariable Long id) {
-      userService.unfollow(id);
-      return new ResponseEntity<>(HttpStatus.OK);
    }
 
    @GetMapping("/existed")
    public ResponseEntity<Boolean> existed(@RequestParam("username") String username) {
-      var ok = userService.isUserExisted(username);
-      System.out.println(username);
-      System.out.println(ok.toString());
-      return ResponseEntity.ok(ok);
+      return ResponseEntity.ok(userService.isUserExisted(username));
+   }
+
+   @GetMapping("{id}/basic-friends")
+   public ResponseEntity<List<UserBasicDto>> getBasicFriends(@PathVariable Long id) {
+      return ResponseEntity.ok(userService.getBasicFriends(id));
    }
 }

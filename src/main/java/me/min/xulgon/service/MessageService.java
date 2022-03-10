@@ -28,7 +28,6 @@ public class MessageService {
    private final AuthenticationService authService;
    private final UserRepository userRepository;
    private final MessageMapper messageMapper;
-   private final UserPageRepository userPageRepository;
 
 
 
@@ -44,7 +43,6 @@ public class MessageService {
             .stream()
             .map(messageMapper::toDto)
             .collect(Collectors.toList());
-
    }
 
    public User getPrincipal(Principal principal) {

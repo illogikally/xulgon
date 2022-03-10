@@ -44,19 +44,19 @@ public class FriendshipService {
       );
 
       friendRequestRepository.deleteById(request.getId());
-      followRepository.findByUserAndPage(principal, requester.getUserPage())
+      followRepository.findByFollowerAndPage(principal, requester.getUserPage())
             .orElseGet(() -> followRepository.save(Follow.builder()
                   .page(requester.getUserPage())
                   .createdAt(Instant.now())
-                  .user(principal)
+                  .follower(principal)
                   .build())
             );
 
-      followRepository.findByUserAndPage(requester, principal.getUserPage())
+      followRepository.findByFollowerAndPage(requester, principal.getUserPage())
             .orElseGet(() -> followRepository.save(Follow.builder()
                   .page(principal.getUserPage())
                   .createdAt(Instant.now())
-                  .user(requester)
+                  .follower(requester)
                   .build())
             );
    }
@@ -66,8 +66,8 @@ public class FriendshipService {
       User user = userRepository.findById(userId)
             .orElseThrow(UserNotFoundException::new);
       friendshipRepository.deleteByUsers(user, principal);
-      followRepository.deleteByUserAndPage(user, principal.getUserPage());
-      followRepository.deleteByUserAndPage(principal, user.getUserPage());
+      followRepository.deleteByFollowerAndPage(user, principal.getUserPage());
+      followRepository.deleteByFollowerAndPage(principal, user.getUserPage());
    }
 
    public Integer getCommonFriendCount(User user) {
