@@ -1,16 +1,19 @@
 package me.min.xulgon.service;
 
 import lombok.AllArgsConstructor;
+import me.min.xulgon.dto.PhotoRequest;
+import me.min.xulgon.dto.PhotoResponse;
 import me.min.xulgon.exception.PageNotFoundException;
-import me.min.xulgon.model.Follow;
-import me.min.xulgon.model.Page;
-import me.min.xulgon.model.User;
+import me.min.xulgon.mapper.PhotoMapper;
+import me.min.xulgon.model.*;
 import me.min.xulgon.repository.FollowRepository;
 import me.min.xulgon.repository.PageRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.Instant;
+import java.util.List;
 
 @Service
 @AllArgsConstructor
@@ -20,6 +23,9 @@ public class PageService {
    private final FollowRepository followRepository;
    private final PageRepository pageRepository;
    private final PrincipalService principalService;
+   private PhotoService photoService;
+   private PhotoSetPhotoService photoSetPhotoService;
+   private PhotoMapper photoMapper;
 
 
    @Transactional(readOnly = true)
@@ -53,5 +59,21 @@ public class PageService {
 
       User principal = principalService.getPrincipal();
       followRepository.deleteByFollowerAndPage(principal, page);
+   }
+
+   public PhotoResponse uploadCoverPhoto(Long pageId,
+                                         PhotoRequest request,
+                                         MultipartFile multipartFile) {
+
+      Page page = pageRepository.findById(pageId)
+            .orElseThrow(RuntimeException::new);
+      Photo photo = photoService.save(request, multipartFile);
+
+      photoSetPhotoService.bulkInsertUnique(page.getCoverPhotoSet(), List.of(photo));
+      photoSetPhotoService.bulkInsertUnique(page.getPagePhotoSet(), List.of(photo));
+
+      page.setCoverPhoto(photo);
+      pageRepository.save(page);
+      return photoMapper.toPhotoResponse(photo);
    }
 }

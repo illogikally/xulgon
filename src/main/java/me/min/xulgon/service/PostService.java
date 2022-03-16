@@ -1,7 +1,6 @@
 package me.min.xulgon.service;
 
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.extern.slf4j.Slf4j;
 import me.min.xulgon.dto.*;
 import me.min.xulgon.exception.ContentNotFoundException;
@@ -29,7 +28,7 @@ public class PostService {
    private final PostRepository postRepository;
    private final PostMapper postMapper;
    private final AuthenticationService authService;
-   private final UserPageRepository userPageRepository;
+   private final ProfileRepository profileRepository;
    private final PhotoService photoService;
    private final GroupRepository groupRepository;
    private final BlockService blockService;
@@ -50,14 +49,15 @@ public class PostService {
 
    @Transactional(readOnly = true)
    public OffsetResponse<PostResponse> getPostsByProfile(Long profileId, OffsetRequest pageable) {
-      UserPage userPage = userPageRepository.findById(profileId)
+      Profile profile = profileRepository.findById(profileId)
             .orElseThrow(PageNotFoundException::new);
 
       List<Post> posts = postRepository.getProfilePosts(
-            userPage.getId(),
+            profile.getId(),
             authService.getPrincipal().getId(),
             pageable.getPageSize() + 1,
-            pageable.getOffset()
+            pageable.getAfter(),
+            pageable.getBefore()
       );
 
       List<PostResponse> postResponses = posts

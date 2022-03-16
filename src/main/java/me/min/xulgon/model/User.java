@@ -1,12 +1,8 @@
 package me.min.xulgon.model;
 
 import lombok.*;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
-
 import javax.persistence.*;
 import java.time.Instant;
-import java.util.Collection;
 
 @Entity
 @Data
@@ -33,5 +29,7 @@ public class User {
    private Integer unreadNotificationCount;
    private Boolean enabled;
    @OneToOne(mappedBy = "user", fetch = FetchType.LAZY)
-   private UserPage userPage;
+   private Profile profile;
+   @OneToOne
+   private UserInfo userInfo;
 }

@@ -6,6 +6,7 @@ import me.min.xulgon.dto.FriendRequestDto;
 import me.min.xulgon.exception.UserNotFoundException;
 import me.min.xulgon.mapper.FriendRequestMapper;
 import me.min.xulgon.model.FriendRequest;
+import me.min.xulgon.model.NotificationType;
 import me.min.xulgon.model.User;
 import me.min.xulgon.repository.FriendRequestRepository;
 import me.min.xulgon.repository.FriendshipRepository;
@@ -29,10 +30,26 @@ public class FriendRequestService {
    private final AuthenticationService authenticationService;
    private final UserRepository userRepository;
    private final FriendRequestMapper friendRequestMapper;
+   private final PrincipalService principalService;
+   private final NotificationService notificationService;
+   private final FriendshipRepository friendshipRepository;
 
    public void save(Long requesteeId) {
       User requestee = userRepository.findById(requesteeId)
             .orElseThrow(UserNotFoundException::new);
+
+      var isRequestExisted = friendRequestRepository.findByRequesterAndRequestee(
+            authenticationService.getPrincipal(),
+            requestee
+      ).isPresent();
+
+      var isAlreadyFriends = friendshipRepository.findByUsers(
+            authenticationService.getPrincipal(),
+            requestee
+      ).isPresent();
+
+      if (isRequestExisted || isAlreadyFriends) return;
+
       var request = friendRequestRepository.save(
             FriendRequest.builder()
                   .requester(authenticationService.getPrincipal())
@@ -41,11 +58,20 @@ public class FriendRequestService {
                   .build()
       );
 
-      System.out.println("okla");
       simpMessagingTemplate.convertAndSendToUser(
             requestee.getUsername(),
             "/queue/friend-request",
             friendRequestMapper.toDto(request)
+      );
+
+      notificationService.createNotification(
+            principalService.getPrincipal(),
+            null,
+            null,
+            null,
+            requestee.getProfile(),
+            requestee,
+            NotificationType.FRIEND_REQUEST
       );
    }
 

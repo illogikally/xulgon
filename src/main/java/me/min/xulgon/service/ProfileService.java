@@ -5,10 +5,12 @@ import me.min.xulgon.dto.*;
 import me.min.xulgon.exception.PageNotFoundException;
 import me.min.xulgon.exception.ContentNotFoundException;
 import me.min.xulgon.mapper.PhotoMapper;
-import me.min.xulgon.mapper.UserPageMapper;
+import me.min.xulgon.mapper.UserInfoMapper;
+import me.min.xulgon.mapper.ProfileMapper;
 import me.min.xulgon.model.*;
 import me.min.xulgon.repository.PhotoRepository;
-import me.min.xulgon.repository.UserPageRepository;
+import me.min.xulgon.repository.UserInfoRepository;
+import me.min.xulgon.repository.ProfileRepository;
 import me.min.xulgon.util.Util;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
@@ -20,12 +22,12 @@ import java.util.List;
 @Service
 @AllArgsConstructor
 @Transactional
-public class UserPageService {
+public class ProfileService {
 
    private final PrincipalService principalService;
    private final PhotoSetPhotoService photoSetPhotoService;
-   private final UserPageRepository userPageRepository;
-   private final UserPageMapper userPageMapper;
+   private final ProfileRepository profileRepository;
+   private final ProfileMapper profileMapper;
    private final FriendshipService friendshipService;
    private final PhotoService photoService;
    private final PhotoMapper photoMapper;
@@ -36,23 +38,25 @@ public class UserPageService {
 
 
    private final PhotoRepository photoRepository;
+   private UserInfoMapper userInfoMapper;
+   private UserInfoRepository userInfoRepository;
 
    public UserPageResponse getUserProfile(Long id) {
-      UserPage userPage = userPageRepository.findById(id)
+      Profile userPage = profileRepository.findById(id)
             .orElseThrow(PageNotFoundException::new);
 
-      return userPageMapper.toDto(userPage);
+      return profileMapper.toDto(userPage);
    }
 
    public List<UserDto> getFriends(Long id) {
-      UserPage profile = userPageRepository.findById(id)
+      Profile profile = profileRepository.findById(id)
             .orElseThrow(RuntimeException::new);
       return userService.getFriends(profile.getUser().getId());
    }
 
    public void changeAvatar(Long photoId) {
       User principal = principalService.getPrincipal();
-      UserPage page = principal.getUserPage();
+      Profile page = principal.getProfile();
 
       Photo photo = photoRepository.findById(photoId)
             .orElseThrow(ContentNotFoundException::new);
@@ -61,25 +65,26 @@ public class UserPageService {
       photoRepository.save(photo);
       photoSetPhotoService.bulkInsertUnique(page.getAvatarSet(), List.of(photo));
       page.setAvatar(photo);
-      userPageRepository.save(page);
+      profileRepository.save(page);
    }
 
-   public PhotoResponse uploadAvatar(PhotoRequest request,
+   public PhotoResponse uploadAvatar(Long pageId,
+                                     PhotoRequest request,
                                      MultipartFile multipartFile) {
-      User principal = principalService.getPrincipal();
-      UserPage page = principal.getUserPage();
+      Profile page = profileRepository.findById(pageId)
+            .orElseThrow(RuntimeException::new);
       Photo photo = photoService.save(request, multipartFile);
 
       photoSetPhotoService.bulkInsertUnique(page.getPagePhotoSet(), List.of(photo));
       photoSetPhotoService.bulkInsertUnique(page.getAvatarSet(), List.of(photo));
       page.setAvatar(photo);
-      userPageRepository.save(page);
+      profileRepository.save(page);
       return photoMapper.toPhotoResponse(photo);
    }
 
    public void changeCoverPhoto(Long photoId) {
       User principal = principalService.getPrincipal();
-      UserPage page = principal.getUserPage();
+      Profile page = principal.getProfile();
 
       Photo photo = photoRepository.findById(photoId)
             .orElseThrow(ContentNotFoundException::new);
@@ -89,26 +94,12 @@ public class UserPageService {
       photoSetPhotoService.bulkInsertUnique(page.getCoverPhotoSet(), List.of(photo));
 
       page.setCoverPhoto(photo);
-      userPageRepository.save(page);
+      profileRepository.save(page);
    }
 
-   public PhotoResponse uploadCoverPhoto(PhotoRequest request,
-                                         MultipartFile multipartFile) {
-
-      User principal = principalService.getPrincipal();
-      UserPage page = principal.getUserPage();
-      Photo photo = photoService.save(request, multipartFile);
-
-      photoSetPhotoService.bulkInsertUnique(page.getCoverPhotoSet(), List.of(photo));
-      photoSetPhotoService.bulkInsertUnique(page.getPagePhotoSet(), List.of(photo));
-
-      page.setCoverPhoto(photo);
-      userPageRepository.save(page);
-      return photoMapper.toPhotoResponse(photo);
-   }
 
    public PageHeaderDto getPageHeader(Long id) {
-      var page = userPageRepository.findById(id)
+      var page = profileRepository.findById(id)
             .orElseThrow(PageNotFoundException::new);
       var coverPhoto = page.getCoverPhoto();
       String coverPhotoUrl = "";
@@ -131,5 +122,18 @@ public class UserPageService {
             .avatarPhotoSetId(page.getAvatarSet().getId())
             .name(page.getName())
             .build();
+   }
+
+   public UserInfoDto getUserInfo(Long profileId) {
+      Profile profile = profileRepository.findById(profileId)
+            .orElseThrow(RuntimeException::new);
+      return userInfoMapper.toDto(profile.getUser().getUserInfo());
+   }
+
+   public UserInfoDto saveUserInfo(Long profileId, UserInfoDto dto) {
+      Profile profile = profileRepository.findById(profileId)
+            .orElseThrow(RuntimeException::new);
+      UserInfo userInfo = userInfoMapper.toUserInfo(dto, profile.getUser());
+      return userInfoMapper.toDto(userInfoRepository.save(userInfo));
    }
 }

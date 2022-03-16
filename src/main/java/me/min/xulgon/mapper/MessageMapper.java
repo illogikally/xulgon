@@ -1,7 +1,6 @@
 package me.min.xulgon.mapper;
 
 import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
 import me.min.xulgon.dto.MessageRequest;
 import me.min.xulgon.dto.MessageResponse;
 import me.min.xulgon.exception.UserNotFoundException;
@@ -11,8 +10,6 @@ import me.min.xulgon.model.Photo;
 import me.min.xulgon.model.User;
 import me.min.xulgon.repository.ConversationRepository;
 import me.min.xulgon.repository.UserRepository;
-import me.min.xulgon.service.AuthenticationService;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,7 +27,7 @@ public class MessageMapper {
 
    @Transactional
    public MessageResponse toDto(Message message) {
-      Photo senderAvatar = message.getSender().getUserPage().getAvatar();
+      Photo senderAvatar = message.getSender().getProfile().getAvatar();
       return MessageResponse.builder()
             .username(getUsername(message))
             .id(message.getId())

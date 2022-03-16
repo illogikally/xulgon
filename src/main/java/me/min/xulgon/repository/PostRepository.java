@@ -17,74 +17,67 @@ public interface PostRepository extends JpaRepository<Post, Long> {
 
    @Query(nativeQuery = true,
    value =
-         "select * from post p inner join content c on p.id = c.id " +
-         "where page_id in (select page_id from follow where follower_id = :userId) " +
-         "and c.user_id not in (select b.blockee_id from block b where b.blocker_id = :userId) " +
-         "order by c.created_at desc limit :offset, :size")
+         "SELECT * " +
+         "FROM   post p " +
+         "       INNER JOIN content c " +
+         "               ON p.id = c.id " +
+         "WHERE  page_id IN (SELECT page_id " +
+         "                   FROM   follow " +
+         "                   WHERE  follower_id = :userId " +
+         "                          AND (SELECT type " +
+         "                               FROM   page " +
+         "                               WHERE  page.id = page_id) = 'GROUP') " +
+         "       AND c.user_id NOT IN (SELECT b.blockee_id " +
+         "                             FROM   block b " +
+         "                             WHERE  b.blocker_id = :userId) " +
+         "ORDER  BY c.created_at DESC " +
+         "LIMIT  :offset, :size ")
    List<Post> getUserGroupFeed(Long userId, long size, long offset);
 
    @Query(nativeQuery = true,
    value =
          "SELECT * " +
-         "FROM " +
-         "    post p INNER JOIN content c ON p.id = c.id " +
-         "WHERE " +
-         "    c.page_id = :profileId " +
-         "    AND " +
-         /* Privacy filter */
-         "    (" +
-         "         c.user_id = :userId " +
-         "         OR c.privacy = 'PUBLIC' " +
-         "         OR " +
-         "         ( " +
-         "              c.privacy = 'FRIEND' " +
-         "              AND EXISTS " +
-         "              (" +
-         "                   SELECT * " +
-         "                   FROM friendship f " +
-         "                   WHERE " +
-         "                       :userId IN (f.usera_id, f.userb_id) " +
-         "                       AND c.user_id IN (f.usera_id, f.userb_id) " +
-         "              )" +
-         "         ) " +
-         "    )" +
-
-         "ORDER BY c.created_at DESC " +
-         "LIMIT :offset, :size")
-   List<Post> getProfilePosts(Long profileId, Long userId, int size, long offset);
+         "FROM   post p " +
+         "       INNER JOIN content c " +
+         "               ON p.id = c.id " +
+         "WHERE  c.id < :after " +
+         "       AND c.id > :before " +
+         "       AND c.page_id = :profileId " +
+         "       AND (c.user_id = :userId " +
+         "              OR c.privacy = 'PUBLIC' " +
+         "              OR (c.privacy = 'FRIEND' " +
+         "                   AND EXISTS (SELECT * " +
+         "                               FROM   friendship f " +
+         "                               WHERE  :userId IN (f.usera_id, f.userb_id ) " +
+         "                                      AND c.user_id IN (f.usera_id, " +
+         "                                                       f.userb_id )))) " +
+         "ORDER  BY c.created_at DESC " +
+         "LIMIT :size")
+   List<Post> getProfilePosts(Long profileId,
+                              Long userId,
+                              int size,
+                              Long before,
+                              Long after);
 
    @Query(nativeQuery = true,
          value =
          "SELECT * " +
-         "FROM " +
-         "    post p INNER JOIN content c ON p.id = c.id " +
-         "WHERE " +
-         "    c.page_id IN " +
-         "    (" +
-         "        SELECT page_id " +
-         "        FROM follow f " +
-         "        WHERE f.follower_id = :userId " +
-         "    ) " +
-         "    AND " +
-         /* Privacy filter */
-         "    (" +
-         "         c.user_id = :userId " +
-         "         OR c.privacy = 'PUBLIC' " +
-         "         OR " +
-         "         ( " +
-         "              c.privacy = 'FRIEND' " +
-         "              AND EXISTS " +
-         "              (" +
-         "                   SELECT * " +
-         "                   FROM friendship f " +
-         "                   WHERE " +
-         "                       :userId IN (f.usera_id, f.userb_id) " +
-         "                       AND c.user_id IN (f.usera_id, f.userb_id) " +
-         "              )" +
-         "         ) " +
-         "    )" +
-         "    AND c.user_id != :userId " +
-         "ORDER BY c.created_at DESC " +
-         "LIMIT :offset, :size")
+         "FROM   post p " +
+         "       INNER JOIN content c " +
+         "               ON p.id = c.id " +
+         "WHERE  c.page_id IN (SELECT page_id " +
+         "                     FROM   follow f " +
+         "                     WHERE  f.follower_id = :userId) " +
+         "       AND ( c.user_id = :userId " +
+         "              OR c.privacy = 'PUBLIC' " +
+         "              OR ( c.privacy = 'FRIEND' " +
+         "                   AND EXISTS (SELECT * " +
+         "                               FROM   friendship f " +
+         "                               WHERE  :userId IN ( f.usera_id, f.userb_id ) " +
+         "                                      AND c.user_id IN ( f.usera_id, " +
+         "                                                       f.userb_id )) ) ) " +
+         "       AND c.user_id != :userId " +
+         "ORDER  BY c.created_at DESC " +
+         "LIMIT  :offset, :size ")
    List<Post> getUserNewsFeed(Long userId, int size, long offset);
 }

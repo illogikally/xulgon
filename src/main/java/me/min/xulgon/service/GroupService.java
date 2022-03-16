@@ -66,7 +66,7 @@ public class GroupService {
             .stream()
             .map(member -> GroupMemberDto.builder()
                   .user(userMapper.toDto(member.getUser()))
-                  .avatarUrl(photoMapper.getUrl(member.getUser().getUserPage().getAvatar()))
+                  .avatarUrl(photoMapper.getUrl(member.getUser().getProfile().getAvatar()))
                   .name(member.getUser().getFullName())
                   .role(member.getRole())
                   .build()
@@ -94,12 +94,17 @@ public class GroupService {
       Group group = groupRepository.findById(groupId)
             .orElseThrow(RuntimeException::new);
 
+      boolean isRequestExisted = groupJoinRequestRepository.findByUserAndGroup(principal, group)
+                  .isPresent();
+      if (isRequestExisted) return;
+
       groupJoinRequestRepository.save(GroupJoinRequest
             .builder()
             .createdAt(Instant.now())
             .user(principal)
             .group(group)
             .build());
+
       group.getMembers().stream()
             .filter(member -> member.getRole().equals(GroupRole.ADMIN))
             .map(GroupMember::getUser)

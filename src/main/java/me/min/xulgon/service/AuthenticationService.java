@@ -3,11 +3,9 @@ package me.min.xulgon.service;
 import lombok.AllArgsConstructor;
 import me.min.xulgon.dto.*;
 import me.min.xulgon.exception.UserNotFoundException;
-import me.min.xulgon.mapper.PhotoMapper;
 import me.min.xulgon.model.*;
-import me.min.xulgon.repository.PhotoRepository;
 import me.min.xulgon.repository.PhotoSetRepository;
-import me.min.xulgon.repository.UserPageRepository;
+import me.min.xulgon.repository.ProfileRepository;
 import me.min.xulgon.repository.UserRepository;
 import me.min.xulgon.security.JwtProvider;
 import me.min.xulgon.util.Util;
@@ -29,7 +27,7 @@ public class AuthenticationService {
    private final RefreshTokenService refreshTokenService;
    private final UserRepository userRepository;
    private final PhotoSetRepository photoSetRepository;
-   private final UserPageRepository userPageRepository;
+   private final ProfileRepository profileRepository;
    private final Environment env;
 
 
@@ -42,13 +40,13 @@ public class AuthenticationService {
             .token(token)
             .refreshToken(refreshToken)
             .userId(user.getId())
-            .profileId(user.getUserPage().getId())
+            .profileId(user.getProfile().getId())
             .firstName(user.getFirstName())
             .lastName(user.getLastName())
             .expiresAt(exp)
             .username(user.getUsername())
             .userFullName(user.getFullName())
-            .avatarUrl(Util.getPhotoUrl(env, user.getUserPage().getAvatar()))
+            .avatarUrl(Util.getPhotoUrl(env, user.getProfile().getAvatar()))
             .build();
    }
 
@@ -61,7 +59,7 @@ public class AuthenticationService {
       pagePhotoSet = photoSetRepository.save(pagePhotoSet);
       pageAvatarSet = photoSetRepository.save(pageAvatarSet);
       pageCoverPhotoSet = photoSetRepository.save(pageCoverPhotoSet);
-      UserPage page = userPageRepository.save(UserPage.builder()
+      Profile page = profileRepository.save(Profile.builder()
             .user(user)
             .type(PageType.PROFILE)
             .pagePhotoSet(pagePhotoSet)
@@ -70,7 +68,7 @@ public class AuthenticationService {
             .name(user.getFullName())
             .build());
 
-      user.setUserPage(page);
+      user.setProfile(page);
       return user;
    }
 

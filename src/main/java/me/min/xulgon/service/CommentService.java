@@ -101,11 +101,11 @@ public class CommentService {
 
    @Transactional(readOnly = true)
    public OffsetResponse<CommentResponse> getCommentsByContent(Long contentId,
-                                                               Pageable pageable) {
+                                                               OffsetRequest pageable) {
       Content content = contentRepository.findById(contentId)
             .orElseThrow(ContentNotFoundException::new);
       var size = pageable.getPageSize();
-      pageable = new OffsetRequest(size + 1, pageable.getOffset());
+      pageable = pageable.sizePlusOne();
 
       var commentResponses =
             commentRepository.findAllByParentContent(content, pageable)

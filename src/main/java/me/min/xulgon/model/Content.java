@@ -49,6 +49,13 @@ public class Content {
    @OneToMany(mappedBy = "content", fetch = FetchType.LAZY, cascade = {CascadeType.REMOVE})
    private List<Follow> follows;
 
+   @OneToMany(mappedBy = "subjectContent", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
+   private List<NotificationSubject> notificationSubjects;
+//   @OneToMany(mappedBy = "rootContent", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
+//   private List<NotificationSubject> childNotificationSubjects;
+   @OneToMany(mappedBy = "actorContent", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
+   private List<Notification> notifications;
+
    @Transient
    private List<Photo> photos;
 

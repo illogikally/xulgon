@@ -9,7 +9,6 @@ import me.min.xulgon.mapper.UserMapper;
 import me.min.xulgon.model.Message;
 import me.min.xulgon.model.User;
 import me.min.xulgon.repository.MessageRepository;
-import me.min.xulgon.repository.UserPageRepository;
 import me.min.xulgon.repository.UserRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

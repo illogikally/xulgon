@@ -23,10 +23,10 @@ public class FriendRequestMapper {
    private final PhotoMapper photoMapper;
 
    public FriendRequestDto toDto(FriendRequest request) {
-      Photo avatar = request.getRequester().getUserPage().getAvatar();
+      Photo avatar = request.getRequester().getProfile().getAvatar();
       return FriendRequestDto.builder()
             .id(request.getId())
-            .requesterProfileId(request.getRequester().getUserPage().getId())
+            .requesterProfileId(request.getRequester().getProfile().getId())
             .requesterId(request.getRequester().getId())
             .requesterAvatarUrl(photoMapper.getUrl(avatar))
             .requesterName(getRequesterName(request))

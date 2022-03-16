@@ -26,7 +26,7 @@ public class UserController {
    private final UserService userService;
 
    @PostMapping("/{id}/friend-requests")
-   public void save(@PathVariable Long id) {
+   public void createFriendRequest(@PathVariable Long id) {
       friendRequestService.save(id);
    }
 
@@ -36,7 +36,7 @@ public class UserController {
    }
 
    @GetMapping("/{id}/friend-requests")
-   public ResponseEntity<List<FriendRequestDto>> get(@PathVariable Long id) {
+   public ResponseEntity<List<FriendRequestDto>> getFriendRequests(@PathVariable Long id) {
       return ResponseEntity.ok(friendRequestService.getRequestsByRequestee(id));
    }
 
@@ -90,8 +90,13 @@ public class UserController {
       return ResponseEntity.ok(userService.isUserExisted(username));
    }
 
-   @GetMapping("{id}/basic-friends")
+   @GetMapping("/{id}/basic-friends")
    public ResponseEntity<List<UserBasicDto>> getBasicFriends(@PathVariable Long id) {
       return ResponseEntity.ok(userService.getBasicFriends(id));
+   }
+
+   @GetMapping("/{id}/avatar")
+   public ResponseEntity<PhotoResponse> getAvatar(@PathVariable Long id) {
+      return ResponseEntity.ok(userService.getAvatar(id));
    }
 }

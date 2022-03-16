@@ -8,9 +8,13 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.swing.text.html.Option;
+import java.util.Optional;
+
 @Repository
 public interface GroupJoinRequestRepository extends JpaRepository<GroupJoinRequest, Long> {
   @Transactional
   @Modifying
   void deleteByUserAndGroup(User user, Group group);
+  Optional<GroupJoinRequest> findByUserAndGroup(User user, Group group);
 }

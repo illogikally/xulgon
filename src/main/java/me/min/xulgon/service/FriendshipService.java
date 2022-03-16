@@ -30,12 +30,16 @@ public class FriendshipService {
    public void createFriendship(Long requesterId) {
       User requester = userRepository.findById(requesterId)
             .orElseThrow(UserNotFoundException::new);
+
       FriendRequest request = friendRequestRepository.findByRequesterAndRequestee(
             requester, authenticationService.getPrincipal()
-      )
-            .orElseThrow(() -> new RuntimeException("Friendresiq not found"));
+      ).orElse(null);
+
+      if (request == null) return;
 
       User principal = authenticationService.getPrincipal();
+
+
       friendshipRepository.save(Friendship.builder()
             .createdAt(Instant.now())
             .userA(request.getRequestee())
@@ -43,18 +47,18 @@ public class FriendshipService {
             .build()
       );
 
-      friendRequestRepository.deleteById(request.getId());
-      followRepository.findByFollowerAndPage(principal, requester.getUserPage())
+      friendRequestRepository.deleteByUsers(requester, principal);
+      followRepository.findByFollowerAndPage(principal, requester.getProfile())
             .orElseGet(() -> followRepository.save(Follow.builder()
-                  .page(requester.getUserPage())
+                  .page(requester.getProfile())
                   .createdAt(Instant.now())
                   .follower(principal)
                   .build())
             );
 
-      followRepository.findByFollowerAndPage(requester, principal.getUserPage())
+      followRepository.findByFollowerAndPage(requester, principal.getProfile())
             .orElseGet(() -> followRepository.save(Follow.builder()
-                  .page(principal.getUserPage())
+                  .page(principal.getProfile())
                   .createdAt(Instant.now())
                   .follower(requester)
                   .build())
@@ -66,8 +70,8 @@ public class FriendshipService {
       User user = userRepository.findById(userId)
             .orElseThrow(UserNotFoundException::new);
       friendshipRepository.deleteByUsers(user, principal);
-      followRepository.deleteByFollowerAndPage(user, principal.getUserPage());
-      followRepository.deleteByFollowerAndPage(principal, user.getUserPage());
+      followRepository.deleteByFollowerAndPage(user, principal.getProfile());
+      followRepository.deleteByFollowerAndPage(principal, user.getProfile());
    }
 
    public Integer getCommonFriendCount(User user) {

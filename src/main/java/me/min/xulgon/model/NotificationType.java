@@ -5,4 +5,5 @@ public enum NotificationType {
    COMMENT,
    NEW_POST,
    GROUP_JOIN_REQUEST,
+   FRIEND_REQUEST
 }

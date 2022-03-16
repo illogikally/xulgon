@@ -1,6 +1,8 @@
 package me.min.xulgon.model;
 
 import lombok.*;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 import javax.persistence.*;
 import java.time.Instant;
@@ -23,7 +25,8 @@ public class NotificationSubject {
    private Boolean isDisabled;
    @Enumerated(value = EnumType.STRING)
    private NotificationType type;
-   @ManyToOne
+   @OneToOne
+   @OnDelete(action = OnDeleteAction.CASCADE)
    private Notification latestNotification;
    @ManyToOne
    private Content rootContent;
@@ -33,6 +36,6 @@ public class NotificationSubject {
    private Page page;
    @ManyToOne
    private Content subjectContent;
-   @OneToMany(mappedBy = "subject", fetch = FetchType.LAZY)
+   @OneToMany(mappedBy = "subject", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
    private List<Notification> notifications;
 }

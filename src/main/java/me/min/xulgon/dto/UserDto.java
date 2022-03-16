@@ -15,6 +15,7 @@ public class UserDto {
    private String username;
    private Boolean blocked;
    private FriendshipStatus friendshipStatus;
+   private UserInfoDto userInfo;
    private Boolean isFollow;
    private Integer commonFriendCount;
    private String workplace;

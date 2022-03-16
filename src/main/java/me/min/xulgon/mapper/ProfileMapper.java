@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
-public class UserPageMapper {
+public class ProfileMapper {
 
    private final AuthenticationService authenticationService;
    private final BlockRepository blockRepository;
@@ -28,7 +28,7 @@ public class UserPageMapper {
    private final PhotoMapper photoMapper;
    private ContentService contentService;
 
-   public UserPageResponse toDto(UserPage page) {
+   public UserPageResponse toDto(Profile page) {
       if (page == null) return null;
 
       return UserPageResponse.builder()
@@ -42,7 +42,7 @@ public class UserPageMapper {
             .build();
    }
 
-   private List<PhotoResponse> getPhotos(UserPage userPage) {
+   private List<PhotoResponse> getPhotos(Profile userPage) {
       return userPage.getPagePhotoSet()
             .getPhotoSetPhotos()
             .stream()
@@ -53,7 +53,7 @@ public class UserPageMapper {
             .collect(Collectors.toList());
    }
 
-   private List<UserDto> getFriends(UserPage profile) {
+   private List<UserDto> getFriends(Profile profile) {
       List<User> profileFriendList = friendshipService.getFriends(profile.getUser());
       return profileFriendList.stream()
             .map(user -> new AbstractMap.SimpleEntry<>(user,
@@ -66,7 +66,7 @@ public class UserPageMapper {
    }
 
 
-   private boolean isBlocked(UserPage userPage) {
+   private boolean isBlocked(Profile userPage) {
       return blockRepository.findByBlockerAndBlockee(userPage.getUser(),
             authenticationService.getPrincipal()).isPresent();
    }

@@ -6,14 +6,13 @@ import me.min.xulgon.exception.UserNotFoundException;
 import me.min.xulgon.model.Block;
 import me.min.xulgon.model.Content;
 import me.min.xulgon.model.User;
-import me.min.xulgon.model.UserPage;
+import me.min.xulgon.model.Profile;
 import me.min.xulgon.repository.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -23,7 +22,7 @@ public class BlockService {
 
    private final BlockRepository blockRepository;
    private final AuthenticationService authService;
-   private final UserPageRepository userPageRepository;
+   private final ProfileRepository profileRepository;
    private final FollowRepository followRepository;
    private final FriendRequestRepository friendRequestRepository;
    private final UserRepository userRepository;
@@ -57,7 +56,7 @@ public class BlockService {
 
    @Transactional(readOnly = true)
    public Boolean isBlocked(Long profileId) {
-      UserPage profile = userPageRepository.findById(profileId)
+      Profile profile = profileRepository.findById(profileId)
             .orElseThrow(PageNotFoundException::new);
 
       return blockRepository.findByBlockerAndBlockee(profile.getUser(), authService.getPrincipal())
@@ -75,8 +74,8 @@ public class BlockService {
 
       friendshipRepository.deleteByUsers(authService.getPrincipal(), blockee);
       friendRequestRepository.deleteByUsers(authService.getPrincipal(), blockee);
-      followRepository.deleteByFollowerAndPage(authService.getPrincipal(), blockee.getUserPage());
-      followRepository.deleteByFollowerAndPage(blockee, authService.getPrincipal().getUserPage());
+      followRepository.deleteByFollowerAndPage(authService.getPrincipal(), blockee.getProfile());
+      followRepository.deleteByFollowerAndPage(blockee, authService.getPrincipal().getProfile());
       blockRepository.save(block);
    }
 

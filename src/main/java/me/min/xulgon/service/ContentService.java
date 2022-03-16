@@ -17,7 +17,6 @@ public class ContentService {
 
    private final ContentRepository contentRepository;
    private final PostRepository postRepository;
-   private final CommentRepository commentRepository;
    private final PhotoRepository photoRepository;
    private final PrincipalService principalService;
    private final GroupRepository groupRepository;
@@ -28,7 +27,20 @@ public class ContentService {
       Content content = contentRepository.findById(id)
             .orElseThrow(ContentNotFoundException::new);
       deleteContent(content);
-      deletePostIfEmpty(content);
+      deleteParentIfEmpty(content);
+   }
+
+   private void deleteParentIfEmpty(Content child) {
+      if (child.isNotType(ContentType.PHOTO)) return;
+      Content parent = child.getParentContent();
+
+      if (parent == null) return;
+
+      boolean isEmpty = parent.getBody() == null || parent.getBody().isBlank();
+      var photos = photoRepository.findAllByParentContent(parent);
+      if (photos.isEmpty() && isEmpty) {
+         deleteContent(parent);
+      }
    }
 
    public void deleteContent(Content content) {
@@ -41,15 +53,17 @@ public class ContentService {
       children.forEach(this::deleteContent);
       if (content.isNotType(ContentType.PHOTO)) {
          if (content.isType(ContentType.COMMENT)) {
-            Content commentParent = content.getParentContent();
-            decreaseCommentCount(commentParent);
+            decreaseCommentCount(content.getParentContent());
+
          } else {
-            Content sharedContent = ((Post) content).getShare();
-            if (sharedContent != null) {
-               decreaseShareCount(sharedContent);
+            Post post = postRepository.findById(content.getId())
+                  .orElseThrow(RuntimeException::new);
+            if (post.getShare() != null) {
+               decreaseShareCount(post.getShare());
             }
          }
          contentRepository.delete(content);
+
       } else {
          deletePhoto((Photo) content);
       }
@@ -66,33 +80,19 @@ public class ContentService {
    }
 
    public void save(Content content) {
-      switch (content.getType()) {
-         case POST:
-            postRepository.save((Post) content);
-            break;
-         case COMMENT:
-            commentRepository.save((Comment) content);
-            break;
-         case PHOTO:
-            photoRepository.save((Photo) content);
-            break;
-         default:
-            break;
-      }
-   }
-
-   private void deletePostIfEmpty(Content content) {
-      if (content.isNotType(ContentType.POST)) return;
-      boolean isTextEmpty = content.getBody() == null || content.getBody().isBlank();
-      if (content.getPhotos().isEmpty() && isTextEmpty) {
-         deleteContent(content.getId());
-      }
+      contentRepository.save(content);
    }
 
    public void deletePhoto(Photo photo) {
       photo.getThumbnails().stream()
             .map(PhotoThumbnail::getName)
             .forEach(storageService::delete);
+
+      Profile profile = photo.getUser().getProfile();
+      if (photo.equals(profile.getAvatar())) {
+         profile.setAvatar(null);
+      }
+
       storageService.delete(photo.getName());
       photoRepository.deleteById(photo.getId());
    }
@@ -106,11 +106,12 @@ public class ContentService {
       return content.getPrivacy().ordinal() <= privacy.ordinal();
    }
 
+   @Transactional(readOnly = true)
    public Content privacyFilter(Content content) {
       if (content == null) return null;
       return isPrivacyAdequate(content) ? content : null;
    }
-   
+
    private Privacy getPrivacy(Content content, User user) {
       if (user == null) {
          user = principalService.getPrincipal();
