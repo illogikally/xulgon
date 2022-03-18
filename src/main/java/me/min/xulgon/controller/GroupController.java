@@ -6,6 +6,7 @@ import me.min.xulgon.model.GroupMember;
 import me.min.xulgon.model.GroupRole;
 import me.min.xulgon.repository.GroupRepository;
 import me.min.xulgon.service.GroupService;
+import me.min.xulgon.util.OffsetRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -23,6 +24,11 @@ public class GroupController {
    @PostMapping
    public ResponseEntity<Long> create(@RequestBody GroupRequest request) {
       return ResponseEntity.ok(groupService.create(request));
+   }
+
+   @GetMapping()
+   public ResponseEntity<OffsetResponse<GroupResponse>> getGroups(OffsetRequest request) {
+      return ResponseEntity.ok(groupService.getGroups(request));
    }
 
    @GetMapping("/{id}")

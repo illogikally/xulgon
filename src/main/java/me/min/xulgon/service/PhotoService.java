@@ -1,6 +1,7 @@
 package me.min.xulgon.service;
 
 import lombok.AllArgsConstructor;
+import me.min.xulgon.dto.OffsetResponse;
 import me.min.xulgon.dto.PhotoRequest;
 import me.min.xulgon.dto.PhotoResponse;
 import me.min.xulgon.dto.PhotoViewResponse;
@@ -9,9 +10,11 @@ import me.min.xulgon.exception.PageNotFoundException;
 import me.min.xulgon.mapper.PhotoMapper;
 import me.min.xulgon.model.*;
 import me.min.xulgon.repository.*;
+import me.min.xulgon.util.OffsetRequest;
 import net.coobird.thumbnailator.Thumbnails;
 import net.coobird.thumbnailator.geometry.Positions;
 import org.springframework.core.env.Environment;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -120,16 +123,28 @@ public class PhotoService {
    }
 
    @Transactional(readOnly = true)
-   public List<PhotoResponse> getPhotosByPage(Long id) {
+   public OffsetResponse<PhotoResponse> getPhotosByPage(Long id, OffsetRequest pageable) {
       Page page = pageRepository.findById(id)
             .orElseThrow(PageNotFoundException::new);
 
-      return photoSetPhotoRepository.findAllByPhotoSetOrderByIdDesc(page.getPagePhotoSet())
+      var photos = photoSetPhotoRepository.findAllByPhotoSetOrderByIdDesc(
+            page.getPagePhotoSet(),
+            pageable.sizePlusOne()
+      );
+      boolean hasNext = photos.size() > pageable.getPageSize();
+      var photoResponses = photos
             .stream()
             .map(PhotoSetPhoto::getPhoto)
             .filter(contentService::isPrivacyAdequate)
+            .limit(pageable.getPageSize())
             .map(photoMapper::toPhotoResponse)
             .collect(Collectors.toList());
+
+      return OffsetResponse
+            .<PhotoResponse>builder()
+            .data(photoResponses)
+            .hasNext(hasNext)
+            .build();
    }
 
    public void delete(Long id) {

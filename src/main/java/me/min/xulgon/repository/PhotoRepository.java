@@ -12,7 +12,5 @@ import java.util.List;
 
 @Repository
 public interface PhotoRepository extends JpaRepository<Photo, Long> {
-   List<Photo> findAllByPage(Page page);
    List<Photo> findAllByParentContent(Content content);
-   List<Photo> findAllByPageOrderByCreatedAtDesc(Page page, Pageable pageable);
 }

@@ -39,6 +39,7 @@ public class PostService {
    private final PhotoSetRepository photoSetRepository;
    private PhotoSetPhotoService photoSetPhotoService;
    private ContentRepository contentRepository;
+   private final WebSocketService webSocketService;
 
    public OffsetResponse<PostResponse> getPostsByPage(Long id, OffsetRequest pageable) {
       Page page = pageRepository.findById(id)
@@ -152,7 +153,14 @@ public class PostService {
       photoSetPhotoService.bulkInsertUnique(postPhotoSet, savedPhotos);
       photoSetPhotoService.bulkInsertUnique(page.getPagePhotoSet(), savedPhotos);
       sendNewPostNotification(savedPost);
-      return postMapper.toDto(savedPost);
+      var postResponse = postMapper.toDto(savedPost);
+      webSocketService.send(
+            postRequest.getPageId(),
+            WebSocketContentType.POST,
+            postResponse,
+            "/topic/post"
+      );
+      return postResponse;
    }
 
    private void sendNewPostNotification(Post post) {

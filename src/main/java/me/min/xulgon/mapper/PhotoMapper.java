@@ -10,10 +10,7 @@ import me.min.xulgon.exception.PageNotFoundException;
 import me.min.xulgon.model.*;
 import me.min.xulgon.repository.ContentRepository;
 import me.min.xulgon.repository.PageRepository;
-import me.min.xulgon.repository.PhotoSetPhotoRepository;
-import me.min.xulgon.service.ContentService;
 import me.min.xulgon.service.FollowService;
-import me.min.xulgon.service.PhotoSetPhotoService;
 import me.min.xulgon.service.PrincipalService;
 import org.springframework.core.env.Environment;
 import org.springframework.data.util.Pair;
@@ -24,7 +21,6 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -40,7 +36,6 @@ public class PhotoMapper {
    private final ThumbnailMapper thumbnailMapper;
    private final Environment environment;
    private final FollowService followService;
-   private final PhotoSetPhotoRepository photoSetPhotoRepository;
 
    public Photo map(PhotoRequest photoRequest,
                     Pair<Integer, Integer> widthHeight,
@@ -75,6 +70,7 @@ public class PhotoMapper {
       return PhotoResponse.builder()
             .id(photo.getId())
             .url(getUrl(photo))
+            .userId(photo.getUser().getId())
             .thumbnails(getThumbnails(photo))
             .build();
    }

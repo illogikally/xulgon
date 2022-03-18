@@ -2,10 +2,15 @@ package me.min.xulgon.service;
 
 import lombok.AllArgsConstructor;
 import me.min.xulgon.dto.NotificationDto;
+import me.min.xulgon.dto.OffsetResponse;
+import me.min.xulgon.exception.UserNotFoundException;
 import me.min.xulgon.mapper.NotificationMapper;
 import me.min.xulgon.model.*;
+import me.min.xulgon.repository.BlockRepository;
 import me.min.xulgon.repository.NotificationRepository;
 import me.min.xulgon.repository.NotificationSubjectRepository;
+import me.min.xulgon.repository.UserRepository;
+import me.min.xulgon.util.OffsetRequest;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
@@ -23,14 +28,27 @@ public class NotificationService {
    private NotificationRepository notificationRepository;
    private SimpMessagingTemplate simpMessagingTemplate;
    private BlockService blockService;
+   private final UserRepository userRepository;
 
-   public List<NotificationDto> get() {
-      return notificationSubjectRepository
-            .findAllByRecipientOrderByLatestCreatedAtDesc(authenticationService.getPrincipal())
+   public OffsetResponse<NotificationDto> get(OffsetRequest request) {
+      var notifications = notificationSubjectRepository
+            .findAllByRecipientOrderByIsReadAscLatestCreatedAtDesc(
+                  authenticationService.getPrincipal(),
+                  request.sizePlusOne()
+      );
+      boolean hasNext = notifications.size() > request.getPageSize();
+      var responses = notifications
             .stream()
-            .filter(subject -> !blockService.isBlockingEachOther(subject.getRecipient(), subject.getLatestNotification().getActor()))
+//            .filter(subject -> !blockService.isBlockingEachOther(subject.getRecipient(), subject.getLatestNotification().getActor()))
+            .limit(request.getPageSize())
             .map(notificationMapper::toDto)
             .collect(Collectors.toList());
+
+      return OffsetResponse
+            .<NotificationDto>builder()
+            .data(responses)
+            .hasNext(hasNext)
+            .build();
    }
 
    public void read(Long id) {
@@ -38,6 +56,9 @@ public class NotificationService {
             .orElseThrow(RuntimeException::new);
 
       notification.setIsRead(true);
+      User principal = authenticationService.getPrincipal();
+      principal.setUnreadNotificationCount(principal.getUnreadMessageCount() - 1);
+      userRepository.save(principal);
       notificationSubjectRepository.save(notification);
    }
 
@@ -90,9 +111,16 @@ public class NotificationService {
       subject.setIsRead(false);
       notification.setSubject(subject);
       notificationRepository.save(notification);
+      recipient.setUnreadNotificationCount(recipient.getUnreadNotificationCount() + 1);
+      userRepository.save(recipient);
       simpMessagingTemplate.convertAndSendToUser(
             subject.getRecipient().getUsername(),
             "/queue/notification",
             notificationMapper.toDto(subject));
+   }
+
+   public Integer getUnreadCount() {
+      User principal = authenticationService.getPrincipal();
+      return principal.getUnreadNotificationCount();
    }
 }

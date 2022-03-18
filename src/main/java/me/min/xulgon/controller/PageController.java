@@ -8,6 +8,7 @@ import me.min.xulgon.service.PageService;
 import me.min.xulgon.service.PhotoService;
 import me.min.xulgon.service.PostService;
 import me.min.xulgon.util.OffsetRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -29,8 +30,9 @@ public class PageController {
    }
 
    @GetMapping("/{id}/photos")
-   public ResponseEntity<List<PhotoResponse>> getPhotos(@PathVariable Long id) {
-      return ResponseEntity.ok(photoService.getPhotosByPage(id));
+   public ResponseEntity<OffsetResponse<PhotoResponse>> getPhotos(@PathVariable Long id,
+                                                        OffsetRequest pageable) {
+      return ResponseEntity.ok(photoService.getPhotosByPage(id, pageable));
    }
 
    @PostMapping("/{id}/follow")

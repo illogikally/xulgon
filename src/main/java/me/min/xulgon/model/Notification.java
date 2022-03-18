@@ -23,6 +23,7 @@ public class Notification {
    private User actor;
    @ManyToOne
    private Content actorContent;
-   @ManyToOne
+   @ManyToOne(cascade = CascadeType.REMOVE)
    private NotificationSubject subject;
+
 }

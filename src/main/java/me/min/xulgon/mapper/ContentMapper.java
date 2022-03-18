@@ -41,13 +41,4 @@ public class ContentMapper {
             .build();
    }
 
-   public NotificationContentDto toNotificationContentDto(Content content) {
-      if (content == null) return null;
-      return NotificationContentDto.builder()
-            .id(content.getId())
-            .text(content.getBody())
-            .type(content.getType())
-            .user(userMapper.toBasicDto(content.getUser()))
-            .build();
-   }
 }

@@ -67,7 +67,10 @@ public interface PostRepository extends JpaRepository<Post, Long> {
          "               ON p.id = c.id " +
          "WHERE  c.page_id IN (SELECT page_id " +
          "                     FROM   follow f " +
-         "                     WHERE  f.follower_id = :userId) " +
+         "                     WHERE  f.follower_id = :userId " +
+         "                            AND (SELECT type " +
+         "                                 FROM   page " +
+         "                                 WHERE  page.id = page_id) != 'GROUP') " +
          "       AND ( c.user_id = :userId " +
          "              OR c.privacy = 'PUBLIC' " +
          "              OR ( c.privacy = 'FRIEND' " +

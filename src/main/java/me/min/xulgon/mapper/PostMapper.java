@@ -23,7 +23,6 @@ public class PostMapper {
 
    private final PhotoMapper photoMapper;
    private final AuthenticationService authenticationService;
-   private final PostRepository postRepository;
    private final PageRepository pageRepository;
    private final UserMapper userMapper;
    private ContentMapper contentMapper;

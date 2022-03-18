@@ -1,16 +1,12 @@
 package me.min.xulgon.service;
 
 import lombok.AllArgsConstructor;
-import me.min.xulgon.dto.CommentRequest;
-import me.min.xulgon.dto.CommentResponse;
-import me.min.xulgon.dto.OffsetResponse;
-import me.min.xulgon.dto.PhotoRequest;
+import me.min.xulgon.dto.*;
 import me.min.xulgon.exception.ContentNotFoundException;
 import me.min.xulgon.mapper.CommentMapper;
 import me.min.xulgon.model.*;
 import me.min.xulgon.repository.*;
 import me.min.xulgon.util.OffsetRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -33,6 +29,7 @@ public class CommentService {
    private NotificationService notificationService;
    private FollowRepository followRepository;
    private FollowService followService;
+   private WebSocketService webSocketService;
 
    public CommentResponse get(Long id) {
       return commentRepository.findById(id)
@@ -59,7 +56,14 @@ public class CommentService {
       followTargetContent(comment);
       createCommentNotification(comment);
       followService.followContent(comment.getId());
-      return commentMapper.toDto(comment);
+      var commentResponse = commentMapper.toDto(comment);
+      webSocketService.send(
+            comment.getParentContent().getId(),
+            WebSocketContentType.COMMENT,
+            commentResponse,
+            "/topic/comment"
+      );
+      return commentResponse;
    }
 
    private void followTargetContent(Comment comment) {

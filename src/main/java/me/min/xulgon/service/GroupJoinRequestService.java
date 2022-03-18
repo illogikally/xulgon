@@ -1,10 +1,7 @@
 package me.min.xulgon.service;
 
 import lombok.AllArgsConstructor;
-import me.min.xulgon.model.Follow;
-import me.min.xulgon.model.GroupJoinRequest;
-import me.min.xulgon.model.GroupMember;
-import me.min.xulgon.model.GroupRole;
+import me.min.xulgon.model.*;
 import me.min.xulgon.repository.FollowRepository;
 import me.min.xulgon.repository.GroupJoinRequestRepository;
 import me.min.xulgon.repository.GroupMemberRepository;
@@ -22,6 +19,8 @@ public class GroupJoinRequestService {
    private final GroupJoinRequestRepository groupJoinRequestRepository;
    private final GroupMemberRepository groupMemberRepository;
    private final FollowRepository followRepository;
+   private final NotificationService notificationService;
+   private final PrincipalService principalService;
 
    public void accept(Long id) {
       GroupJoinRequest request = groupJoinRequestRepository.findById(id)
@@ -40,6 +39,14 @@ public class GroupJoinRequestService {
             .createdAt(Instant.now())
             .follower(request.getUser())
             .build());
+
+      notificationService.createNotification(
+            principalService.getPrincipal(),
+            null, null, null,
+            request.getGroup(),
+            request.getUser(),
+            NotificationType.GROUP_JOIN_REQUEST_ACCEPT
+      );
    }
 
    public void deleteRequest(Long id) {

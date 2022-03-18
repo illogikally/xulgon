@@ -28,7 +28,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
    @Override
    public void registerStompEndpoints(StompEndpointRegistry registry) {
       registry.addEndpoint("/ws")
-            .setAllowedOrigins("http://localhost:4200")
+            .setAllowedOriginPatterns("*")
             .withSockJS();
    }
 
@@ -38,7 +38,10 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
       registry.enableSimpleBroker(
             "/queue/chat",
             "/queue/notification",
-            "/queue/friend-request");
+            "/queue/friend-request",
+            "/topic/comment",
+            "/topic/post",
+            "/topic/group-join-request");
       registry.setUserDestinationPrefix("/user");
    }
 

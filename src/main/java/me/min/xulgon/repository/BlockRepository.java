@@ -14,4 +14,5 @@ public interface BlockRepository extends JpaRepository<Block, Long> {
    Optional<Block> findByBlockerAndBlockee(User blocker, User blockee);
    void deleteByBlockerAndBlockee(User blocker, User blockee);
    List<Block> findAllByBlockee(User blockee);
+   List<Block> findAllByBlocker(User blocker);
 }

@@ -4,6 +4,7 @@ import me.min.xulgon.model.Content;
 import me.min.xulgon.model.NotificationSubject;
 import me.min.xulgon.model.NotificationType;
 import me.min.xulgon.model.User;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -15,5 +16,5 @@ public interface NotificationSubjectRepository extends JpaRepository<Notificatio
    Optional<NotificationSubject> findByRecipientAndSubjectContentAndType(User recipient,
                                                                          Content content,
                                                                          NotificationType type);
-   List<NotificationSubject> findAllByRecipientOrderByLatestCreatedAtDesc(User recipient);
+   List<NotificationSubject> findAllByRecipientOrderByIsReadAscLatestCreatedAtDesc(User recipient, Pageable pageable);
 }

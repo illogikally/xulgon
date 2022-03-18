@@ -26,6 +26,7 @@ public class FriendshipService {
    private final AuthenticationService authenticationService;
    private final BlockService blockService;
    private final UserRepository userRepository;
+   private final NotificationService notificationService;
 
    public void createFriendship(Long requesterId) {
       User requester = userRepository.findById(requesterId)
@@ -63,6 +64,14 @@ public class FriendshipService {
                   .follower(requester)
                   .build())
             );
+
+      notificationService.createNotification(
+            principal,
+            null, null, null,
+            principal.getProfile(),
+            requester,
+            NotificationType.FRIEND_REQUEST_ACCEPT
+      );
    }
 
    public void delete(Long userId) {

@@ -9,6 +9,7 @@ import me.min.xulgon.mapper.PhotoMapper;
 import me.min.xulgon.mapper.UserMapper;
 import me.min.xulgon.model.*;
 import me.min.xulgon.repository.*;
+import me.min.xulgon.util.OffsetRequest;
 import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Service;
 
@@ -193,5 +194,27 @@ public class GroupService {
             .filter(member -> member.getRole().equals(GroupRole.ADMIN))
             .orElseThrow(() -> new RuntimeException(""));
       return Pair.of(user, group);
+   }
+
+   public OffsetResponse<GroupResponse> getGroups(OffsetRequest request) {
+      var groups = groupRepository.findAll(request.sizePlusOne());
+      boolean hasNext = groups.getSize() > request.getPageSize();
+      var groupResponses = groups.stream()
+            .limit(request.getPageSize())
+            .map(groupMapper::toDto)
+            .collect(Collectors.toList());
+      return OffsetResponse
+            .<GroupResponse>builder()
+            .hasNext(hasNext)
+            .data(groupResponses)
+            .build();
+   }
+
+   private boolean isNotMember(Group group) {
+      User principal = authService.getPrincipal();
+      return group.getMembers()
+            .stream()
+            .map(GroupMember::getUser)
+            .noneMatch(member -> member.equals(principal));
    }
 }
