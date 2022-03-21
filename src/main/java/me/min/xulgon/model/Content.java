@@ -36,11 +36,11 @@ public class Content {
    private Privacy privacy;
    @OneToOne(cascade = CascadeType.REMOVE)
    private PhotoSet photoSet;
-   @ManyToOne(fetch = FetchType.LAZY)
+   @ManyToOne
    private Content parentContent;
-   @ManyToOne(fetch = FetchType.LAZY)
+   @ManyToOne
    private Page page;
-   @ManyToOne(fetch = FetchType.LAZY)
+   @ManyToOne
    @NotNull
    private User user;
    @OneToMany(mappedBy = "content", cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)
