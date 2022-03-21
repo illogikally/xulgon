@@ -23,20 +23,17 @@ public class MessageMapper {
 
    private final ConversationRepository conversationRepository;
    private final UserRepository userRepository;
-   private final PhotoMapper photoMapper;
+   private final UserMapper userMapper;
 
    @Transactional
    public MessageResponse toDto(Message message) {
-      Photo senderAvatar = message.getSender().getProfile().getAvatar();
       return MessageResponse.builder()
-            .username(getUsername(message))
             .id(message.getId())
-            .userAvatarUrl(photoMapper.getUrl(senderAvatar))
             .isRead(message.getIsRead())
+            .user(userMapper.toBasicDto(message.getSender()))
             .conversationId(message.getConversation().getId())
             .createdAgo(MappingUtil.getCreatedAgo(message.getCreatedAt()))
             .createdAt(message.getCreatedAt().toEpochMilli())
-            .userId(message.getSender().getId())
             .message(message.getMessage())
             .build();
    }

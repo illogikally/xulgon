@@ -29,7 +29,7 @@ public class NotificationController {
    @PutMapping("/{id}/read")
    public ResponseEntity<Void> read(@PathVariable Long id) {
       notificationService.read(id);
-      return new ResponseEntity<>(HttpStatus.OK);
+      return ResponseEntity.ok().build();
    }
 
    @GetMapping("/unread")

@@ -20,5 +20,6 @@ public class MessageResponse {
    private String userAvatarUrl;
    private Boolean isRead;
    private String username;
+   private UserBasicDto user;
    private Long conversationId;
 }

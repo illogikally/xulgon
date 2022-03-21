@@ -2,7 +2,6 @@ package me.min.xulgon.dto;
 
 import lombok.Builder;
 import lombok.Data;
-import me.min.xulgon.model.ContentType;
 import me.min.xulgon.model.NotificationType;
 import me.min.xulgon.model.PageType;
 
@@ -13,6 +12,8 @@ public class NotificationDto {
    private String createdAgo;
    private NotificationType type;
    private Boolean isRead;
+   private Boolean isPreviousRead;
+
    private Integer actorCount;
 
    private UserBasicDto actor;

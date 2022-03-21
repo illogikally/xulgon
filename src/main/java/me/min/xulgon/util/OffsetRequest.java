@@ -24,7 +24,7 @@ public class OffsetRequest implements Pageable {
       }
       this.size = size;
       this.offset = offset;
-      this.after = after == null ? 0 : after;
+      this.after = after == null ? 0L : after;
       this.before = before == null ? Long.MAX_VALUE : before;
    }
 

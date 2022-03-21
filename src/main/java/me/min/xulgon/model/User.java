@@ -10,6 +10,7 @@ import java.time.Instant;
 @NoArgsConstructor
 @Builder
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@Table(name = "user_table")
 public class User {
    @Id
    @GeneratedValue(strategy = GenerationType.IDENTITY)

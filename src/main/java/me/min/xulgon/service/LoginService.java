@@ -49,7 +49,7 @@ public class LoginService {
             .lastName(registerDto.getLastName())
             .createdAt(Instant.now())
             .unreadMessageCount(0)
-            .unreadMessageCount(0)
+            .unreadNotificationCount(0)
             .enabled(true)
             .userInfo(userInfo)
             .fullName(registerDto.getLastName() + " " + registerDto.getFirstName())

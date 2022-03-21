@@ -3,6 +3,7 @@ package me.min.xulgon.service;
 import lombok.AllArgsConstructor;
 import me.min.xulgon.exception.UserNotFoundException;
 import me.min.xulgon.model.User;
+import me.min.xulgon.repository.ContentRepository;
 import me.min.xulgon.repository.UserRepository;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -18,6 +19,7 @@ import java.util.Collections;
 @AllArgsConstructor
 public class UserDetailsServiceImpl implements UserDetailsService {
    private final UserRepository userRepository;
+   private final ContentRepository contentRepository;
 
    @Override
    @Transactional(readOnly = true)

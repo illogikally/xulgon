@@ -33,6 +33,7 @@ public class GroupService {
    private final GroupJoinRequestRepository groupJoinRequestRepository;
    private final PhotoSetRepository photoSetRepository;
    private NotificationService notificationService;
+   private final WebSocketService webSocketService;
 
    public Long create(GroupRequest groupRequest) {
       Group group = groupMapper.map(groupRequest);
@@ -99,12 +100,25 @@ public class GroupService {
                   .isPresent();
       if (isRequestExisted) return;
 
-      groupJoinRequestRepository.save(GroupJoinRequest
+      var request = groupJoinRequestRepository.save(GroupJoinRequest
             .builder()
             .createdAt(Instant.now())
             .user(principal)
             .group(group)
             .build());
+
+      GroupJoinRequestDto requestDto = GroupJoinRequestDto.builder()
+            .id(request.getId())
+            .user(userMapper.toDto(request.getUser()))
+            .createdAgo(MappingUtil.getCreatedAgo(request.getCreatedAt()))
+            .build();
+
+      webSocketService.send(
+            groupId,
+            WebSocketContentType.GROUP_JOIN_REQUEST,
+            requestDto,
+            "/topic/group-join-request"
+      );
 
       group.getMembers().stream()
             .filter(member -> member.getRole().equals(GroupRole.ADMIN))
@@ -208,13 +222,5 @@ public class GroupService {
             .hasNext(hasNext)
             .data(groupResponses)
             .build();
-   }
-
-   private boolean isNotMember(Group group) {
-      User principal = authService.getPrincipal();
-      return group.getMembers()
-            .stream()
-            .map(GroupMember::getUser)
-            .noneMatch(member -> member.equals(principal));
    }
 }

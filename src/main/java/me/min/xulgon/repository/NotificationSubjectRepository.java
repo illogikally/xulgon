@@ -17,4 +17,5 @@ public interface NotificationSubjectRepository extends JpaRepository<Notificatio
                                                                          Content content,
                                                                          NotificationType type);
    List<NotificationSubject> findAllByRecipientOrderByIsReadAscLatestCreatedAtDesc(User recipient, Pageable pageable);
+   Integer countByRecipientAndIsRead(User recipient, Boolean isRead);
 }

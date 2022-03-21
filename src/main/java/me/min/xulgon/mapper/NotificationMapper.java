@@ -9,6 +9,7 @@ import me.min.xulgon.util.Util;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.function.Function;
 
 @Service
@@ -17,7 +18,7 @@ public class NotificationMapper {
 
    private final Environment env;
 
-   public NotificationDto toDto(NotificationSubject notification) {
+   public NotificationDto toDto(NotificationSubject notification, boolean isPreviousRead) {
       Notification latest = notification.getLatestNotification();
       Page page = notification.getPage();
       Content subjectContent = notification.getSubjectContent();
@@ -26,6 +27,7 @@ public class NotificationMapper {
             .builder()
             .id(notification.getId())
             .isRead(notification.getIsRead())
+            .isPreviousRead(isPreviousRead)
             .type(notification.getType())
             .actorCount(notification.getActorCount())
             .createdAgo(MappingUtil.getCreatedAgo(notification.getLatestCreatedAt()))

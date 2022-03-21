@@ -2,6 +2,8 @@ package me.min.xulgon.model;
 
 import lombok.*;
 import lombok.experimental.SuperBuilder;
+import org.hibernate.annotations.Type;
+import org.hibernate.type.TextType;
 import org.jetbrains.annotations.NotNull;
 
 import javax.persistence.*;
@@ -22,6 +24,7 @@ public class Content {
    @EqualsAndHashCode.Include
    private Long id;
    @Lob
+   @Type(type = "org.hibernate.type.TextType")
    private String body;
    @Enumerated(value = EnumType.STRING)
    private ContentType type;

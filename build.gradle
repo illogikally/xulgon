@@ -32,6 +32,7 @@ dependencies {
 	implementation 'io.springfox:springfox-swagger-ui:2.9.2'
 	implementation 'com.github.marlonlom:timeago:4.0.3'
 	implementation 'net.coobird:thumbnailator:0.4.17'
+	implementation 'org.postgresql:postgresql'
 
 	compileOnly 'org.projectlombok:lombok'
 	annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'

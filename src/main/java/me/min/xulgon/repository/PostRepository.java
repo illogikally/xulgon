@@ -31,7 +31,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
          "                             FROM   block b " +
          "                             WHERE  b.blocker_id = :userId) " +
          "ORDER  BY c.created_at DESC " +
-         "LIMIT  :offset, :size ")
+         "LIMIT :size OFFSET :offset ")
    List<Post> getUserGroupFeed(Long userId, long size, long offset);
 
    @Query(nativeQuery = true,
@@ -81,6 +81,6 @@ public interface PostRepository extends JpaRepository<Post, Long> {
          "                                                       f.userb_id )) ) ) " +
          "       AND c.user_id != :userId " +
          "ORDER  BY c.created_at DESC " +
-         "LIMIT  :offset, :size ")
+         "LIMIT :size OFFSET :offset ")
    List<Post> getUserNewsFeed(Long userId, int size, long offset);
 }

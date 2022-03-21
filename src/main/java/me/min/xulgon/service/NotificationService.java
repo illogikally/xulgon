@@ -11,12 +11,14 @@ import me.min.xulgon.repository.NotificationRepository;
 import me.min.xulgon.repository.NotificationSubjectRepository;
 import me.min.xulgon.repository.UserRepository;
 import me.min.xulgon.util.OffsetRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 @AllArgsConstructor
@@ -41,7 +43,7 @@ public class NotificationService {
             .stream()
 //            .filter(subject -> !blockService.isBlockingEachOther(subject.getRecipient(), subject.getLatestNotification().getActor()))
             .limit(request.getPageSize())
-            .map(notificationMapper::toDto)
+            .map(n -> notificationMapper.toDto(n, true))
             .collect(Collectors.toList());
 
       return OffsetResponse
@@ -52,13 +54,13 @@ public class NotificationService {
    }
 
    public void read(Long id) {
-      NotificationSubject notification = notificationSubjectRepository.findById(id)
-            .orElseThrow(RuntimeException::new);
+      var notificationOptional = notificationSubjectRepository.findById(id);
 
+      if (notificationOptional.isEmpty()) return;
+
+      NotificationSubject notification = notificationOptional.get();
+      if (notification.getIsRead()) return;
       notification.setIsRead(true);
-      User principal = authenticationService.getPrincipal();
-      principal.setUnreadNotificationCount(principal.getUnreadMessageCount() - 1);
-      userRepository.save(principal);
       notificationSubjectRepository.save(notification);
    }
 
@@ -79,24 +81,36 @@ public class NotificationService {
             .actorContent(actorContent)
             .build();
 
-      NotificationSubject subject =
-            notificationSubjectRepository.findByRecipientAndSubjectContentAndType(
-                  recipient,
-                  targetContent,
-                  notificationType
-            ).orElseGet(() ->
-                  NotificationSubject
-                        .builder()
-                        .type(notificationType)
-                        .isDisabled(false)
-                        .actorCount(0)
-                        .rootContent(rootContent)
-                        .page(page)
-                        .subjectContent(targetContent)
-                        .notifications(List.of())
-                        .recipient(recipient)
-                        .build()
-            );
+      boolean uniqueNotification = List.of(NotificationType.FRIEND_REQUEST,
+            NotificationType.FRIEND_REQUEST_ACCEPT,
+            NotificationType.GROUP_JOIN_REQUEST,
+            NotificationType.GROUP_JOIN_REQUEST_ACCEPT
+      ).contains(notificationType);
+      NotificationSubject subject = NotificationSubject
+            .builder()
+            .type(notificationType)
+            .isDisabled(false)
+            .actorCount(0)
+            .isRead(true)
+            .rootContent(rootContent)
+            .page(page)
+            .subjectContent(targetContent)
+            .notifications(List.of())
+            .recipient(recipient)
+            .build();
+
+      if (!uniqueNotification) {
+         var subjectOptional
+               = notificationSubjectRepository.findByRecipientAndSubjectContentAndType(
+               recipient,
+               targetContent,
+               notificationType
+         );
+
+         if (subjectOptional.isPresent()) {
+            subject = subjectOptional.get();
+         }
+      }
 
       notification = notificationRepository.save(notification);
       subject.setLatestNotification(notification);
@@ -106,21 +120,21 @@ public class NotificationService {
       ) {
          subject.setActorCount(subject.getActorCount() + 1);
       }
-      subject.setLatestCreatedAt(notification.getCreatedAt());
-      subject = notificationSubjectRepository.save(subject);
-      subject.setIsRead(false);
+
+      boolean isPreviousRead = subject.getIsRead();
       notification.setSubject(subject);
+      subject.setLatestCreatedAt(notification.getCreatedAt());
+      subject.setIsRead(false);
+      subject = notificationSubjectRepository.save(subject);
       notificationRepository.save(notification);
-      recipient.setUnreadNotificationCount(recipient.getUnreadNotificationCount() + 1);
-      userRepository.save(recipient);
       simpMessagingTemplate.convertAndSendToUser(
             subject.getRecipient().getUsername(),
             "/queue/notification",
-            notificationMapper.toDto(subject));
+            notificationMapper.toDto(subject, isPreviousRead));
    }
 
    public Integer getUnreadCount() {
       User principal = authenticationService.getPrincipal();
-      return principal.getUnreadNotificationCount();
+      return notificationSubjectRepository.countByRecipientAndIsRead(principal, false);
    }
 }
