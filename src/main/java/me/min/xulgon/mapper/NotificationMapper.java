@@ -45,7 +45,7 @@ public class NotificationMapper {
 
    private UserBasicDto toBasicDto(User user) {
       return UserBasicDto.builder()
-            .avatarUrl(Util.getThumbnailUrl(env, user.getProfile().getAvatar().getThumbnailsMap().get(ThumbnailType.s40x40)))
+            .avatarUrl(Util.getThumbnailUrl(env, user.getProfile().getAvatar().getThumbnailsMap().get(ThumbnailType.s160x160)))
             .username(user.getFullName())
             .profileId(user.getProfile().getId())
             .id(user.getId())
