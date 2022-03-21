@@ -15,6 +15,7 @@ import org.springframework.util.Assert;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.UUID;
@@ -26,8 +27,15 @@ public class StorageService {
    private Environment environment;
 
    public String store(BufferedImage bufferedImage) {
-      String DIR_PATH = environment.getProperty("resource.path");
-      Assert.notNull(DIR_PATH, "Image storage (resource.path) path is null.");
+      URL url = this.getClass().getClassLoader().getResource("images");
+      Assert.notNull(url, "Resource path is null");
+      String DIR_PATH;
+      try {
+         DIR_PATH = Path.of(url.toURI()).toString();
+      }
+      catch (Exception ignored) {
+         throw new RuntimeException();
+      }
       String name = UUID.randomUUID().toString();
       String extension = "jpg";
       String fileName = name + "." + extension;
@@ -43,8 +51,15 @@ public class StorageService {
    }
 
    public void delete(String name) {
-      String DIR_PATH = environment.getProperty("resource.path");
-      Assert.notNull(DIR_PATH, "Image storage (resource.path) path is null.");
+      URL url = this.getClass().getClassLoader().getResource("images");
+      Assert.notNull(url, "Resource path is null");
+      String DIR_PATH;
+      try {
+         DIR_PATH = Path.of(url.toURI()).toString();
+      }
+      catch (Exception ignored) {
+         throw new RuntimeException();
+      }
       File file = new File(Paths.get(DIR_PATH, name).toString());
       System.out.println(file);
       System.out.println(file.exists());

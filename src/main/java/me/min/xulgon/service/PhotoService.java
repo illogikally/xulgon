@@ -25,6 +25,7 @@ import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.nio.file.Path;
 import java.text.MessageFormat;
 import java.util.Arrays;
@@ -80,8 +81,15 @@ public class PhotoService {
    private PhotoThumbnail generateThumbnails(Photo photo,
                                              ThumbnailType thumbnailType,
                                              BufferedImage bufferedImage) {
-      String resourcePath = environment.getProperty("resource.path");
-      Assert.notNull(resourcePath, "Resource path is null");
+      URL resourcePathUrl = this.getClass().getClassLoader().getResource("images");
+      Assert.notNull(resourcePathUrl, "Resource path is null");
+      String resourcePath;
+      try {
+         resourcePath = Path.of(resourcePathUrl.toURI()).toString();
+      }
+      catch (Exception e) {
+         throw  new RuntimeException();
+      }
       String type = thumbnailType.toString();
       int size = thumbnailType.getSize();
       String fileName = MessageFormat.format("{0}.{1}.jpg", UUID.randomUUID(), type);

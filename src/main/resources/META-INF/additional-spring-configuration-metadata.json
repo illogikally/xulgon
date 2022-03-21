@@ -24,6 +24,11 @@
       "name": "resource.url",
       "type": "java.lang.String",
       "description": "Description for resource.url."
+    },
+    {
+      "name": "app.resource-url",
+      "type": "java.lang.String",
+      "description": "Description for app.resource-url."
     }
   ]
 }

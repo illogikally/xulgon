@@ -117,7 +117,7 @@ public class PhotoMapper {
 
    public String getUrl(Photo photo) {
       if (photo == null) return null;
-      String url = environment.getProperty("resource.url");
+      String url = environment.getProperty("app.resource-url");
       return MessageFormat.format("{0}/{1}", url, photo.getName());
    }
 

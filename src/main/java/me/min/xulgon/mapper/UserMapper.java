@@ -1,9 +1,11 @@
 package me.min.xulgon.mapper;
 
 import lombok.AllArgsConstructor;
+import me.min.xulgon.dto.PhotoResponse;
 import me.min.xulgon.dto.UserBasicDto;
 import me.min.xulgon.dto.UserDto;
 import me.min.xulgon.model.Photo;
+import me.min.xulgon.model.ThumbnailType;
 import me.min.xulgon.model.User;
 import me.min.xulgon.repository.FollowRepository;
 import me.min.xulgon.service.AuthenticationService;
@@ -25,14 +27,13 @@ public class UserMapper {
    private final Environment env;
 
    public UserDto toDto(User user) {
-      Photo avatar = user.getProfile().getAvatar();
       return UserDto.builder()
             .id(user.getId())
             .profileId(user.getProfile().getId())
             .blocked(blockService.blocked(user))
             .friendshipStatus(friendshipService.getFriendshipStatus(user))
             .isFollow(isFollow(user))
-            .avatarUrl(Util.getPhotoUrl(env, avatar))
+            .avatarUrl(Util.getThumbnailUrl(env, user.getProfile().getAvatar().getThumbnailsMap().get(ThumbnailType.s160x160)))
             .username(user.getFullName())
             .userInfo(userInfoMapper.toDto(user.getUserInfo()))
             .commonFriendCount(friendshipService.getCommonFriendCount(user))
@@ -50,7 +51,7 @@ public class UserMapper {
 
    public UserBasicDto toBasicDto(User user) {
       return UserBasicDto.builder()
-            .avatarUrl(Util.getPhotoUrl(env, user.getProfile().getAvatar()))
+            .avatarUrl(Util.getThumbnailUrl(env, user.getProfile().getAvatar().getThumbnailsMap().get(ThumbnailType.s200x200)))
             .username(user.getFullName())
             .profileId(user.getProfile().getId())
             .id(user.getId())

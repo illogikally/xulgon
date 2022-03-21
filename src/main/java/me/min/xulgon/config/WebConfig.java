@@ -10,19 +10,19 @@ import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import java.text.MessageFormat;
+import java.util.List;
 
 @Configuration
 @EnableWebMvc
 public class WebConfig implements WebMvcConfigurer {
 
-   @Value("${resource.path}")
-   private String resourcePath;
-
    @Override
    public void addResourceHandlers(ResourceHandlerRegistry registry) {
-      String path = MessageFormat.format("file:/{0}/", resourcePath);
+//      String path = MessageFormat.format("file:/{0}/", resourcePath);
+//      registry.addResourceHandler("/contents/**")
+//              .addResourceLocations(path);
       registry.addResourceHandler("/contents/**")
-              .addResourceLocations(path);
+              .addResourceLocations("classpath:/resources/images/", "classpath:/images/");
 
       registry.addResourceHandler("/swagger-ui.html")
             .addResourceLocations("classpath:/META-INF/resources/");
