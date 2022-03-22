@@ -18,12 +18,6 @@ public class WebConfig implements WebMvcConfigurer {
 
    @Override
    public void addResourceHandlers(ResourceHandlerRegistry registry) {
-//      String path = MessageFormat.format("file:/{0}/", resourcePath);
-//      registry.addResourceHandler("/contents/**")
-//              .addResourceLocations(path);
-      registry.addResourceHandler("/contents/**")
-              .addResourceLocations("classpath:/resources/images/", "classpath:/images/");
-
       registry.addResourceHandler("/swagger-ui.html")
             .addResourceLocations("classpath:/META-INF/resources/");
 

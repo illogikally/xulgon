@@ -59,7 +59,6 @@ public class UserController {
 
    @GetMapping("/news-feed")
    public ResponseEntity<List<PostResponse>> getNewsFeed(OffsetRequest pageable) {
-      System.out.println(pageable.toString());
       return ResponseEntity.ok(userService.getNewsFeed(pageable));
    }
 
