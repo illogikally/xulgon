@@ -33,7 +33,7 @@ public class UserMapper {
             .blocked(blockService.blocked(user))
             .friendshipStatus(friendshipService.getFriendshipStatus(user))
             .isFollow(isFollow(user))
-            .avatarUrl(Util.getThumbnailUrl(env, user.getProfile().getAvatar().getThumbnailsMap().get(ThumbnailType.s160x160)))
+            .avatarUrl(Util.getPhotoUrl(env, user.getProfile().getAvatar()))
             .username(user.getFullName())
             .userInfo(userInfoMapper.toDto(user.getUserInfo()))
             .commonFriendCount(friendshipService.getCommonFriendCount(user))
@@ -51,7 +51,7 @@ public class UserMapper {
 
    public UserBasicDto toBasicDto(User user) {
       return UserBasicDto.builder()
-            .avatarUrl(Util.getThumbnailUrl(env, user.getProfile().getAvatar().getThumbnailsMap().get(ThumbnailType.s200x200)))
+            .avatarUrl(Util.getPhotoUrl(env, user.getProfile().getAvatar()))
             .username(user.getFullName())
             .profileId(user.getProfile().getId())
             .id(user.getId())

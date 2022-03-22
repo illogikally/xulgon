@@ -29,6 +29,26 @@
       "name": "app.resource-url",
       "type": "java.lang.String",
       "description": "Description for app.resource-url."
+    },
+    {
+      "name": "app.cdn-id",
+      "type": "java.lang.String",
+      "description": "Description for app.cdn-id."
+    },
+    {
+      "name": "app.cdn-secret",
+      "type": "java.lang.String",
+      "description": "Description for app.cdn-secret."
+    },
+    {
+      "name": "app.sirv-id",
+      "type": "java.lang.String",
+      "description": "Description for app.sirv-id."
+    },
+    {
+      "name": "app.sirv-secret",
+      "type": "java.lang.String",
+      "description": "Description for app.sirv-secret."
     }
   ]
 }

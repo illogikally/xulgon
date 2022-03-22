@@ -20,28 +20,9 @@ public class Photo extends Content {
    private Integer width;
    private Integer height;
    @OneToMany(
-         mappedBy = "originalPhoto",
-         cascade = CascadeType.REMOVE
-   )
-   private List<PhotoThumbnail> thumbnails;
-   @OneToMany(
          mappedBy = "photo",
          cascade = CascadeType.REMOVE,
          orphanRemoval = true
    )
    private List<PhotoSetPhoto> photoSetPhotos;
-
-   @Transient
-   private Map<ThumbnailType, PhotoThumbnail> thumbnailsMap;
-
-   @PostLoad
-   private void map() {
-      thumbnailsMap = thumbnails
-            .stream()
-            .collect(Collectors.toMap(PhotoThumbnail::getType, Function.identity()));
-   }
-
-   public Map<ThumbnailType, PhotoThumbnail> getThumbnailsMap() {
-      return thumbnailsMap;
-   }
 }

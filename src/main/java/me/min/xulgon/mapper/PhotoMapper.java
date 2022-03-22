@@ -33,7 +33,6 @@ public class PhotoMapper {
    private final PrincipalService principalService;
    private final PageRepository pageRepository;
    private final UserMapper userMapper;
-   private final ThumbnailMapper thumbnailMapper;
    private final Environment environment;
    private final FollowService followService;
 
@@ -71,15 +70,9 @@ public class PhotoMapper {
             .id(photo.getId())
             .url(getUrl(photo))
             .userId(photo.getUser().getId())
-            .thumbnails(getThumbnails(photo))
             .build();
    }
 
-   private Map<ThumbnailType, ThumbnailDto> getThumbnails(Photo photo) {
-      return photo.getThumbnails()
-            .stream()
-            .collect(Collectors.toMap(PhotoThumbnail::getType, thumbnailMapper::toDto));
-   }
 
    public PhotoViewResponse toPhotoViewResponse(Photo photo) {
       if (photo == null) return null;

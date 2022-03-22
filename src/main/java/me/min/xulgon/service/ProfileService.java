@@ -104,9 +104,9 @@ public class ProfileService {
       var coverPhoto = page.getCoverPhoto();
       String coverPhotoUrl = "";
       if (coverPhoto != null) {
-         coverPhotoUrl = Util.getThumbnailUrl(
+         coverPhotoUrl = Util.getPhotoUrl(
                environment,
-               coverPhoto.getThumbnailsMap().get(ThumbnailType.s900x900)
+               coverPhoto
          );
       }
 

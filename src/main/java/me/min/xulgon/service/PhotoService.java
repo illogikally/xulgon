@@ -1,5 +1,7 @@
 package me.min.xulgon.service;
 
+import com.sirv.SirvClientImpl;
+import com.sirv.spring.RestTemplateAdapter;
 import lombok.AllArgsConstructor;
 import me.min.xulgon.dto.OffsetResponse;
 import me.min.xulgon.dto.PhotoRequest;
@@ -41,14 +43,13 @@ public class PhotoService {
    private final PhotoMapper photoMapper;
    private final ContentService contentService;
    private final PhotoRepository photoRepository;
-   private final StorageService storageService;
    private final PageRepository pageRepository;
    private final PhotoSetPhotoRepository photoSetPhotoRepository;
    private final PhotoThumbnailRepository thumbnailRepository;
-   private final Environment environment;
    private PhotoSetRepository photoSetRepository;
    private PhotoSetPhotoService photoSetPhotoService;
    private FollowService followService;
+   private final SirvService sirvService;
 
 
    public Photo save(PhotoRequest photoRequest, MultipartFile multipartFile) {
@@ -58,68 +59,28 @@ public class PhotoService {
       }
       catch (IOException exception) {
          exception.printStackTrace();
-         throw new RuntimeException();
+         throw new RuntimeException("Error while reading MultipartFile to BufferedImage");
       }
 
       PhotoSet photoSet = photoSetRepository.save(PhotoSet.generate(SetType.PHOTO));
       Photo photo = photoMapper.map(
             photoRequest,
             Pair.of(bufferedImage.getWidth(), bufferedImage.getHeight()),
-            storageService.store(bufferedImage),
+            upload(multipartFile),
             photoSet
       );
       photoSetPhotoService.bulkInsertUnique(photoSet, List.of(photo));
       Photo savedPhoto = photoRepository.save(photo);
-      var thumbnails = Arrays.stream(ThumbnailType.values())
-            .map(type -> generateThumbnails(savedPhoto, type, bufferedImage))
-            .collect(Collectors.toList());
-      savedPhoto.setThumbnails(thumbnails);
       followService.followContent(savedPhoto.getId());
       return savedPhoto;
    }
 
-   private PhotoThumbnail generateThumbnails(Photo photo,
-                                             ThumbnailType thumbnailType,
-                                             BufferedImage bufferedImage) {
-      URL resourcePathUrl = this.getClass().getClassLoader().getResource("images");
-      Assert.notNull(resourcePathUrl, "Resource path is null");
-      String resourcePath;
-      try {
-         resourcePath = Path.of(resourcePathUrl.toURI()).toString();
-      }
-      catch (Exception e) {
-         throw  new RuntimeException();
-      }
-      String type = thumbnailType.toString();
-      int size = thumbnailType.getSize();
-      String fileName = MessageFormat.format("{0}.{1}.jpg", UUID.randomUUID(), type);
-
-      int minDimension = Math.min(bufferedImage.getWidth(), bufferedImage.getHeight());
-      try {
-         bufferedImage = Thumbnails.of(bufferedImage)
-               .sourceRegion(Positions.CENTER, minDimension, minDimension)
-               .size(size, size)
-               .asBufferedImage();
-
-         File outputFile = new File(Path.of(resourcePath, fileName).toString());
-         Thumbnails.of(bufferedImage)
-               .scale(1)
-               .outputFormat("jpg")
-               .toFile(outputFile);
-      }
-      catch (IOException exception) {
-         exception.printStackTrace();
-         throw new RuntimeException();
-      }
-
-      PhotoThumbnail thumbnail = PhotoThumbnail.builder()
-            .originalPhoto(photo)
-            .width(size)
-            .height(size)
-            .type(thumbnailType)
-            .name(fileName)
-            .build();
-      return thumbnailRepository.save(thumbnail);
+   private String upload(MultipartFile file) {
+      String name = UUID.randomUUID().toString();
+      String extension = "jpg";
+      String filename = name + "." + extension;
+      sirvService.upload(filename, file);
+      return filename;
    }
 
    @Transactional(readOnly = true)

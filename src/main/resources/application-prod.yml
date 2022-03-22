@@ -1,0 +1,34 @@
+server:
+  port: ${PORT:8080}
+
+logging:
+  level:
+    org.springframework.security: error
+spring:
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 50MB
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: 69808755204-ms5h812f8kvundgp3otdo3fnv9nbeks0.apps.googleusercontent.com
+            client-secret: bA6ECJXz0TCtUkP3Ha6hm-66
+            redirect-uri: http://localhost:4200/oauth2/callback?provider=google
+jwt:
+  expiration-time-in-millis: 900 000
+  signing-key: secret
+
+app:
+  resource-url: https://xulgon.sirv.com
+  sirv-id:
+  sirv-secret:
+#  resource-url: https://cdn.image4.io/illogikally/f_auto
+#    resource-url: https://xulgon-spring.herokuapp.com/contents
+#  resource-url: http://localhost:8080/contents
