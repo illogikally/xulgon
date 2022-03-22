@@ -1,9 +1,11 @@
 package me.min.xulgon.model;
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.Type;
-import org.hibernate.type.TextType;
 import org.jetbrains.annotations.NotNull;
 
 import javax.persistence.*;

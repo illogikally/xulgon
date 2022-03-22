@@ -1,6 +1,7 @@
 package me.min.xulgon.dto;
 
-import lombok.*;
+import lombok.Builder;
+import lombok.Data;
 
 import java.util.List;
 

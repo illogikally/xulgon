@@ -4,7 +4,6 @@ import lombok.AllArgsConstructor;
 import me.min.xulgon.dto.PhotoRequest;
 import me.min.xulgon.dto.PhotoResponse;
 import me.min.xulgon.dto.PhotoViewResponse;
-import me.min.xulgon.dto.ThumbnailDto;
 import me.min.xulgon.exception.ContentNotFoundException;
 import me.min.xulgon.exception.PageNotFoundException;
 import me.min.xulgon.model.*;
@@ -22,8 +21,6 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor

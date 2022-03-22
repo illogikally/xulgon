@@ -1,10 +1,8 @@
 package me.min.xulgon.util;
 
-import lombok.AllArgsConstructor;
 import me.min.xulgon.model.Photo;
 import me.min.xulgon.model.PhotoThumbnail;
 import org.springframework.core.env.Environment;
-import org.springframework.stereotype.Service;
 
 public class Util {
    private Util() {}

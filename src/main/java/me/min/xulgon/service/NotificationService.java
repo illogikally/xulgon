@@ -3,22 +3,18 @@ package me.min.xulgon.service;
 import lombok.AllArgsConstructor;
 import me.min.xulgon.dto.NotificationDto;
 import me.min.xulgon.dto.OffsetResponse;
-import me.min.xulgon.exception.UserNotFoundException;
 import me.min.xulgon.mapper.NotificationMapper;
 import me.min.xulgon.model.*;
-import me.min.xulgon.repository.BlockRepository;
 import me.min.xulgon.repository.NotificationRepository;
 import me.min.xulgon.repository.NotificationSubjectRepository;
 import me.min.xulgon.repository.UserRepository;
 import me.min.xulgon.util.OffsetRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @Service
 @AllArgsConstructor

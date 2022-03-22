@@ -1,6 +1,7 @@
 package me.min.xulgon.model;
 
 import lombok.*;
+
 import javax.persistence.*;
 import java.time.Instant;
 

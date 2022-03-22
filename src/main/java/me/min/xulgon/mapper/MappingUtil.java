@@ -1,8 +1,6 @@
 package me.min.xulgon.mapper;
 
 import com.github.marlonlom.utilities.timeago.TimeAgo;
-import me.min.xulgon.model.Comment;
-import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.time.LocalDateTime;

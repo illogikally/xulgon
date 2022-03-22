@@ -5,11 +5,10 @@ import me.min.xulgon.dto.ReactionDto;
 import me.min.xulgon.exception.ContentNotFoundException;
 import me.min.xulgon.model.*;
 import me.min.xulgon.repository.ContentRepository;
-import me.min.xulgon.repository.NotificationRepository;
-import me.min.xulgon.repository.NotificationSubjectRepository;
 import me.min.xulgon.repository.ReactionRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 import java.util.Optional;
 
 @Service

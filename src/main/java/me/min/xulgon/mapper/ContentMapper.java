@@ -1,9 +1,8 @@
 package me.min.xulgon.mapper;
 
 import lombok.AllArgsConstructor;
-import me.min.xulgon.dto.NotificationContentDto;
-import me.min.xulgon.dto.PhotoResponse;
 import me.min.xulgon.dto.ContentDto;
+import me.min.xulgon.dto.PhotoResponse;
 import me.min.xulgon.model.Content;
 import org.springframework.stereotype.Service;
 

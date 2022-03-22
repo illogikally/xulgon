@@ -1,11 +1,8 @@
 package me.min.xulgon.mapper;
 
 import lombok.AllArgsConstructor;
-import me.min.xulgon.dto.PhotoResponse;
 import me.min.xulgon.dto.UserBasicDto;
 import me.min.xulgon.dto.UserDto;
-import me.min.xulgon.model.Photo;
-import me.min.xulgon.model.ThumbnailType;
 import me.min.xulgon.model.User;
 import me.min.xulgon.repository.FollowRepository;
 import me.min.xulgon.service.AuthenticationService;

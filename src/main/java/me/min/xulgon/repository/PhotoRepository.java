@@ -1,10 +1,7 @@
 package me.min.xulgon.repository;
 
 import me.min.xulgon.model.Content;
-import me.min.xulgon.model.Page;
 import me.min.xulgon.model.Photo;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

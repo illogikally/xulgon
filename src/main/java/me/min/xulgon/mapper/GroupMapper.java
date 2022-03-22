@@ -2,7 +2,10 @@ package me.min.xulgon.mapper;
 
 import me.min.xulgon.dto.GroupRequest;
 import me.min.xulgon.dto.GroupResponse;
-import me.min.xulgon.model.*;
+import me.min.xulgon.model.Group;
+import me.min.xulgon.model.GroupMember;
+import me.min.xulgon.model.GroupRole;
+import me.min.xulgon.model.User;
 import me.min.xulgon.repository.FollowRepository;
 import me.min.xulgon.repository.PhotoRepository;
 import me.min.xulgon.service.AuthenticationService;

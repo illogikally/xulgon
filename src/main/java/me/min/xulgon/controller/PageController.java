@@ -8,11 +8,8 @@ import me.min.xulgon.service.PageService;
 import me.min.xulgon.service.PhotoService;
 import me.min.xulgon.service.PostService;
 import me.min.xulgon.util.OffsetRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/pages")

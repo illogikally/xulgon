@@ -6,7 +6,6 @@ import me.min.xulgon.dto.MessageResponse;
 import me.min.xulgon.exception.UserNotFoundException;
 import me.min.xulgon.model.Conversation;
 import me.min.xulgon.model.Message;
-import me.min.xulgon.model.Photo;
 import me.min.xulgon.model.User;
 import me.min.xulgon.repository.ConversationRepository;
 import me.min.xulgon.repository.UserRepository;

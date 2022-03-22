@@ -4,18 +4,15 @@ import lombok.AllArgsConstructor;
 import me.min.xulgon.dto.CommentRequest;
 import me.min.xulgon.dto.CommentResponse;
 import me.min.xulgon.dto.PhotoResponse;
-import me.min.xulgon.dto.PhotoViewResponse;
 import me.min.xulgon.exception.ContentNotFoundException;
 import me.min.xulgon.exception.PageNotFoundException;
 import me.min.xulgon.model.*;
 import me.min.xulgon.repository.ContentRepository;
 import me.min.xulgon.repository.PageRepository;
-import me.min.xulgon.repository.PostRepository;
 import me.min.xulgon.service.AuthenticationService;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
-import java.util.LinkedList;
 import java.util.List;
 
 @Service

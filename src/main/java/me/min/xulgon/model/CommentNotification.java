@@ -1,7 +1,6 @@
 package me.min.xulgon.model;
 
 import lombok.*;
-import lombok.experimental.SuperBuilder;
 
 import javax.persistence.Entity;
 import javax.persistence.OneToOne;

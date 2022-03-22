@@ -20,10 +20,10 @@ spring:
           google:
             client-id:
             client-secret:
-            redirect-uri: http://localhost:4200/oauth2/callback?provider=google
+            redirect-uri: https://xulgon.herokuapp.com/oauth2/callback?provider=google
 jwt:
   expiration-time-in-millis: 900 000
-  signing-key: secret
+  signing-key:
 
 app:
   resource-url: https://xulgon.sirv.com

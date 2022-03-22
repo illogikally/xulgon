@@ -1,6 +1,5 @@
 package me.min.xulgon.repository;
 
-import lombok.AllArgsConstructor;
 import me.min.xulgon.model.Block;
 import me.min.xulgon.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;

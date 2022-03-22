@@ -10,7 +10,6 @@ import me.min.xulgon.model.User;
 import me.min.xulgon.repository.ContentRepository;
 import me.min.xulgon.repository.FollowRepository;
 import me.min.xulgon.repository.PageRepository;
-import me.min.xulgon.repository.UserRepository;
 import org.springframework.stereotype.Service;
 
 @Service

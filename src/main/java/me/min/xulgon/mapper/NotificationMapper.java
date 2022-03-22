@@ -9,7 +9,6 @@ import me.min.xulgon.util.Util;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.util.function.Function;
 
 @Service

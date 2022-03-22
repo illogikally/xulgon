@@ -1,7 +1,5 @@
 package me.min.xulgon.service;
 
-import com.sirv.SirvClientImpl;
-import com.sirv.spring.RestTemplateAdapter;
 import lombok.AllArgsConstructor;
 import me.min.xulgon.dto.OffsetResponse;
 import me.min.xulgon.dto.PhotoRequest;
@@ -13,24 +11,14 @@ import me.min.xulgon.mapper.PhotoMapper;
 import me.min.xulgon.model.*;
 import me.min.xulgon.repository.*;
 import me.min.xulgon.util.OffsetRequest;
-import net.coobird.thumbnailator.Thumbnails;
-import net.coobird.thumbnailator.geometry.Positions;
-import org.springframework.core.env.Environment;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.Assert;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
-import java.io.File;
 import java.io.IOException;
-import java.net.URL;
-import java.nio.file.Path;
-import java.text.MessageFormat;
-import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;

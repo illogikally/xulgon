@@ -5,7 +5,6 @@ import me.min.xulgon.model.*;
 import me.min.xulgon.repository.FollowRepository;
 import me.min.xulgon.repository.GroupJoinRequestRepository;
 import me.min.xulgon.repository.GroupMemberRepository;
-import me.min.xulgon.repository.GroupRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 

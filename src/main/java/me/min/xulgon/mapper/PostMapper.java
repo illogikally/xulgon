@@ -1,19 +1,21 @@
 package me.min.xulgon.mapper;
 
 import lombok.AllArgsConstructor;
-import me.min.xulgon.dto.*;
+import me.min.xulgon.dto.PhotoResponse;
+import me.min.xulgon.dto.PostRequest;
+import me.min.xulgon.dto.PostResponse;
 import me.min.xulgon.exception.ContentNotFoundException;
 import me.min.xulgon.exception.PageNotFoundException;
 import me.min.xulgon.model.*;
-import me.min.xulgon.repository.*;
+import me.min.xulgon.repository.ContentRepository;
+import me.min.xulgon.repository.FollowRepository;
+import me.min.xulgon.repository.PageRepository;
 import me.min.xulgon.service.AuthenticationService;
 import me.min.xulgon.service.ContentService;
 import me.min.xulgon.service.FollowService;
-import org.springframework.data.jpa.repository.support.SimpleJpaRepository;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
 

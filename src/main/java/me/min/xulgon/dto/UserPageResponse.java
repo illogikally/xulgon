@@ -3,7 +3,6 @@ package me.min.xulgon.dto;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
-import me.min.xulgon.model.FriendshipStatus;
 
 import java.util.List;
 

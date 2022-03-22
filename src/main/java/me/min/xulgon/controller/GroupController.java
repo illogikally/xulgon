@@ -2,9 +2,7 @@ package me.min.xulgon.controller;
 
 import lombok.AllArgsConstructor;
 import me.min.xulgon.dto.*;
-import me.min.xulgon.model.GroupMember;
 import me.min.xulgon.model.GroupRole;
-import me.min.xulgon.repository.GroupRepository;
 import me.min.xulgon.service.GroupService;
 import me.min.xulgon.util.OffsetRequest;
 import org.springframework.http.HttpStatus;
@@ -12,7 +10,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/groups")
