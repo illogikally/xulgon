@@ -4,12 +4,12 @@ server:
 logging:
   level:
     org.springframework.security: error
+
 spring:
   servlet:
     multipart:
-      max-file-size: 2MB
-      max-request-size: 20MB
-
+      max-file-size: 5MB
+      max-request-size: 50MB
   jpa:
     hibernate:
       ddl-auto: update
@@ -20,7 +20,7 @@ spring:
           google:
             client-id:
             client-secret:
-            redirect-uri: https://xulgon.herokuapp.com/oauth2/callback?provider=google
+            redirect-uri: http://localhost:4200/oauth2/callback?provider=google
 jwt:
   expiration-time-in-millis: 900 000
   signing-key: secret
