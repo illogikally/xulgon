@@ -49,4 +49,10 @@ public class AuthenticationController {
    public ResponseEntity<Boolean> isUserExisted(@PathVariable String username) {
       return ResponseEntity.ok(userService.isUserExisted(username));
    }
+
+   @GetMapping("/no-auth")
+   public ResponseEntity<?> noAuth() {
+      return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+   }
+
 }
