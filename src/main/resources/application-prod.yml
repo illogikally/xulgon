@@ -13,14 +13,17 @@ spring:
   jpa:
     hibernate:
       ddl-auto: update
+  datasource:
+    driver-class-name: org.postgresql.Driver
+
   security:
     oauth2:
       client:
         registration:
           google:
+            redirect-uri: https://xulgon.herokuapp.com/oauth2/callback?provider=google
             client-id:
             client-secret:
-            redirect-uri: https://xulgon.herokuapp.com/oauth2/callback?provider=google
 jwt:
   expiration-time-in-millis: 900 000
   signing-key:
