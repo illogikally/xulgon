@@ -22,7 +22,7 @@ public class WebConfig implements WebMvcConfigurer {
    @Override
    public void addCorsMappings(CorsRegistry registry) {
       registry.addMapping("/**")
-            .allowedOriginPatterns("https://xulgon.herokuapp.com")
+            .allowedOriginPatterns("*")
             .allowCredentials(true)
             .allowedHeaders("*")
             .allowedMethods("*");

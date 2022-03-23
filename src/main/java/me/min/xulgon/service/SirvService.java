@@ -3,6 +3,7 @@ package me.min.xulgon.service;
 import com.sirv.SirvClientImpl;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -24,6 +25,9 @@ public class SirvService {
    }
 
    public void delete(String filename) {
-      sirvClient.getFilesClient().delete("/" + filename);
+      try {
+         sirvClient.getFilesClient().delete("/" + filename);
+      }
+      catch (Exception ignored) {}
    }
 }

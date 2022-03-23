@@ -22,6 +22,12 @@ public class Photo extends Content {
    private Integer width;
    private Integer height;
    @OneToMany(
+         mappedBy = "originalPhoto",
+         cascade = CascadeType.REMOVE,
+         orphanRemoval = true
+   )
+   private List<PhotoThumbnail> thumbnails;
+   @OneToMany(
          mappedBy = "photo",
          cascade = CascadeType.REMOVE,
          orphanRemoval = true
