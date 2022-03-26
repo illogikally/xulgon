@@ -37,7 +37,7 @@ public class Util {
       int width = image.getWidth();
 
       for (int i = (int) (width * bound.getFirst()); i < width * bound.getSecond(); i++) {
-         for (int j = 0; j < height; j++) {
+         for (int j = 0; j < height * .5; j++) {
             int rgb = image.getRGB(i, j);
             if (!isGray(getRGBArr(rgb))) {
                Integer counter = colorMap.get(rgb);
@@ -78,7 +78,7 @@ public class Util {
       int rgDiff = rgbArr[0] - rgbArr[1];
       int rbDiff = rgbArr[0] - rgbArr[2];
       // Filter out black, white and grays...... (tolerance within 10 pixels)
-      int tolerance = 5;
+      int tolerance = 10;
       if (rgDiff > tolerance || rgDiff < -tolerance) {
          return rbDiff <= tolerance && rbDiff >= -tolerance;
       }

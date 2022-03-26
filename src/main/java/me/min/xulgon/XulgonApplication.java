@@ -23,6 +23,11 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Objects;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.net.URL;
+import java.util.Objects;
+
 @SpringBootApplication
 @EnableSpringConfigured
 public class XulgonApplication {
@@ -36,4 +41,25 @@ public class XulgonApplication {
 													@Value("${app.sirv-secret}") String clientSecret) {
 		return new SirvClientImpl(clientId, clientSecret, new RestTemplateAdapter());
 	}
+
+	@Bean
+	@Autowired
+	public ApplicationRunner run(PhotoRepository photoRepository, PageRepository pageRepository) {
+		return args -> {
+			pageRepository.findAll()
+					.stream()
+					.map(Page::getCoverPhoto).filter(Objects::nonNull)
+					.forEach(photo -> {
+						try {
+							URL url = new URL("https://xulgon.sirv.com/" + photo.getName());
+							BufferedImage image = ImageIO.read(url);
+							photo.setDominantColorLeft(Util.getDominantColorLeft(image));
+							photo.setDominantColorRight(Util.getDominantColorRight(image));
+							photoRepository.save(photo);
+						} catch (Exception e) {
+							e.printStackTrace();
+						}
+					});
+		};
+	};
 }
