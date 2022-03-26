@@ -21,6 +21,7 @@ public class ContentService {
    private final PrincipalService principalService;
    private final GroupRepository groupRepository;
    private final FriendshipRepository friendshipRepository;
+   private final PageRepository pageRepository;
    private final SirvService sirvService;
 
    public void deleteContent(Long id) {
@@ -88,6 +89,11 @@ public class ContentService {
       if (photo.equals(profile.getAvatar())) {
          profile.setAvatar(null);
       }
+
+      pageRepository.findAll()
+            .stream()
+            .filter(page -> photo.equals(page.getCoverPhoto()))
+            .forEach(page -> page.setCoverPhoto(null));
 
       sirvService.delete(photo.getName());
       photoRepository.deleteById(photo.getId());

@@ -45,11 +45,6 @@ public class AuthenticationController {
       return ResponseEntity.ok(authenticationService.refreshToken(refreshTokenDto));
    }
 
-   @GetMapping("/username-existed/{username}")
-   public ResponseEntity<Boolean> isUserExisted(@PathVariable String username) {
-      return ResponseEntity.ok(userService.isUserExisted(username));
-   }
-
    @GetMapping("/no-auth")
    public ResponseEntity<?> noAuth() {
       return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();

@@ -56,8 +56,6 @@ public class Content {
 
    @OneToMany(mappedBy = "subjectContent", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
    private List<NotificationSubject> notificationSubjects;
-//   @OneToMany(mappedBy = "rootContent", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
-//   private List<NotificationSubject> childNotificationSubjects;
    @OneToMany(mappedBy = "actorContent", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
    private List<Notification> notifications;
 

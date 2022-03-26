@@ -8,6 +8,7 @@ import me.min.xulgon.dto.UserDto;
 import me.min.xulgon.mapper.GroupMapper;
 import me.min.xulgon.mapper.PostMapper;
 import me.min.xulgon.mapper.UserMapper;
+import me.min.xulgon.model.GroupMember;
 import me.min.xulgon.model.Post;
 import me.min.xulgon.repository.GroupRepository;
 import me.min.xulgon.repository.PostRepository;
@@ -26,8 +27,8 @@ public class SearchService {
    private final ContentService contentService;
    private final UserRepository userRepository;
    private final GroupRepository groupRepository;
-   private final GroupMapper groupMapper;
    private final UserMapper userMapper;
+   private final GroupMapper groupMapper;
    private final PostMapper postMapper;
    private final PostRepository postRepository;
 

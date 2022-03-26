@@ -65,11 +65,12 @@ public class PhotoMapper {
       if (photo == null) return null;
       return PhotoResponse.builder()
             .id(photo.getId())
+            .dominantColorLeft(photo.getDominantColorLeft())
+            .dominantColorRight(photo.getDominantColorRight())
             .url(getUrl(photo))
             .userId(photo.getUser().getId())
             .build();
    }
-
 
    public PhotoViewResponse toPhotoViewResponse(Photo photo) {
       if (photo == null) return null;

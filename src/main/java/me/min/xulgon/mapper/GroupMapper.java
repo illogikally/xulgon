@@ -33,7 +33,6 @@ public abstract class GroupMapper {
    @Mapping(target = "members", expression = "java(new ArrayList<>())")
    public abstract Group map(GroupRequest groupRequest);
 
-
    @Mapping(target = "coverPhotoUrl", expression = "java(getPhotoUrl(group))")
    @Mapping(target = "memberCount"  , expression = "java(group.getMembers().size())")
    @Mapping(target = "isMember"     , expression = "java(isMember(group))")
@@ -66,14 +65,14 @@ public abstract class GroupMapper {
       User user = authService.getPrincipal();
       return group.getJoinRequests()
             .stream()
-            .anyMatch(request -> request.getUser().getId().equals(user.getId()));
+            .anyMatch(request -> request.getUser().equals(user));
    }
 
    Boolean isMember(Group group) {
       User user = authService.getPrincipal();
       return group.getMembers()
             .stream()
-            .anyMatch(member -> member.getUser().getId().equals(user.getId()));
+            .anyMatch(member -> member.getUser().equals(user));
    }
 
 }

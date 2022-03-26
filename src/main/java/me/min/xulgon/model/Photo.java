@@ -21,6 +21,8 @@ public class Photo extends Content {
    private String name;
    private Integer width;
    private Integer height;
+   private String dominantColorLeft;
+   private String dominantColorRight;
    @OneToMany(
          mappedBy = "originalPhoto",
          cascade = CascadeType.REMOVE,

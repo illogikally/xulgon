@@ -12,5 +12,7 @@ import lombok.NoArgsConstructor;
 public class PhotoResponse {
    private Long id;
    private String url;
+   private String dominantColorLeft;
+   private String dominantColorRight;
    private Long userId;
 }
