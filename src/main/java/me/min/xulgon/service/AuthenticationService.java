@@ -17,6 +17,7 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.sql.Date;
 import java.time.Instant;
 
 
@@ -37,6 +38,10 @@ public class AuthenticationService {
                                                               String token,
                                                               String refreshToken) {
       Long exp = Instant.now().plusMillis(jwtProvider.getJwtExpirationInMillis()).toEpochMilli();
+      System.out.println("htere exp here" +  exp);
+      System.out.println(Date.from(Instant.now()));
+      System.out.println(Date.from(Instant.ofEpochMilli(exp)));
+
       return AuthenticationResponse.builder()
             .token(token)
             .refreshToken(refreshToken)

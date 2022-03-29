@@ -1,5 +1,8 @@
 server:
   port: ${PORT:8080}
+  compression:
+    enabled: true
+    mime-types: text/html,text/css,application/javascript,application/json
 
 logging:
   level:
