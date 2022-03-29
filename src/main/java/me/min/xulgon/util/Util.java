@@ -39,12 +39,13 @@ public class Util {
       for (int i = (int) (width * bound.getFirst()); i < width * bound.getSecond(); i++) {
          for (int j = 0; j < height * .5; j++) {
             int rgb = image.getRGB(i, j);
-            Integer counter = colorMap.get(rgb);
-            if (counter == null) {
-               counter = 0;
+            if (!isGray(getRGBArr(rgb))) {
+               Integer counter = colorMap.get(rgb);
+               if (counter == null) {
+                  counter = 0;
+               }
+               colorMap.put(rgb, ++counter);
             }
-            int amount = isGray(getRGBArr(rgb)) ? 1 : 2;
-            colorMap.put(rgb, counter + amount);
          }
       }
       return getMostCommonColor(colorMap);
