@@ -92,7 +92,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
       CorsConfiguration config = new CorsConfiguration();
       config.setAllowCredentials(true);
       config.setAllowedMethods(List.of("*"));
-      config.setAllowedOriginPatterns(List.of("*"));
+      config.setAllowedOriginPatterns(List.of("https://xulgon.herokuapp.com"));
       config.setAllowedHeaders(List.of("*"));
 
       UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();

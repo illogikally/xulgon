@@ -16,6 +16,8 @@ public class GroupResponse {
    private GroupRole role;
    private Boolean isRequestSent;
    private String coverPhotoUrl;
+   private String coverLeftColor;
+   private String coverRightColor;
    private String name;
    private Boolean isHidden;
    private Boolean isPrivate;

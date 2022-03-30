@@ -39,6 +39,8 @@ public abstract class GroupMapper {
    @Mapping(target = "isRequestSent", expression = "java(isRequestSent(group))")
    @Mapping(target = "role"         , expression = "java(getRole(group))")
    @Mapping(target = "isFollow"     , expression = "java(isFollow(group))")
+   @Mapping(target = "coverLeftColor", source = "group.coverPhoto.dominantColorLeft")
+   @Mapping(target = "coverRightColor", source = "group.coverPhoto.dominantColorRight")
    public abstract GroupResponse toDto(Group group);
 
    String getPhotoUrl(Group group) {
