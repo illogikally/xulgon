@@ -9,6 +9,7 @@ import me.min.xulgon.service.AuthenticationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.env.Environment;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.BeanIds;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
@@ -29,6 +30,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 
 
@@ -41,6 +43,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
    private UserDetailsService userDetailsService;
    private ObjectMapper mapper;
    private AuthenticationService authService;
+   private Environment environment;
 
 
    @Bean(BeanIds.AUTHENTICATION_MANAGER)
@@ -89,10 +92,13 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
    @Bean
    public CorsConfigurationSource corsConfigurationSource() {
+      String allowedOriginsString = environment.getProperty("app.allowed-origins");
+      allowedOriginsString = allowedOriginsString == null ? "*" : allowedOriginsString;
+      List<String> allowedOrigins = Arrays.asList(allowedOriginsString.split(","));
       CorsConfiguration config = new CorsConfiguration();
       config.setAllowCredentials(true);
       config.setAllowedMethods(List.of("*"));
-      config.setAllowedOriginPatterns(List.of("https://xulgon.herokuapp.com"));
+      config.setAllowedOriginPatterns(allowedOrigins);
       config.setAllowedHeaders(List.of("*"));
 
       UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
